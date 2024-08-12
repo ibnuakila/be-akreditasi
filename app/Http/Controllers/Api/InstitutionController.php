@@ -58,7 +58,7 @@ class InstitutionController extends BaseController //implements ICrud
 			$query->where('library_name', 'like', "%{$s}%")
 			->orWhere('agency_name', 'like', "%{$s}%");
 		}
-		$perPage = 10;
+		$perPage = 15;
 		$page = $request->input(key:'page', default:1);
 		$total = $query->count();
 		$response = $query->offset(value:($page - 1) * $perPage)
