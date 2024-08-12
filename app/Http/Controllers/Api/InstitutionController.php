@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
-//require_once ('ICrud.php');
-
-
 
 use Controllers\Api;
 /**
