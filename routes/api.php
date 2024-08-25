@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\InstitutionController;
+use App\Http\Controllers\Api\InstrumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\ProvinceController;
 use App\Http\Controllers\Api\RegionController;
@@ -87,4 +88,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/proposal/show/{id}', [ProposalController::class, 'show']);
     Route::put('/proposal/update/{model}', [ProposalController::class, 'update']);
     Route::delete('/proposal/destroy/{model}', [ProposalController::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/instrument/get-instrument/{params}', [InstrumentController::class, 'getInstrument']);
 });

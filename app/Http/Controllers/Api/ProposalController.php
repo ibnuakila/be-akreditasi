@@ -113,17 +113,21 @@ class ProposalController extends BaseController
     }
 
     public function storeFiles(Request $request)
-    {
-        $request->validate([
+    {        
+        $input = $request->all();
+        $validator = Validator::make($input, [
             'file' => 'required|mimes:pdf, xlsx| max:2048',
             'accreditation_proposal_id' => 'required',
             'proposal_document_id' => 'required'
         ]);
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error!', $validator->errors());
+        }
         if($request->file()){
-            $file_name = $request->file()->hashName();
-            $file_type = $request->file()->getClientMimeType();
+            $file_name = $request->file('file')->getClientOriginalName();
+            $file_type = $request->file('file')->getClientMimeType();
             $file_path = '/storage/' . $request->file('file')->storeAs($request->accreditation_proposal_id, $file_name, 'public');
-            $accre_files = AccreditationProposalFiles::find()
+            $accre_files = AccreditationProposalFiles::query()
                 ->where('accreditation_proposal_id', '=', $request->accreditation_proposal_id)
                 ->where('proposal_document_id', '=', $request->proposal_document_id)->first();
             if(is_object($accre_files)){
@@ -134,14 +138,18 @@ class ProposalController extends BaseController
                 $accre_files->file_path = $file_path;
                 $accre_files->update();
             }else{
-                $accre_files = new AccreditationProposalFiles();
-                $accre_files->accreditation_proposal_id = $request->accreditation_proposal_id;
-                $accre_files->proposal_document_id = $request->proposal_document_id;
-                $accre_files->file_name = $file_name;
-                $accre_files->file_type = $file_type;
-                $accre_files->file_path = $file_path;
-                $accre_files->insert();
+                $data = [
+                    'accreditation_proposal_id' => $request->accreditation_proposal_id,
+                    'proposal_document_id' => $request->proposal_document_id,
+                    'file_name' => $request->proposal_document_id,
+                    'file_type' => $file_type,
+                    'file_path' => $file_path
+                ];
+                
+                $accre_files = AccreditationProposalFiles::create($data);
             }
+        }else{
+            return $this->sendError('File Error!', $validator->errors());        
         }
         return $this->sendResponse(new AccreditationProposalResource($accre_files), 'Success', $accre_files->count());
     }

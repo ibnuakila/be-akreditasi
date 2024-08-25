@@ -37,5 +37,5 @@ class InstitutionRequest extends Model
         'last_certification_date',
         'predicate',
         'accredited_at'
-    ]
+    ];
 }

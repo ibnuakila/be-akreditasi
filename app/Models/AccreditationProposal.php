@@ -11,6 +11,7 @@ class AccreditationProposal extends Model
     use HasFactory;
     use HasUuids;
     protected $table = 'accreditation_proposals';
+    public $timestamps = false;
     protected $fillable = [
         'institution_id',
         'proposal_date',
