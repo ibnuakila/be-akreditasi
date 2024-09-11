@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\InstrumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\ProvinceController;
 use App\Http\Controllers\Api\RegionController;
-use App\Http\Controllers\Api\SubdistricController;
+use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
 use App\Models\EvaluationAssignment;
 use Illuminate\Http\Request;
@@ -53,13 +53,13 @@ Route::middleware('auth:sanctum')->group(function(){
 });
 
 Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/subdistrict/index/', [SubdistricController::class, 'index']);
-    Route::post('/subdistrict/store', [SubdistricController::class, 'store']);
-    Route::get('/subdistrict/show/{id}', [SubdistricController::class, 'show']);
-    Route::put('/subdistrict/update/{model}', [SubdistricController::class, 'update']);
-    Route::delete('/subdistrict/destroy/{model}', [SubdistricController::class, 'destroy']);
-    Route::get('/subdistrict/list', [SubdistricController::class, 'list']);
-    Route::get('/subdistrict/cityid/{city_id}', [SubdistricController::class, 'cityid']);
+    Route::get('/subdistrict/index/', [SubdistrictController::class, 'index']);
+    Route::post('/subdistrict/store', [SubdistrictController::class, 'store']);
+    Route::get('/subdistrict/show/{id}', [SubdistrictController::class, 'show']);
+    Route::put('/subdistrict/update/{model}', [SubdistrictController::class, 'update']);
+    Route::delete('/subdistrict/destroy/{model}', [SubdistrictController::class, 'destroy']);
+    Route::get('/subdistrict/list', [SubdistrictController::class, 'list']);
+    Route::get('/subdistrict/cityid/{city_id}', [SubdistrictController::class, 'cityid']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
