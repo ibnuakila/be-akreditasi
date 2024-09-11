@@ -28,4 +28,23 @@ class AccreditationProposal extends Model
         'certificate_file',
         'recommendation_file'
     ];
+
+    public function proposalState()
+    {
+        return $this->belongsTo(ProposalState::class);
+    }
+    public function accreditationProposalFiles()
+    {
+        return $this->hasMany(AccreditationProposalFiles::class);
+    }
+
+    /*public function proposalDocument()
+    {
+        return $this->hasOneThrough(ProposalDocument::class, AccreditationProposalFiles::class);
+    }*/
+
+    public function institutionRequest()
+    {
+        return $this->hasOne(InstitutionRequest::class);
+    }
 }

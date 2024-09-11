@@ -45,7 +45,7 @@ class BaseController extends Controller
 	 * @param result
 	 * @param message
 	 */
-	public function sendResponse($result, $message = null, $count)
+	public function sendResponse($result, $message = null, $count = null)
 	{
 		$response = [
             'success' => true,

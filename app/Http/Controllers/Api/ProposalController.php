@@ -52,13 +52,23 @@ class ProposalController extends BaseController
 
     public function list(Request $request)//with filter
     {
-        $query = AccreditationProposal::query();
-        if ($s = $request->input(key: 's')) {//filter berdasarkan name 
-            //$query->join('institution_requests', 'accreditation_proposal.id')
-            $query->where('name', 'like', "%{$s}%");
-
+        $query = AccreditationProposal::query()
+            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+            ->select(['accreditation_proposals.*',
+                'proposal_states.state_name',
+                'institution_requests.category',
+                'library_name',
+                'npp',
+                'agency_name',
+                'institution_head_name',
+                'email',
+                'telephone_number']);
+        if ($s = $request->input(key: 'search')) {//filter berdasarkan name 
+            
+            $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
-        $perPage = 15;
+        $perPage = $request->input(key: 'pageSize', default: 10);
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
         $response = $query->offset(value: ($page - 1) * $perPage)
@@ -74,7 +84,14 @@ class ProposalController extends BaseController
      */
     public function show($id)
     {
-        $accreditation = AccreditationProposal::find($id);
+        $accreditation = AccreditationProposal::query()
+            ->where(['id' => $id])
+            ->with('proposalState')
+            ->with('accreditationProposalFiles')            
+            ->get();
+        //$accre_files = AccreditationProposalFiles::query();
+
+
         if (is_null($accreditation)) {
             return $this->sendError('Proposal not found!');
         }
@@ -161,20 +178,32 @@ class ProposalController extends BaseController
      * @param request
      * @param model
      */
-    public function update(Request $request, Province $model)
+    public function update(Request $request, AccreditationProposal $model)
     {
         $input = $request->all();
 
         $validator = Validator::make($input, [
-            'name' => 'required'
+            'institution_id' => 'required',
+            'proposal_date' => 'required',
+            'proposal_state_id' => 'required',
+            'finish_date' => 'nullable',
+            'type' => 'required',
+            'notes' => 'nullable',
+            'accredited_at' => 'nullable',
+            'predicate' => 'nullable',
+            'certificate_status' => 'nullable',
+            'certificate_expires_at' => 'nullable',
+            'pleno_date' => 'nullable',
+            'certificate_file' => 'nullable',
+            'recommendation_file' => 'nullable'
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
-        $model->name = $input['name'];
-        $model->update();
+        
+        $model->update($input);
 
-        return $this->sendResponse(new ProvinceResource($model), 'Province Updated!', $model->count());
+        return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
     }
 }

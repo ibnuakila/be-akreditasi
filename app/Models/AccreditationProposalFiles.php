@@ -20,4 +20,9 @@ class AccreditationProposalFiles extends Model
         'validation',
         'notes'
     ];
+
+    public function proposalDocuments()
+    {
+        return $this->hasMany(ProposalDocument::class);
+    }
 }

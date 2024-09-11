@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProposalState extends Model
+class AssignmentState extends Model
 {
     use HasFactory;
-    protected $table = 'proposal_states';
+    protected $timestamps = false;
+    protected $table = 'assignment_states';
     protected $fillable = [
-        'status_name'
+        'state_name'
     ];
 }

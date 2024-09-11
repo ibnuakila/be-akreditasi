@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProposalDocumentResource;
 use App\Models\Instrument;
 use App\Models\InstrumentComponent;
+use App\Models\ProposalDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Validator;
 class InstrumentController extends BaseController
 {
     public function getInstrument(Request $request, $params){
@@ -93,5 +96,40 @@ class InstrumentController extends BaseController
 
         return $response;
         //return $this->sendResponse($instrument_com, 'Success', $instrument_com->count());
+    }
+
+    public function generateProposalDocument(Request $request)
+    {
+        $post = $request->all();
+        $validator = Validator::make($post, [
+            'category' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error!', $validator->errors());
+        }
+        $instrument = Instrument::query()->where('category', '=', $post['category'])->first();
+        
+        if(is_object($instrument)){
+            $instrument_component = InstrumentComponent::query()
+            ->where('instrument_id', '=', $instrument->id)
+            ->where('type', '=', 'main')
+            ->get();
+            if(count($instrument_component) > 0){
+                foreach($instrument_component as $item){
+                    $data = [
+                        'document_name' => $item->name,
+                        'instrument_id' => $instrument->id,
+                        'instrument_component_id' => $item->id
+                    ];
+                    $return = ProposalDocument::create($data);
+                }
+                $proposal_document = ProposalDocument::query()
+                ->where('instrument_id', '=', $instrument->id)
+                ->get();
+                return $this->sendResponse(($proposal_document), 'Success', $proposal_document->count());
+            }else{
+                return $this->sendError('Failed', 'Instrument not available');
+            }
+        }
     }
 }

@@ -38,4 +38,9 @@ class InstitutionRequest extends Model
         'predicate',
         'accredited_at'
     ];
+
+    public function accreditationProposal()
+    {
+        return $this->belongsTo(AccreditationProposal::class);
+    }
 }

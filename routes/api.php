@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProvinceController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistricController;
 use App\Http\Controllers\Api\VillageController;
+use App\Models\EvaluationAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -92,4 +93,14 @@ Route::middleware('auth:sanctum')->group(function(){
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/instrument/get-instrument/{params}', [InstrumentController::class, 'getInstrument']);
+    Route::post('/instrument/generate-proposal-document/', [InstrumentController::class, 'generateProposalDocument']);
+});
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/evaluationassignment/index/', [EvaluationAssignment::class, 'index']);
+    Route::get('/evaluationassignment/list/', [EvaluationAssignment::class, 'list']);
+    Route::get('/evaluationassignment/show/{id}', [EvaluationAssignment::class, 'show']);
+    Route::post('/evaluationassignment/store/', [EvaluationAssignment::class, 'store']);
+    Route::post('/evaluationassignment/update/', [EvaluationAssignment::class, 'update']);
+    Route::delete('/evaluationassignment/destroy/{id}', [EvaluationAssignment::class, 'destroy']);
 });
