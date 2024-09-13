@@ -55,6 +55,10 @@ class ProposalController extends BaseController
         $query = AccreditationProposal::query()
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+            ->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
+            ->join('cities', 'institution_requests.city_id', '=', 'cities.id')
+            ->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
+            ->join('villages', 'institution_requests.village_id', '=', 'villages.id')
             ->select(['accreditation_proposals.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
@@ -63,7 +67,12 @@ class ProposalController extends BaseController
                 'agency_name',
                 'institution_head_name',
                 'email',
-                'telephone_number']);
+                'telephone_number',
+                'provinces.name',
+                'cities.name',
+                'subdistricts.name',
+                'villages.name',
+                'villages.postal_code']);
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name 
             
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
