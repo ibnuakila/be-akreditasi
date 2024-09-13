@@ -68,10 +68,10 @@ class ProposalController extends BaseController
                 'institution_head_name',
                 'email',
                 'telephone_number',
-                'provinces.name',
-                'cities.name',
-                'subdistricts.name',
-                'villages.name',
+                'provinces.name as province',
+                'cities.name as city',
+                'subdistricts.name as subdistrict',
+                'villages.name as village',
                 'villages.postal_code']);
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name 
             
