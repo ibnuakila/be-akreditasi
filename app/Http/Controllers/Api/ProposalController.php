@@ -73,9 +73,20 @@ class ProposalController extends BaseController
                 'subdistricts.name as subdistrict',
                 'villages.name as village',
                 'villages.postal_code']);
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan name 
-            
+        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
+        }
+        if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
+            $query->where('provinces.name', '=', "{$s}");
+        }
+        if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
+            $query->where('cities.name', '=', "{$s}");
+        }
+        if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
+            $query->where('subdistricts.name', '=', "{$s}");
+        }
+        if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
+            $query->where('proposal_states.state_name', '=', "{$s}");
         }
         $perPage = $request->input(key: 'pageSize', default: 10);
         $page = $request->input(key: 'page', default: 1);
