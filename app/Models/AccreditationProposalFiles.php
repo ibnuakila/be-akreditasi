@@ -21,8 +21,8 @@ class AccreditationProposalFiles extends Model
         'notes'
     ];
 
-    public function proposalDocuments()
+    public function proposalDocument()
     {
-        return $this->hasMany(ProposalDocument::class);
+        return $this->belongsTo(ProposalDocument::class);
     }
 }

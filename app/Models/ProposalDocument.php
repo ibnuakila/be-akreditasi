@@ -19,4 +19,8 @@ class ProposalDocument extends Model
         'instrument_id',
         'instrument_component_id'
     ];
+
+    public function accreditationProposalFiles(){
+        return $this->hasMany(AccreditationProposalFiles::class);
+    }
 }
