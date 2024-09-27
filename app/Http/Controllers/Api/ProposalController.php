@@ -107,15 +107,20 @@ class ProposalController extends BaseController
         $accreditation = AccreditationProposal::query()
             ->where(['id' => $id])
             ->with('proposalState')
-            ->with('accreditationProposalFiles')            
+            //->with('accreditationProposalFiles')            
             ->get();
-        //$accre_files = AccreditationProposalFiles::query();
+        $accre_files = AccreditationProposalFiles::query()
+            ->where(['accreditation_proposal_id' => $id])
+            ->with('proposalDocument')
+            ->get();
 
+        $data['accreditation_proposal'] = $accreditation;
+        $data['accreditation_proposal_files'] = $accre_files;
 
         if (is_null($accreditation)) {
             return $this->sendError('Proposal not found!');
         }
-        return $this->sendResponse(new AccreditationProposalResource($accreditation), 'Proposal Available', $accreditation->count());
+        return $this->sendResponse($data, 'Proposal Available', $accreditation->count());
     }
 
     /**
