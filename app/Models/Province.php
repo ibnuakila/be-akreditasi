@@ -15,4 +15,9 @@ class Province extends Model
     protected $fillable = [
         'name'
     ];
+
+    public function institutionRequest()
+    {
+        return $this->hasMany(InstitutionRequest::class);
+    }
 }

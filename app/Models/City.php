@@ -18,4 +18,9 @@ class City extends Model
         'type',
         'province_id'
     ];
+
+    public function institutionRequest()
+    {
+        return $this->hasMany(InstitutionRequest::class);
+    }
 }

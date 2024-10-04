@@ -15,4 +15,9 @@ class Subdistrict extends Model
         'name',
         'city_id'
     ];
+
+    public function institutionRequest()
+    {
+        return $this->hasMany(InstitutionRequest::class);
+    }
 }

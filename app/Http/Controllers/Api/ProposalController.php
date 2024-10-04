@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\AccreditationProposalResource;
+use App\Models\InstitutionRequest;
 use Illuminate\Http\Request;
 use App\Models\AccreditationProposal;
 use App\Models\ProposalState;
@@ -107,15 +108,28 @@ class ProposalController extends BaseController
         $accreditation = AccreditationProposal::query()
             ->where(['id' => $id])
             ->with('proposalState')
-            //->with('accreditationProposalFiles')            
+            //->with('institutionRequest')            
+            ->get();
+        $institution_request = InstitutionRequest::query()
+            ->where(['accreditation_proposal_id' => $id])
+            ->with('province')
+            ->with('city')
+            ->with('subDistrict')
+            ->with('village')
             ->get();
         $accre_files = AccreditationProposalFiles::query()
             ->where(['accreditation_proposal_id' => $id])
             ->with('proposalDocument')
             ->get();
+        $proposal_states = ProposalState::all();
+        $is_valid = [['label' => 'Valid', 'value' => 'valid'], 
+            ['label' => 'Tidak Valid', 'value' => 'tidak_valid']];
 
         $data['accreditation_proposal'] = $accreditation;
+        $data['institution_request'] = $institution_request;
         $data['accreditation_proposal_files'] = $accre_files;
+        $data['proposal_states'] = $proposal_states;
+        $data['is_valid'] = $is_valid;
 
         if (is_null($accreditation)) {
             return $this->sendError('Proposal not found!');
@@ -145,7 +159,10 @@ class ProposalController extends BaseController
             'certificate_expires_at' => 'nullable',
             'pleno_date' => 'nullable',
             'certificate_file' => 'nullable',
-            'recommendation_file' => 'nullable'
+            'recommendation_file' => 'nullable',
+            'is_valid' => 'required',
+            'instrument_id' => 'required',
+            'category' => 'required'
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
@@ -220,7 +237,10 @@ class ProposalController extends BaseController
             'certificate_expires_at' => 'nullable',
             'pleno_date' => 'nullable',
             'certificate_file' => 'nullable',
-            'recommendation_file' => 'nullable'
+            'recommendation_file' => 'nullable',
+            'is_valid' => 'required',
+            'instrument_id' => 'required',
+            'category' => 'required'
         ]);
 
         if ($validator->fails()) {

@@ -26,7 +26,9 @@ class AccreditationProposal extends Model
         'certificate_expires_at',
         'pleno_date',
         'certificate_file',
-        'recommendation_file'
+        'recommendation_file',
+        'is_valid',
+        'instrument_id'
     ];
 
     public function proposalState()

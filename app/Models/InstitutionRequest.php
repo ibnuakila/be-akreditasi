@@ -43,4 +43,24 @@ class InstitutionRequest extends Model
     {
         return $this->belongsTo(AccreditationProposal::class);
     }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function subdistrict()
+    {
+        return $this->belongsTo(Subdistrict::class);
+    }
+
+    public function village()
+    {
+        return $this->belongsTo(Village::class);
+    }
 }
