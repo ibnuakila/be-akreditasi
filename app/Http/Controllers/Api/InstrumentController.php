@@ -25,6 +25,10 @@ class InstrumentController extends BaseController
         $activeWorksheet->getColumnDimension('F')->setWidth(12);
         $activeWorksheet->getColumnDimension('G')->setWidth(12);
         $activeWorksheet->getColumnDimension('H')->setWidth(12);
+        $activeWorksheet->getColumnDimension('I')->setWidth(8);
+        $activeWorksheet->getStyle('I')->getAlignment()->setWrapText(true);
+        $activeWorksheet->getColumnDimension('J')->setWidth(8);
+        $activeWorksheet->getStyle('J')->getAlignment()->setWrapText(true);
         $activeWorksheet->setCellValue('A1', 'Instrument '.$params);
         $activeWorksheet->getStyle('A1')->getFont()->setSize(14);
         $activeWorksheet->getStyle('A1')->getFont()->setBold(true);
@@ -97,7 +101,7 @@ class InstrumentController extends BaseController
                     $activeWorksheet->setCellValue('B'. strval($sub_sub_component_row + 1), '--'.$sub_sub_com->name);
                     $sub_sub_component_row++; $sub_sub_butir++;
                     $ins_aspect = DB::table('instrument_components')
-                        ->select(['instrument_components.*', 'instrument_aspects.instrument_component_id', 'instrument_aspects.aspect'])
+                        ->select(['instrument_components.*', 'instrument_aspects.id as aspectable_id', 'instrument_aspects.aspect'])
                         ->join('instrument_aspects', 'instrument_components.id', '=', 'instrument_aspects.instrument_component_id')
                         ->where('instrument_components.type', '=', 'sub_2')
                         ->where('instrument_component_id', '=', $sub_sub_com->id)
@@ -150,6 +154,9 @@ class InstrumentController extends BaseController
                                 ->getStartColor()->setARGB('f8fc03');
                             $activeWorksheet->getStyle('H' . strval($ins_com_aspect + 1))
                                 ->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                            $activeWorksheet->setCellValue('I' . strval($ins_com_aspect + 1), $aspect->id);
+                            $activeWorksheet->setCellValue('J' . strval($ins_com_aspect + 1), $aspect->aspectable_id);
+                            //$activeWorksheet->setCellValue('K' . strval($ins_com_aspect + 1), $aspect->instrument_aspect_point_id);
                         //}
                         $butir_aspect++;
                         $ins_com_aspect++;
@@ -228,4 +235,6 @@ class InstrumentController extends BaseController
             }
         }
     }
+    
+    
 }
