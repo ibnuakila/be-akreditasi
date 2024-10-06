@@ -14,7 +14,7 @@ class EvaluationAssignmentController extends BaseController
     public function destroy(EvaluationAssignment $model)
     {        
         //delete files
-        if(is_object($model){
+        if(is_object($model)){
             $model->delete();
         }
         
@@ -33,8 +33,8 @@ class EvaluationAssignmentController extends BaseController
     {
         $query = EvaluationAssignment::query();
         if ($s = $request->input(key: 'name')) {//filter berdasarkan name 
-            $query->join('accreditation_proposals', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditiona_proposals.id')
-            $query->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accredition_proposal_id')
+            $query->join('accreditation_proposals', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditiona_proposals.id');
+            $query->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accredition_proposal_id');
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
 
         }
