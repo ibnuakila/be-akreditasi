@@ -258,5 +258,8 @@ class ProposalController extends BaseController
     private function readInstrument($params)
     {
         $file_path = $params['file_path'];
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
+        $start_row = 3;
+        $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . $start_row)->getCalculatedValue();
     }
 }
