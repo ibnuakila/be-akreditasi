@@ -206,6 +206,9 @@ class ProposalController extends BaseController
                 ];
                 
                 $accre_files = AccreditationProposalFiles::create($data);
+                if($data['file_type']=='xlsx'){
+                    
+                }
             }
         }else{
             return $this->sendError('File Error!', $validator->errors());        
@@ -250,5 +253,10 @@ class ProposalController extends BaseController
         $model->update($input);
 
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
+    }
+    
+    private function readInstrument($params)
+    {
+        $file_path = $params['file_path'];
     }
 }
