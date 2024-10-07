@@ -207,8 +207,13 @@ class ProposalController extends BaseController
                 
                 $accre_files = AccreditationProposalFiles::create($data);
                 if($data['file_type']=='xlsx'){
-                    
+                    $params['file_path'] = $data['file_path'];
+                    $accre_contents = $this->readInstrument($params);
                 }
+            }
+            $return['accre_files'] = $accre_files;
+            if(isset($accre_contents)){
+                $return['accre_contents'] = $accre_contents;
             }
         }else{
             return $this->sendError('File Error!', $validator->errors());        
@@ -259,7 +264,24 @@ class ProposalController extends BaseController
     {
         $file_path = $params['file_path'];
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
-        $start_row = 3;
+        $start_row = 6;
         $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . $start_row)->getCalculatedValue();
+        $obj_instrument = new ArrayObject();
+        while($ins_component_id != ''){
+            $value = $spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue();
+            $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue();
+            $aspect_id = $spreadsheet->getActiveSheet(0)->getCell('J' . strval($start_row))->getCalculatedValue();
+            
+            $accre_content = new \App\Models\AccreditationContent();
+            $accre_content->aspectable_id = $ins_component_id;
+            $accre_content->main_component_id = '';
+            $accre_content->instrument_aspect_point_id = $aspect_id;
+            $accre_content->aspect = '';
+            $accre_content->statement = '';
+            $accre_content->value = $value;
+            $obj_instrument->append($accre_content);
+            $start_row++;
+        }
+        return $obj_instrument;
     }
 }
