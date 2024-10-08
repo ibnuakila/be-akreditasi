@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\InstitutionController;
 use App\Http\Controllers\Api\InstrumentController;
 use App\Http\Controllers\Api\ProposalController;
+use App\Http\Controllers\Api\ProposalDocumentController;
 use App\Http\Controllers\Api\ProvinceController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistrictController;
@@ -79,6 +80,15 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/region/update/{model}', [RegionController::class, 'update']);
     Route::delete('/region/destroy/{model}', [RegionController::class, 'destroy']);
     Route::get('/region/list', [RegionController::class, 'list']);
+});
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/proposaldocument/index/', [ProposalDocumentController::class, 'index']);
+    Route::post('/proposaldocument/store', [ProposalDocumentController::class, 'store']);
+    Route::get('/proposaldocument/show/{id}', [ProposalDocumentController::class, 'show']);
+    Route::put('/proposaldocument/update/{model}', [ProposalDocumentController::class, 'update']);
+    Route::delete('/proposaldocument/destroy/{model}', [ProposalDocumentController::class, 'destroy']);
+    Route::get('/proposaldocument/list', [ProposalDocumentController::class, 'list']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
