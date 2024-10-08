@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\AccreditationProposalResource;
 use App\Models\InstitutionRequest;
+use ArrayObject;
+use File;
 use Illuminate\Http\Request;
 use App\Models\AccreditationProposal;
 use App\Models\ProposalState;
@@ -14,6 +16,7 @@ use App\Models\Province;
 use App\Models\Region;
 use App\Models\ProvinceRegion;
 use Illuminate\Support\Facades\Validator;
+use Storage;
 class ProposalController extends BaseController
 {
 
@@ -175,23 +178,29 @@ class ProposalController extends BaseController
     {        
         $input = $request->all();
         $validator = Validator::make($input, [
-            'file' => 'required|mimes:pdf, xlsx| max:2048',
+            'file' => ['required', 'extensions:pdf,xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
             'accreditation_proposal_id' => 'required',
-            'proposal_document_id' => 'required'
+            'proposal_document_id' => 'required',
+            'instrument_component_id' => 'nullable'
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
         if($request->file()){
+            $document = ProposalDocument::find($input['proposal_document_id']);
             $file_name = $request->file('file')->getClientOriginalName();
-            $file_type = $request->file('file')->getClientMimeType();
-            $file_path = '/storage/' . $request->file('file')->storeAs($request->accreditation_proposal_id, $file_name, 'public');
+            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
+            $file_path = $request->file('file')->store($request->accreditation_proposal_id);
             $accre_files = AccreditationProposalFiles::query()
                 ->where('accreditation_proposal_id', '=', $request->accreditation_proposal_id)
                 ->where('proposal_document_id', '=', $request->proposal_document_id)->first();
+            
+            $return['document'] = $document;
             if(is_object($accre_files)){
                 $accre_files->accreditation_proposal_id = $request->accreditation_proposal_id;
                 $accre_files->proposal_document_id = $request->proposal_document_id;
+                $accre_files->instrument_component_id = $document->instrument_component_id;
+                $accre_files->aspect = $document->document_name;
                 $accre_files->file_name = $file_name;
                 $accre_files->file_type = $file_type;
                 $accre_files->file_path = $file_path;
@@ -200,15 +209,21 @@ class ProposalController extends BaseController
                 $data = [
                     'accreditation_proposal_id' => $request->accreditation_proposal_id,
                     'proposal_document_id' => $request->proposal_document_id,
-                    'file_name' => $request->proposal_document_id,
+                    'instrument_component_id' => $document->instrument_document_id,
+                    'aspect' => $document->document_name,
+                    'file_name' => $file_name,
                     'file_type' => $file_type,
                     'file_path' => $file_path
                 ];
                 
-                $accre_files = AccreditationProposalFiles::create($data);
-                if($data['file_type']=='xlsx'){
-                    $params['file_path'] = $data['file_path'];
+                $accre_files = AccreditationProposalFiles::create($data);                                
+            }
+            
+            if(is_object($document)){
+                if(trim($document->document_name) == 'Instrument Penilaian'){
+                    $params['file_path'] = $accre_files->file_path;
                     $accre_contents = $this->readInstrument($params);
+                    //$return['accre_contents'] = $accre_contents;
                 }
             }
             $return['accre_files'] = $accre_files;
@@ -218,7 +233,7 @@ class ProposalController extends BaseController
         }else{
             return $this->sendError('File Error!', $validator->errors());        
         }
-        return $this->sendResponse(new AccreditationProposalResource($accre_files), 'Success', $accre_files->count());
+        return $this->sendResponse($return, 'Success', $accre_files->count());
     }
 
     /**
@@ -262,12 +277,15 @@ class ProposalController extends BaseController
     
     private function readInstrument($params)
     {
-        $file_path = $params['file_path'];
+        $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 6;
-        $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . $start_row)->getCalculatedValue();
+        $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+        $butir = str_replace('.', '', $butir);
         $obj_instrument = new ArrayObject();
-        while($ins_component_id != ''){
+        while(is_numeric($butir)){
+            $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+            $butir = str_replace('.', '', $butir);
             $value = $spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue();
             $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue();
             $aspect_id = $spreadsheet->getActiveSheet(0)->getCell('J' . strval($start_row))->getCalculatedValue();

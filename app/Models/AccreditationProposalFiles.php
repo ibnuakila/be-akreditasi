@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class AccreditationProposalFiles extends Model
 {
     use HasFactory;
-    use HasUuids;
+    //use HasUuids;
     public $timestamps = false;
     protected $fillable = [
         'accreditation_proposal_id',

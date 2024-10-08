@@ -161,7 +161,7 @@ class InstrumentController extends BaseController
                         $butir_aspect++;
                         $ins_com_aspect++;
                     }
-                    $sub_sub_component_row = $ins_com_aspect;
+                    $sub_sub_component_row = $ins_com_aspect-1;
                     $sub_sub_component_row++;
                     $butir_aspect = 1;
                 }
