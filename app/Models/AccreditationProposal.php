@@ -28,7 +28,8 @@ class AccreditationProposal extends Model
         'certificate_file',
         'recommendation_file',
         'is_valid',
-        'instrument_id'
+        'instrument_id',
+        'institution_id'
     ];
 
     public function proposalState()

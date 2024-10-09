@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccreditationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\InstitutionController;
@@ -113,4 +114,13 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/evaluationassignment/store/', [EvaluationAssignment::class, 'store']);
     Route::post('/evaluationassignment/update/', [EvaluationAssignment::class, 'update']);
     Route::delete('/evaluationassignment/destroy/{id}', [EvaluationAssignment::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/accreditation/index/{user_id}', [AccreditationController::class, 'index']);
+    Route::post('/accreditation/store', [AccreditationController::class, 'store']);
+    Route::get('/accreditation/show/{id}', [AccreditationController::class, 'show']);
+    Route::put('/accreditation/update/{model}', [AccreditationController::class, 'update']);
+    Route::delete('/accreditation/destroy/{model}', [AccreditationController::class, 'destroy']);
+    Route::get('/accreditation/list', [AccreditationController::class, 'list']);
 });

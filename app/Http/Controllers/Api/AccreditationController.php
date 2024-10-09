@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AccreditationProposalResource;
+use App\Models\InstitutionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Storage;
@@ -24,12 +26,20 @@ class AccreditationController extends BaseController //implements ICrud
 
     public function index($user_id) {
         $institution_request = \App\Models\InstitutionRequest::query()
-                ->where(['user_id' => $user_id])->get();
+                ->where(['user_id' => $user_id])->first();
         if(is_object($institution_request)){
             $data['institution_request'] = $institution_request;
         }
         $accreditation_proposal = AccreditationProposal::query()
-                ->where(['institution_id']);
+                ->select('accreditation_proposals.*')
+                ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
+                ->where(['accreditation_proposals.institution_id' => $institution_request->institution_id])
+                ->with('proposalState')
+                ->first();
+        if(is_object($accreditation_proposal)){
+            $data['accreditation_proposal'] = $accreditation_proposal;
+        }
+        return $this->sendResponse($data, "Success",0);
     }
 
     public function show($id) {
@@ -37,7 +47,65 @@ class AccreditationController extends BaseController //implements ICrud
     }
 
     public function store(Request $request) {
+        $input = $request->all();
+        //validating---------------------------
+        $validator = Validator::make($input, [
+            //institution-request
+            'category' => 'nullable',
+            'region_id' => 'required',
+            'library_name' => 'required',
+            'npp' => 'nullable',
+            'agency_name' => 'required',
+            'address' => 'required',
+            'city_id' => 'required',
+            'subdistrict_id' => 'required',
+            'village_id' => 'required',
+            'institution_head_name' => 'required',
+            'email' => 'required',
+            'telephone_number' => 'required',
+            'mobile_number' => 'required',
+            'library_head_name' => 'required',
+            'library_worker_name' => 'nullable',
+            'registration_form_file' => 'required',
+            'title_count' => 'required',
+            'user_id' => 'required',
+            'status' => 'nullable',
+            'last_predicate' => 'nullable',
+            'last_certification_date' => 'nullable',
+            'type' => 'required',
+            'accreditation_proposal_id' => 'nullable',
+            'validated_at' => 'nullable',
+            'institution_id' => 'nullable',
+
+            //accreditation-proposal
+            'institution_id' => 'required',
+            'proposal_date' => 'required',
+            'proposal_state_id' => 'required',
+            'finish_date' => 'nullable',
+            'type' => 'required',
+            'notes' => 'nullable',
+            'accredited_at' => 'nullable',
+            'predicate' => 'nullable',
+            'certificate_status' => 'nullable',
+            'certificate_expires_at' => 'nullable',
+            'pleno_date' => 'nullable',
+            'certificate_file' => 'nullable',
+            'recommendation_file' => 'nullable',
+            'is_valid' => 'nullable',
+            'instrument_id' => 'required',
+            'category' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error!', $validator->errors());
         
+        
+        $accreditation_proposal = [];
+        $proposal = AccreditationProposal::create($accreditation_proposal);
+
+        $institution_request = [];
+        $request = InstitutionRequest::create($institution_request);
+
+        return $this->sendResponse(new AccreditationProposalResource($request), 'Proposal Created', $proposal->count);
     }
     
     public function storeFiles(Request $request)

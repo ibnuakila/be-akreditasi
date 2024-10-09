@@ -36,7 +36,8 @@ class InstitutionRequest extends Model
         'last_predicate',
         'last_certification_date',
         'predicate',
-        'accredited_at'
+        'accredited_at',
+        'institution_id'
     ];
 
     public function accreditationProposal()
