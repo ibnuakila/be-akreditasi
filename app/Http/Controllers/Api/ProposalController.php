@@ -176,7 +176,7 @@ class ProposalController extends BaseController
 
     public function storeFiles(Request $request)
     {        
-        $input = $request->all();
+        /*$input = $request->all();
         $validator = Validator::make($input, [
             'file' => ['required', 'extensions:pdf,xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
             'accreditation_proposal_id' => 'required',
@@ -233,7 +233,7 @@ class ProposalController extends BaseController
         }else{
             return $this->sendError('File Error!', $validator->errors());        
         }
-        return $this->sendResponse($return, 'Success', $accre_files->count());
+        return $this->sendResponse($return, 'Success', $accre_files->count());*/
     }
 
     /**
@@ -275,7 +275,7 @@ class ProposalController extends BaseController
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
     }
     
-    private function readInstrument($params)
+    /*private function readInstrument($params)
     {
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
@@ -301,5 +301,5 @@ class ProposalController extends BaseController
             $start_row++;
         }
         return $obj_instrument;
-    }
+    }*/
 }
