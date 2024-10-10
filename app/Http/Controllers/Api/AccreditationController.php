@@ -51,8 +51,8 @@ class AccreditationController extends BaseController //implements ICrud
         //validating---------------------------
         $validator = Validator::make($input, [
             //institution-request
-            'category' => 'nullable',
-            'region_id' => 'required',
+            'category' => $input['category'],
+            'region_id' => $input['region_id'],
             'library_name' => 'required',
             'npp' => 'nullable',
             'agency_name' => 'required',
@@ -97,12 +97,55 @@ class AccreditationController extends BaseController //implements ICrud
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
+        }
         
-        
-        $accreditation_proposal = [];
+        $accreditation_proposal = [
+            'institution_id' => $input['institution_id'],
+            'proposal_date' => $input['proposal_date'],
+            'proposal_state_id' => $input['proposal_state_id'],
+            'finish_date' => $input['finish_date'],
+            'type' => $input['type'],
+            'notes' => '',
+            'accredited_at' => '',
+            'predicate' => '',
+            'certificate_status' => '',
+            'certificate_expires_at' => '',
+            'pleno_date' => '',
+            'certificate_file' => '',
+            'recommendation_file' => '',
+            'is_valid' => '',
+            'instrument_id' => $input['instrument_id'],
+            'category' => $input['category']
+        ];
         $proposal = AccreditationProposal::create($accreditation_proposal);
 
-        $institution_request = [];
+        $institution_request = [
+            'category' => $input['category'],
+            'region_id' => $input['region_id'],
+            'library_name' => $input['library_name'],
+            'npp' => $input['npp'],
+            'agency_name' => $input['agency_name'],
+            'address' => $input['address'],
+            'city_id' => $input['city_id'],
+            'subdistrict_id' => $input['subdistrict_id'],
+            'village_id' => $input['village_id'],
+            'institution_head_name' => $input['institution_head_name'],
+            'email' => $input['email'],
+            'telephone_number' => $input['telephone_number'],
+            'mobile_number' => $input['mobile_number'],
+            'library_head_name' => $input['library_head_name'],
+            'library_worker_name' => $input['library_worker_name'],
+            'registration_form_file' => $input['registration_form_file'],
+            'title_count' => $input['title_count'],
+            'user_id' => $input['user_id'],
+            'status' => $input['status'],
+            'last_predicate' => $input['last_predicate'],
+            'last_certification_date' => $input['last_certification_date'],
+            'type' => $input['type'],
+            'accreditation_proposal_id' => $proposal->id,
+            'validated_at' => '',
+            'institution_id' => '',
+        ];
         $request = InstitutionRequest::create($institution_request);
 
         return $this->sendResponse(new AccreditationProposalResource($request), 'Proposal Created', $proposal->count);
