@@ -16,6 +16,10 @@ use App\Models\Instrument;
 use App\Models\Province;
 use App\Models\Region;
 use App\Models\ProvinceRegion;
+use App\Models\City;
+use App\Models\Subdistrict;
+use App\Models\Village;
+
 
 class AccreditationController extends BaseController //implements ICrud
 {
@@ -44,6 +48,20 @@ class AccreditationController extends BaseController //implements ICrud
 
     public function show($id) {
         
+    }
+    
+    public function addNew(){
+        $provinces = Province::all();
+        $cities = City::all();
+        $subdistricts = Subdistrict::all();
+        $villages = Village::all();
+        $region = Region::all();
+        $data['provinces'] = $provinces;
+        $data['cities'] = $cities;
+        $data['subdistricts'] = $subdistricts;
+        $data['villages'] = $villages;
+        $data['region'] = $region;
+        return $this->sendResponse($data, "Success", 0);
     }
 
     public function store(Request $request) {
@@ -78,7 +96,7 @@ class AccreditationController extends BaseController //implements ICrud
             'institution_id' => 'nullable',
 
             //accreditation-proposal
-            'institution_id' => 'required',
+            /*'institution_id' => 'required',
             'proposal_date' => 'required',
             'proposal_state_id' => 'required',
             'finish_date' => 'nullable',
@@ -93,7 +111,7 @@ class AccreditationController extends BaseController //implements ICrud
             'recommendation_file' => 'nullable',
             'is_valid' => 'nullable',
             'instrument_id' => 'required',
-            'category' => 'required'
+            'category' => 'required'*/
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
@@ -101,7 +119,7 @@ class AccreditationController extends BaseController //implements ICrud
         
         $accreditation_proposal = [
             'institution_id' => $input['institution_id'],
-            'proposal_date' => $input['proposal_date'],
+            'proposal_date' => date('Y-m-d'),
             'proposal_state_id' => $input['proposal_state_id'],
             'finish_date' => $input['finish_date'],
             'type' => $input['type'],
