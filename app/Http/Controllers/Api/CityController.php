@@ -128,5 +128,12 @@ class CityController extends BaseController //implements ICrud
 		return $this->sendResponse(new CityResource($model), 'City Updated!');
 	}
 
+	public function getByProvince($province_id)
+	{
+		$city = City::query()
+			->where('province_id', '=' ,$province_id)->get();
+		return $this->sendResponse(new CityResource($city), 'Available', $city->count() );
+	}
+
 }
 ?>

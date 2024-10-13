@@ -111,4 +111,14 @@ class SubdistrictController extends BaseController
 
 		return $this->sendResponse(new SubdistrictResource($model), 'Subdistrict Updated!', $model->count());
 	}
+
+	public function getByCity($city_id)
+	{
+		$query = Subdistrict::query();		
+        $query->where('city_id', '=', $city_id);			
+		
+		$response = $query->get();
+        $total = $query->count();
+		return $this->sendResponse($response, "Success", $total);
+	}
 }
