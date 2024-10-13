@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/city/update/{model}', [CityController::class, 'update']);
     Route::delete('/city/destroy/{model}', [CityController::class, 'destroy']);
     Route::get('/city/list', [CityController::class, 'list']);
+    Route::get('/city/getbyprovince/{province_id}', [CityController::class, 'getByProvince']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
@@ -61,7 +62,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/subdistrict/update/{model}', [SubdistrictController::class, 'update']);
     Route::delete('/subdistrict/destroy/{model}', [SubdistrictController::class, 'destroy']);
     Route::get('/subdistrict/list', [SubdistrictController::class, 'list']);
-    Route::get('/subdistrict/cityid/{city_id}', [SubdistrictController::class, 'cityid']);
+    Route::get('/subdistrict/getbycity/{city_id}', [SubdistrictController::class, 'getByCity']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
@@ -71,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/village/update/{model}', [VillageController::class, 'update']);
     Route::delete('/village/destroy/{model}', [VillageController::class, 'destroy']);
     Route::get('/village/list', [VillageController::class, 'list']);
-    Route::get('/village/subdistrictid/{subdistrict_id}', [VillageController::class, 'subdistrictid']);
+    Route::get('/village/getbysubdistrictid/{subdistrict_id}', [VillageController::class, 'getbysubdistrictid']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
@@ -123,4 +124,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/accreditation/update/{model}', [AccreditationController::class, 'update']);
     Route::delete('/accreditation/destroy/{model}', [AccreditationController::class, 'destroy']);
     Route::get('/accreditation/list', [AccreditationController::class, 'list']);
+    Route::get('/accreditation/addnew/{user_id}', [AccreditationController::class, 'addNew']);
+    Route::post('/accreditation/store-files', [AccreditationController::class, 'storeFiles']);
+    Route::get('/accreditation/edit/{user_id}', [AccreditationController::class, 'addNew']);
 });
