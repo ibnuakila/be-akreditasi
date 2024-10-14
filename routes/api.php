@@ -72,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/village/update/{model}', [VillageController::class, 'update']);
     Route::delete('/village/destroy/{model}', [VillageController::class, 'destroy']);
     Route::get('/village/list', [VillageController::class, 'list']);
-    Route::get('/village/getbysubdistrictid/{subdistrict_id}', [VillageController::class, 'getbysubdistrictid']);
+    Route::get('/village/getbysubdistrict/{subdistrict_id}', [VillageController::class, 'getbysubdistrict']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
