@@ -52,7 +52,26 @@ class AccreditationController extends BaseController //implements ICrud
     }
 
     public function show($id) {
-        
+        $institution_request = \App\Models\InstitutionRequest::query()
+                ->where(['accreditation_proposal_id' => $id])->first();
+        if(is_object($institution_request)){
+            $data['institution_request'] = $institution_request;
+        }
+        $accreditation_proposal = null;
+        if(is_object($institution_request)){
+            $accreditation_proposal = AccreditationProposal::query()
+                ->select('accreditation_proposals.*')
+                ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
+                ->where(['accreditation_proposals.id' => $id])
+                ->with('proposalState')
+                ->first();
+        }
+        if(is_object($accreditation_proposal)){
+            $data['accreditation_proposal'] = $accreditation_proposal;
+        }
+        $instruments = Instrument::all();
+        $data['instruments'] = $instruments;
+        return $this->sendResponse($data, "Success",0);
     }
     
     public function addNew($user_id){
