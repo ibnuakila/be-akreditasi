@@ -44,7 +44,7 @@ class VillageController extends BaseController
 		return $this->sendResponse($response, "Success", $total);		
 	}
 
-    public function getBySubdistrictId(Request $request, $subdistrict_id)//with filter
+    public function getBySubdistrict(Request $request, $subdistrict_id)//with filter
 	{
 		$query = Village::query();		
         $query->where('subdistrict_id', '=', $subdistrict_id);			
