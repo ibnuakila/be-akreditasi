@@ -13,6 +13,7 @@ class AccreditationProposal extends Model
     protected $table = 'accreditation_proposals';
     public $timestamps = false;
     protected $fillable = [
+        'id',
         'institution_id',
         'proposal_date',
         'proposal_state_id',
