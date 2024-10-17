@@ -165,8 +165,18 @@ class AccreditationController extends BaseController //implements ICrud
             'category' => $input['category'],
             'user_id' => $input['user_id']
         ];
-
-        $proposal = AccreditationProposal::create($accreditation_proposal);
+        //sebelum create cek dulu apakah sudah ada usulan berdasarkan user_di pada tahun yg sama
+        $Y = date('Y');
+        $temp_proposal = AccreditationProposal::query()
+            ->where('user_id', '=', $input['user_id'])
+            ->whereBetween('proposal_date', [$Y.'-01-01', $Y.'-12-31'])
+            ->get();
+        if(is_object($temp_proposal)){
+            $proposal = AccreditationProposal::update($accreditation_proposal);
+        }else{
+            $proposal = AccreditationProposal::create($accreditation_proposal);
+        }
+        
         $data['accreditation_proposal'] = $proposal;
         $file_path = '';
         if($request->file()){
@@ -200,7 +210,14 @@ class AccreditationController extends BaseController //implements ICrud
             'validated_at' => '',
             'institution_id' => '',
         ];
-        $data['institution_request'] = InstitutionRequest::create($institution_request);
+        $temp_inrequest = InstitutionRequest::query()
+            ->where('user_id', '=', $input['user_id']);
+        if(is_object($temp_inrequest)){
+            $data['institution_request'] = InstitutionRequest::update($institution_request);
+        }else{
+            $data['institution_request'] = InstitutionRequest::create($institution_request);
+        }
+        
 
         $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $input['category'])->get();
         $data['proposal_document'] = $proposal_document;
@@ -209,7 +226,7 @@ class AccreditationController extends BaseController //implements ICrud
     }
     
     public function storeFiles(Request $request)
-    {        
+    { 
         $input = $request->all();
         $validator = Validator::make($input, [
             'file' => ['required', 'extensions:pdf,xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
