@@ -12,5 +12,12 @@ class InstrumentAspect extends Model
     use HasUuids;
     public $timestamps = false;
     protected $table = 'instrument_aspects';
-    protected $fillable = [];
+    protected $fillable = [
+        'aspect',
+        'instrument_id',
+        'instrument_component_id',
+        'type',
+        'order',
+        'parent_id'
+    ];
 }

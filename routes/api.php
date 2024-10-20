@@ -121,10 +121,12 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/accreditation/index/{user_id}', [AccreditationController::class, 'index']);
     Route::post('/accreditation/store', [AccreditationController::class, 'store']);
     Route::get('/accreditation/show/{id}', [AccreditationController::class, 'show']);
-    Route::put('/accreditation/update/{model}', [AccreditationController::class, 'update']);
-    Route::delete('/accreditation/destroy/{model}', [AccreditationController::class, 'destroy']);
+    Route::post('/accreditation/update/{id}', [AccreditationController::class, 'update']);
+    Route::delete('/accreditation/destroy/{id}', [AccreditationController::class, 'destroy']);
     Route::get('/accreditation/list', [AccreditationController::class, 'list']);
     Route::get('/accreditation/addnew/{user_id}', [AccreditationController::class, 'addNew']);
     Route::post('/accreditation/store-files', [AccreditationController::class, 'storeFiles']);
     Route::get('/accreditation/edit/{user_id}', [AccreditationController::class, 'addNew']);
+    Route::delete('/accreditation/destroy-file/{id}', [AccreditationController::class, 'destroyFile']);
+    Route::get('/accreditation/show-file/{id}', [AccreditationController::class, 'showFile']);
 });
