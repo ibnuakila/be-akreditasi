@@ -137,25 +137,7 @@ class AccreditationController extends BaseController //implements ICrud
             'type' => 'required',
             'accreditation_proposal_id' => 'nullable',
             'validated_at' => 'nullable',
-            'institution_id' => 'required',
-
-            //accreditation-proposal
-            /*'institution_id' => 'required',
-            'proposal_date' => 'required',
-            'proposal_state_id' => 'required',
-            'finish_date' => 'nullable',
-            'type' => 'required',
-            'notes' => 'nullable',
-            'accredited_at' => 'nullable',
-            'predicate' => 'nullable',
-            'certificate_status' => 'nullable',
-            'certificate_expires_at' => 'nullable',
-            'pleno_date' => 'nullable',
-            'certificate_file' => 'nullable',
-            'recommendation_file' => 'nullable',
-            'is_valid' => 'nullable',
-            'instrument_id' => 'required',
-            'category' => 'required'*/
+            'institution_id' => 'required'            
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
@@ -330,21 +312,31 @@ class AccreditationController extends BaseController //implements ICrud
     {
         $accreditation_proposal = AccreditationProposal::find($id);
         $institution_request = InstitutionRequest::query()
+            ->where('accreditation_proposal_id', '=', $id)->first();
+        $accreditation_files = AccreditationProposalFiles::query()
             ->where('accreditation_proposal_id', '=', $id)->get();
-        $provinces = Province::all();
+        $proposal_document = ProposalDocument::query()
+            ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
+        $accreditation_contents = AccreditationContent::query()
+            ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
+        /*$provinces = Province::all();
         $cities = City::first();
         $subdistricts = Subdistrict::first();
-        $villages = Village::first();
+        $villages = Village::first();*/
+
         $region = Region::all();
         $category = Instrument::all();
 
         $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
         $data['accreditation_proposal'] = $accreditation_proposal;
         $data['institution_request'] = $institution_request;
-        $data['provinces'] = $provinces;
-        $data['cities'] = $cities;
-        $data['subdistricts'] = $subdistricts;
-        $data['villages'] = $villages;
+        $data['accreditation_files'] = $accreditation_files;
+        $data['proposal_document'] = $proposal_document;
+        $data['accreditation_contents'] = $accreditation_contents;
+        //$data['provinces'] = $provinces;
+        //$data['cities'] = $cities;
+        //$data['subdistricts'] = $subdistricts;
+        //$data['villages'] = $villages;
         $data['region'] = $region;
         $data['category'] = $category;
         $data['type'] = $type;

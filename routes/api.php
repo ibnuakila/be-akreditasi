@@ -127,7 +127,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/accreditation/list', [AccreditationController::class, 'list']);
     Route::get('/accreditation/addnew/{user_id}', [AccreditationController::class, 'addNew']);
     Route::post('/accreditation/store-files', [AccreditationController::class, 'storeFiles']);
-    Route::get('/accreditation/edit/{user_id}', [AccreditationController::class, 'addNew']);
+    Route::get('/accreditation/edit/{id}', [AccreditationController::class, 'edit']);
     Route::delete('/accreditation/destroy-file/{id}', [AccreditationController::class, 'destroyFile']);
     Route::get('/accreditation/show-file/{id}', [AccreditationController::class, 'showFile']);
 //});
