@@ -202,8 +202,8 @@ class ProposalController extends BaseController
             'certificate_file' => 'nullable',
             'recommendation_file' => 'nullable',
             'is_valid' => 'required',
-            'instrument_id' => 'required',
-            'category' => 'required'
+            'instrument_id' => 'nullable',
+            'category' => 'nullable'
         ]);
 
         if ($validator->fails()) {
