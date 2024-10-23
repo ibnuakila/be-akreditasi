@@ -512,8 +512,14 @@ class AccreditationController extends BaseController //implements ICrud
         $accre_file = AccreditationProposalFiles::where('id', '=', $id)->first();
         if(is_object($accre_file)){
             $file_path = $accre_file->file_path;
+            $file_name = $accre_file->file_name;
+            $file_type = $accre_file->file_type;
             try{
-                return Storage::download($file_path, $accre_file->file_name);
+                $file_content = Storage::get($file_path);
+                return response($file_content, 200)
+                ->header('Content-Type', $file_type) // Set Content-Type header
+                ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                //return Storage::download($file_path, $accre_file->file_name);
             }catch(FileNotFoundException $e){
                 return $this->sendError('File not Found','File not available in hard drive!');
             }            
