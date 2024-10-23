@@ -59,10 +59,10 @@ class ProposalController extends BaseController
         $query = AccreditationProposal::query()
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            ->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
-            ->join('cities', 'institution_requests.city_id', '=', 'cities.id')
-            ->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
-            ->join('villages', 'institution_requests.village_id', '=', 'villages.id')
+            //->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
+            //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
+            //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
+            //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
             ->select(['accreditation_proposals.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
@@ -72,22 +72,21 @@ class ProposalController extends BaseController
                 'institution_head_name',
                 'email',
                 'telephone_number',
-                'provinces.name as province',
-                'cities.name as city',
-                'subdistricts.name as subdistrict',
-                'villages.name as village',
-                'villages.postal_code']);
+                'province_name as province',
+                'city_name as city',
+                'subdistrict_name as subdistrict',
+                'village_name as village']);
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
         if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
-            $query->where('provinces.name', '=', "{$s}");
+            $query->where('province_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
-            $query->where('cities.name', '=', "{$s}");
+            $query->where('city_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
-            $query->where('subdistricts.name', '=', "{$s}");
+            $query->where('subdistrict_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
             $query->where('proposal_states.state_name', '=', "{$s}");
