@@ -10,7 +10,7 @@ class AccreditationProposalFiles extends Model
 {
     use HasFactory;
     //use HasUuids;
-    public $timestamps = true;
+    public $timestamps = false;
     protected $fillable = [
         'accreditation_proposal_id',
         'file_name',
