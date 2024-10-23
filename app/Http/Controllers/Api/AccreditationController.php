@@ -92,10 +92,10 @@ class AccreditationController extends BaseController //implements ICrud
         $region = Region::all();
         $category = Instrument::all();
         $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
-        $data['provinces'] = $provinces;
-        $data['cities'] = $cities;
-        $data['subdistricts'] = $subdistricts;
-        $data['villages'] = $villages;
+        //$data['provinces'] = $provinces;
+        //$data['cities'] = $cities;
+        //$data['subdistricts'] = $subdistricts;
+        //$data['villages'] = $villages;
         $data['region'] = $region;
         $data['category'] = $category;
         $data['type'] = $type;
