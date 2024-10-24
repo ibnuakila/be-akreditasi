@@ -30,9 +30,31 @@ use App\Models\Village;
 class AccreditationController extends BaseController //implements ICrud
 {
     //
-    public function destroy($model)
+    public function destroy($id)
     {
-
+        $insti_request = InstitutionRequest::where(['accreditation_proposal_id' => $id])->first();
+        if(is_object($insti_request)){
+            $insti_request->delete();
+        }
+        $accre_files = AccreditationProposalFiles::where(['accreditation_proposal_id' => $id])->get();
+        if($accre_files->count()>0){
+            foreach($accre_files as $file){
+                $file->delete();
+            }
+        }
+        $accre_content = AccreditationContent::where(['accreditation_proposal_id' => $id])->get();
+        if($accre_content->count()>0){
+            foreach($accre_content as $row){
+                $row->delete();
+            }
+        }
+        $accre_proposal = AccreditationProposal::find($id);
+        if(is_object($accre_proposal)){
+            $ret = $accre_proposal->delete();
+            return $this->sendResponse([], 'Delete successful', $ret);
+        }else{
+            return $this->sendError('Error', 'Object not found!');
+        }
     }
 
     public function index($user_id)
@@ -314,7 +336,9 @@ class AccreditationController extends BaseController //implements ICrud
         $institution_request = InstitutionRequest::query()
             ->where('accreditation_proposal_id', '=', $id)->first();
         $accreditation_files = AccreditationProposalFiles::query()
-            ->where('accreditation_proposal_id', '=', $id)->get();
+            ->where('accreditation_proposal_id', '=', $id)
+            ->with('proposalDocument')
+            ->get();
         $proposal_document = ProposalDocument::query()
             ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
         $accreditation_contents = AccreditationContent::query()
