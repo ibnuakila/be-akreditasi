@@ -11,4 +11,13 @@ class Instrument extends Model
     use HasFactory;
     use HasUuids;
     protected $table = 'instruments';
+    public $timeStamps = false;
+    protected $fillable = [
+        'category',
+        'periode',
+        'file_path',
+        'file_name',
+        'file_type',
+        'is_active'
+    ];
 }
