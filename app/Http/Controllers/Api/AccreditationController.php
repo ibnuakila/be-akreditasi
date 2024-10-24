@@ -311,7 +311,7 @@ class AccreditationController extends BaseController //implements ICrud
                         $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
                         if ($temp_file_name == $instrument_id) {
                             $accre_contents = $this->readInstrument($params);
-                            $return['accre_contents'] = $accre_contents;
+                            $return['accreditation_contents'] = $accre_contents;
                         } else {
                             return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
                         }
@@ -339,8 +339,17 @@ class AccreditationController extends BaseController //implements ICrud
             ->where('accreditation_proposal_id', '=', $id)
             ->with('proposalDocument')
             ->get();
-        $proposal_document = ProposalDocument::query()
-            ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
+            //ambil hanya dokumen yg belum diupload
+        //$proposal_document = ProposalDocument::query()
+        //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
+        $proposal_document = ProposalDocument::join('instruments', 
+        'proposal_documents.instrument_id', '=', 'instruments.id')
+        ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
+        ->whereNotIn('proposal_documents.id', function($query)use($id){
+            $query->select('proposal_document_id')
+            ->from('accreditation_proposal_files')
+            ->where('accreditation_proposal_id', $id);
+        })->get();
         $accreditation_contents = AccreditationContent::query()
             ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
         /*$provinces = Province::all();
