@@ -38,7 +38,7 @@ class AccreditationController extends BaseController //implements ICrud
     public function index($user_id)
     {
         $institution_request = InstitutionRequest::query()
-            ->where(['user_id' => $user_id])->first();
+            ->where(['user_id' => $user_id])->get();
         if (is_object($institution_request)) {
             $data['institution_request'] = $institution_request;
         }
@@ -48,8 +48,8 @@ class AccreditationController extends BaseController //implements ICrud
                 ->select('accreditation_proposals.*')
                 ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
                 ->where(['accreditation_proposals.institution_id' => $institution_request->institution_id])
-                ->with('proposalState')
-                ->first();
+                ->with('proposalState')->get();
+                
         }
         if (is_object($accreditation_proposal)) {
             $data['accreditation_proposal'] = $accreditation_proposal;
@@ -369,7 +369,7 @@ class AccreditationController extends BaseController //implements ICrud
             'mobile_number' => 'required',
             'library_head_name' => 'required',
             'library_worker_name' => 'nullable',
-            'registration_form_file' => ['required', 'extensions:pdf,xlsx', 'max:2048'],
+            'registration_form_file' => 'nullable',
             'title_count' => 'required',
             'user_id' => 'required',
             'status' => 'nullable',
