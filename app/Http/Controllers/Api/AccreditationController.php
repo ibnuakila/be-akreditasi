@@ -47,7 +47,7 @@ class AccreditationController extends BaseController //implements ICrud
             $accreditation_proposal = AccreditationProposal::query()
                 ->select('accreditation_proposals.*')
                 ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
-                ->where(['accreditation_proposals.institution_id' => $institution_request->institution_id])
+                ->where(['institution_requests.user_id' => $user_id])
                 ->with('proposalState')->get();
                 
         }
@@ -464,8 +464,8 @@ class AccreditationController extends BaseController //implements ICrud
             $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
             $butir = str_replace('.', '', $butir);
             $value = trim($spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue());
-            $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
-            $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('J' . strval($start_row))->getCalculatedValue());
+            $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
+            $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
             
             $instrument_aspect = InstrumentAspect::find($aspect_id);
             $aspect = '-';

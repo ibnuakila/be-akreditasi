@@ -15,6 +15,97 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Validator;
 class InstrumentController extends BaseController
 {
+    public function store(Request $request){
+        $input = $request->all();
+		//validating---------------------------
+		$validator = Validator::make($input, [
+			'category' => 'required',
+            'periode' => 'required',
+            'file_path' => 'nullable',
+            'file_name' => 'nullable',
+            'file_type' => 'nullable',
+            'is_active' => 'required'			
+		]);
+		if($validator->fails()){
+			return $this->sendError('Validation Error!', $validator->errors());
+		}
+        if ($request->file()) {
+            $file_name = $request->file('file')->getClientOriginalName();
+            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
+            $file_path = $request->file('file')->store('/assets');
+            $data = [
+                'category' => $input['category'],
+                'periode' => $input['periode'],
+                'file_path' => $file_path,
+                'file_name' => $file_name,
+                'file_type' => $file_type,
+                'is_active' => $input['is_active']	
+            ];
+        }else{
+            $data = [
+                'category' => $input['category'],
+                'periode' => $input['periode'],                
+                'is_active' => $input['is_active']	
+            ];
+        }
+        
+		$instrument = Instrument::create($data);
+		return $this->sendResponse($instrument, 'Instrument Created', $instrument->count);
+    }
+
+    public function update(Request $request, $id){
+        $input = $request->all();
+		//validating---------------------------
+		$validator = Validator::make($input, [
+			'category' => 'required',
+            'periode' => 'required',
+            'file_path' => 'nullable',
+            'file_name' => 'nullable',
+            'file_type' => 'nullable',
+            'is_active' => 'required'			
+		]);
+        if($validator->fails()){
+			return $this->sendError('Validation Error!', $validator->errors());
+		}
+        $instrument = Instrument::find($id);
+        if ($request->file()) {
+            $file_name = $request->file('file')->getClientOriginalName();
+            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
+            $file_path = $request->file('file')->store('/assets');
+            if(is_object($instrument)){
+                $instrument->category = $input['category'];
+                $instrument->periode = $input['periode'];
+                $instrument->file_path = $file_path;
+                $instrument->file_name = $file_name;
+                $instrument->file_type = $file_type;
+                $instrument->is_active = $input['is_active'];
+            }
+            
+        }else{
+            if(is_object($instrument)){
+                $instrument->category = $input['category'];
+                $instrument->periode = $input['periode'];
+                /*$instrument->file_path = $file_path;
+                $instrument->file_name = $file_name;
+                $instrument->file_type = $file_type;*/
+                $instrument->is_active = $input['is_active'];
+            }
+        }
+        $instrument->save();
+        
+		return $this->sendResponse($instrument, 'Instrument Updated', $instrument->count);
+    }
+
+    public function destroy(Instrument $model){
+        $model->delete();
+		return $this->sendResponse([], 'Instrument Deleted!', $model->count());
+    }
+
+    public function index(){
+        $instruments = Instrument::all();
+        return $this->sendResponse($instruments, 'Success', $instruments->count());
+    }
+
     public function getInstrument(Request $request, $params)
     {
 
@@ -29,10 +120,10 @@ class InstrumentController extends BaseController
             $activeWorksheet->getColumnDimension('F')->setWidth(12);
             $activeWorksheet->getColumnDimension('G')->setWidth(12);
             $activeWorksheet->getColumnDimension('H')->setWidth(12);
-            $activeWorksheet->getColumnDimension('I')->setWidth(8);
-            $activeWorksheet->getStyle('I')->getAlignment()->setWrapText(true);
-            $activeWorksheet->getColumnDimension('J')->setWidth(8);
-            $activeWorksheet->getStyle('J')->getAlignment()->setWrapText(true);
+            $activeWorksheet->getColumnDimension('M')->setWidth(8);
+            $activeWorksheet->getStyle('M')->getAlignment()->setWrapText(true);
+            $activeWorksheet->getColumnDimension('N')->setWidth(8);
+            $activeWorksheet->getStyle('N')->getAlignment()->setWrapText(true);
             $activeWorksheet->setCellValue('A1', $params);
             $activeWorksheet->setCellValue('B1', 'Instrument-'.$instrument->category);
             $activeWorksheet->getStyle('B1')->getFont()->setSize(14);
@@ -45,6 +136,10 @@ class InstrumentController extends BaseController
             $activeWorksheet->setCellValue('F2', '(2)');
             $activeWorksheet->setCellValue('G2', '(1)');
             $activeWorksheet->setCellValue('H2', 'Pilihan');
+            $activeWorksheet->setCellValue('I2', 'Nilai Asesor');
+            $activeWorksheet->setCellValue('J2', 'Keterangan');
+            $activeWorksheet->setCellValue('K2', 'Pleno');
+            $activeWorksheet->setCellValue('L2', 'Banding');
 
             $styleArray = [
                 'font' => [
@@ -70,7 +165,7 @@ class InstrumentController extends BaseController
                 ],
             ];
 
-            $activeWorksheet->getStyle('A2:H2')->applyFromArray($styleArray);
+            $activeWorksheet->getStyle('A2:L2')->applyFromArray($styleArray);
 
             $ins_com = DB::table('instrument_components')
                 ->select('*')
@@ -165,10 +260,22 @@ class InstrumentController extends BaseController
                             $activeWorksheet->getStyle('H' . strval($ins_com_aspect + 1))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('f8fc03');
-                            $activeWorksheet->getStyle('H' . strval($ins_com_aspect + 1))
-                                ->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-                            $activeWorksheet->setCellValue('I' . strval($ins_com_aspect + 1), $aspect->id);
-                            $activeWorksheet->setCellValue('J' . strval($ins_com_aspect + 1), $aspect->aspectable_id);
+                                $activeWorksheet->getStyle('I' . strval($ins_com_aspect + 1))->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('dafcb1');
+                            $activeWorksheet->getStyle('J' . strval($ins_com_aspect + 1))->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('dafcb1');
+                            $activeWorksheet->getStyle('K' . strval($ins_com_aspect + 1))->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('dafcb1');
+                            $activeWorksheet->getStyle('L' . strval($ins_com_aspect + 1))->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('dafcb1');
+                            //$activeWorksheet->getStyle('H' . strval($ins_com_aspect + 1))
+                                //->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                            $activeWorksheet->setCellValue('M' . strval($ins_com_aspect + 1), $aspect->id);
+                            $activeWorksheet->setCellValue('N' . strval($ins_com_aspect + 1), $aspect->aspectable_id);
                             //$activeWorksheet->setCellValue('K' . strval($ins_com_aspect + 1), $aspect->instrument_aspect_point_id);
                             //}
                             $butir_aspect++;
@@ -197,7 +304,7 @@ class InstrumentController extends BaseController
                     ],
                 ],
             ];
-            $activeWorksheet->getStyle('A2:H' . strval($component_row))->applyFromArray($styleBorder);
+            $activeWorksheet->getStyle('A2:L' . strval($component_row))->applyFromArray($styleBorder);
             $activeWorksheet->getStyle('A3:A' . strval($component_row))->getNumberFormat()
                 ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
 
