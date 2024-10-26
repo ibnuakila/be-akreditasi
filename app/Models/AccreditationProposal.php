@@ -19,6 +19,7 @@ class AccreditationProposal extends Model
         'proposal_state_id',
         'finish_date',
         'type',
+        'periode',
         'notes',
         'accredited_at',
         'predicate',

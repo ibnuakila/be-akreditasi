@@ -25,13 +25,14 @@ class InstrumentAspectController extends BaseController implements ICrud
         $this->sendResponse($instrumentAspects, "Success", $instrumentAspects->count());
     }
 
-    public function list(Request $request) {//with filter
-        $query = InstrumentAspect::query();
+    public function list(Request $request, $instrument_id) {//with filter
+        $query = InstrumentAspect::query()
+        ->where('instrument_id', '=', $instrument_id);
         if ($s = $request->input(key: 's')) {//filter berdasarkan library_name atau agency_name
-            $query->where('library_name', 'like', "%{$s}%")
-                    ->orWhere('agency_name', 'like', "%{$s}%");
+            $query->where('aspect', 'like', "%{$s}%");
+                    //->orWhere('agency_name', 'like', "%{$s}%");
         }
-        $perPage = 15;
+        $perPage = $request->input(key: 'pageSize', default: 10);
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
         $response = $query->offset(value: ($page - 1) * $perPage)

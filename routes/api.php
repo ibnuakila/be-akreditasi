@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AccreditationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\InstitutionController;
+use App\Http\Controllers\Api\InstrumentAspectController;
+use App\Http\Controllers\Api\InstrumentComponentController;
 use App\Http\Controllers\Api\InstrumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\ProposalDocumentController;
@@ -111,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/instrument/store', [InstrumentController::class, 'store']);
     Route::post('/instrument/update/{id}', [InstrumentController::class, 'update']);
     Route::delete('/instrument/destroy/{model}', [InstrumentController::class, 'destroy']);
+    Route::get('/instrument/get-document-sk/{id}', [InstrumentController::class, 'getDocumentSK']);
     //});
 
 //Route::middleware('auth:sanctum')->group(function(){
@@ -135,3 +138,9 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::delete('/accreditation/destroy-file/{id}', [AccreditationController::class, 'destroyFile']);
     Route::get('/accreditation/show-file/{id}', [AccreditationController::class, 'showFile']);
 //});
+
+    Route::get('/instrument-aspect/list/{instrument_id}', [InstrumentAspectController::class, 'list']);
+
+
+    Route::get('/instrument-component/add-new/{instrument_id}', [InstrumentComponentController::class, 'addNew']);
+    Route::get('/instrument-component/get-sub-component/{parent_id}/{type}', [InstrumentComponentController::class, 'getSubComponent']);

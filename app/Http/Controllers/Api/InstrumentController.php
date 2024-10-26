@@ -7,10 +7,12 @@ use App\Http\Resources\ProposalDocumentResource;
 use App\Models\Instrument;
 use App\Models\InstrumentComponent;
 use App\Models\ProposalDocument;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Validator;
 class InstrumentController extends BaseController
@@ -104,6 +106,15 @@ class InstrumentController extends BaseController
     public function index(){
         $instruments = Instrument::all();
         return $this->sendResponse($instruments, 'Success', $instruments->count());
+    }
+
+    public function edit($id){
+        $instrument = Instrument::find($id);
+        if(is_object($instrument)){
+            return $this->sendResponse($instrument, "Success", 1);
+        }else{
+
+        }
     }
 
     public function getInstrument(Request $request, $params)
@@ -324,38 +335,25 @@ class InstrumentController extends BaseController
         //return $this->sendResponse($instrument_com, 'Success', $instrument_com->count());
     }
 
-    public function generateProposalDocument(Request $request)
+    public function getDocumentSK($id)
     {
-        $post = $request->all();
-        $validator = Validator::make($post, [
-            'category' => 'required'
-        ]);
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error!', $validator->errors());
-        }
-        $instrument = Instrument::query()->where('category', '=', $post['category'])->first();
-
-        if (is_object($instrument)) {
-            $instrument_component = InstrumentComponent::query()
-                ->where('instrument_id', '=', $instrument->id)
-                ->where('type', '=', 'main')
-                ->get();
-            if (count($instrument_component) > 0) {
-                foreach ($instrument_component as $item) {
-                    $data = [
-                        'document_name' => $item->name,
-                        'instrument_id' => $instrument->id,
-                        'instrument_component_id' => $item->id
-                    ];
-                    $return = ProposalDocument::create($data);
-                }
-                $proposal_document = ProposalDocument::query()
-                    ->where('instrument_id', '=', $instrument->id)
-                    ->get();
-                return $this->sendResponse(($proposal_document), 'Success', $proposal_document->count());
-            } else {
-                return $this->sendError('Failed', 'Instrument not available');
-            }
+        $file_sk = Instrument::find($id);
+        if(is_object($file_sk)){
+            $file_path = $file_sk->file_path;
+            $file_name = $file_sk->file_name;
+            $file_type = $file_sk->file_type;
+            try{
+                $file_content = Storage::get($file_path);
+                return response($file_content, 200)
+                ->header('Content-Type', $file_type) // Set Content-Type header
+                ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                //return Storage::download($file_path, $accre_file->file_name);
+            }catch(FileNotFoundException $e){
+                return $this->sendError('File not Found','File not available in hard drive!');
+            }            
+                
+        }else{
+            return $this->sendError('Record not Found','Record not available in database!');
         }
     }
 

@@ -107,21 +107,27 @@ class AccreditationController extends BaseController //implements ICrud
 
     public function addNew($user_id)
     {
-        $provinces = Province::all();
+        /*$provinces = Province::all();
         $cities = City::first();
         $subdistricts = Subdistrict::first();
-        $villages = Village::first();
-        $region = Region::all();
-        $category = Instrument::all();
-        $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
-        //$data['provinces'] = $provinces;
-        //$data['cities'] = $cities;
-        //$data['subdistricts'] = $subdistricts;
-        //$data['villages'] = $villages;
-        $data['region'] = $region;
-        $data['category'] = $category;
-        $data['type'] = $type;
-        return $this->sendResponse($data, "Success", 0);
+        $villages = Village::first();*/
+        $Y = date('Y');
+        $proposal = AccreditationProposal::where('user_id', '=', $user_id)
+            ->whereBetween('proposal_date', [$Y . '-01-01', $Y . '-12-31'])
+            ->first();
+        if(is_object($proposal)){
+            $data['accreditation_proposal'] = $proposal;
+            $message = 'Anda masih memiliki usulan akreditasi pada tahun yang sama!';
+            return $this->sendResponse($data, $message, 1);
+        }else{
+            $region = Region::all();
+            $category = Instrument::all();
+            $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];            
+            $data['region'] = $region;
+            $data['category'] = $category;
+            $data['type'] = $type;
+            return $this->sendResponse($data, "Success", 0);
+        }
     }
 
     public function store(Request $request)
@@ -171,14 +177,15 @@ class AccreditationController extends BaseController //implements ICrud
             'proposal_state_id' => 0,
             'finish_date' => date('Y-m-d'),
             'type' => $input['type'],
+            'periode' => date('Y'),
             'notes' => '',
             //'accredited_at' => '',
             'predicate' => '',
             'certificate_status' => '',
             //'certificate_expires_at' => '',
             //'pleno_date' => '',
-            'certificate_file' => '',
-            'recommendation_file' => '',
+            //'certificate_file' => '',
+            //'recommendation_file' => '',
             'is_valid' => 'tidak_valid',
             'instrument_id' => $input['category'],
             'category' => $input['category'],
@@ -349,7 +356,9 @@ class AccreditationController extends BaseController //implements ICrud
             $query->select('proposal_document_id')
             ->from('accreditation_proposal_files')
             ->where('accreditation_proposal_id', $id);
-        })->get();
+        })
+        ->select(['proposal_documents.*'])
+        ->get();
         $accreditation_contents = AccreditationContent::query()
             ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
         /*$provinces = Province::all();
