@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
 use App\Models\EvaluationAssignment;
+use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -141,7 +142,10 @@ Route::middleware('auth:sanctum')->group(function(){
 //});
 
     Route::get('/instrument-aspect/list/{instrument_id}', [InstrumentAspectController::class, 'list']);
-
+    Route::get('/instrument-aspect/add-new/{instrument_id}', [InstrumentAspectController::class, 'addNew']);
+    Route::post('/instrument-aspect/store/', [InstrumentAspectController::class, 'store']);
 
     Route::get('/instrument-component/add-new/{instrument_id}', [InstrumentComponentController::class, 'addNew']);
-    Route::get('/instrument-component/get-sub-component/{parent_id}/{type}', [InstrumentComponentController::class, 'getSubComponent']);
+    Route::get('/instrument-component/get-component/{parent_id}/{type}', [InstrumentComponentController::class, 'getComponent']);
+    Route::get('/instrument-component/get-main-component/{instrument_id}', [InstrumentComponentController::class, 'getMainComponent']);
+    Route::post('/instrument-component/store', [InstrumentComponentController::class, 'store']);

@@ -3,26 +3,33 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\InstrumentAspect;
+use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class InstrumentAspectController extends BaseController implements ICrud
 {
     //
+    public function addNew($instrument_id){
+        $insComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main')->get();
+        $data['instrument_components'] = $insComponent;
+        return $this->sendResponse($data, 'Success', $insComponent->count());
+    }
     public function destroy($id) {
         $InsAspect = InstrumentAspect::find($id);
         if(is_object($InsAspect)){
             $ret = $InsAspect->delete();
-            $this->sendResponse([], "Delete successful", $ret);
+            return $this->sendResponse([], "Delete successful", $ret);
         }else{
-            $this->sendError('Error', 'Delete fail');
+            return $this->sendError('Error', 'Delete fail');
         }
     }
 
     public function index() {
         $instrumentAspects = InstrumentAspect::query()
             ->paginate();
-        $this->sendResponse($instrumentAspects, "Success", $instrumentAspects->count());
+        return $this->sendResponse($instrumentAspects, "Success", $instrumentAspects->count());
     }
 
     public function list(Request $request, $instrument_id) {//with filter
@@ -44,9 +51,9 @@ class InstrumentAspectController extends BaseController implements ICrud
     public function show($id) {
         $InsAspect = InstrumentAspect::find($id);
         if(is_object($InsAspect)){            
-            $this->sendResponse($InsAspect, "Success", $InsAspect->count());
+            return $this->sendResponse($InsAspect, "Success", $InsAspect->count());
         }else{
-            $this->sendError('Error', 'Object not found!');
+            return $this->sendError('Error', 'Object not found!');
         }
     }
 
@@ -54,14 +61,32 @@ class InstrumentAspectController extends BaseController implements ICrud
         $input = $request->all();
         $valid = Validator::make($input,
         [
-
+            'instrument_id' => 'required',
+            'aspect' => 'required',
+            'instrument_component_id' => 'required',
+            'type' => 'nullable',
+            'order' => 'nullable',
+            'statement_a' => 'required',
+            'statement_b' => 'required',
+            'statement_c' => 'required',
+            'statement_d' => 'required',            
+            'parent_id' => 'nullable'
         ]);
         if($valid->fails()){
-            $this->sendError('Error', $valid->errors());
+            return $this->sendError('Error', $valid->errors());
         }
-        $data = [];
+        $data = [
+            'instrument_id' => $input['instrument_id'],
+            'aspect' => $input['aspect'],
+            'instrument_component_id' => $input['instrument_component_id'],
+            'type' => $input['type'],
+            'order' => $input['order'],
+            //'statement' => $input['statement'],
+            //'value' => $input['value'],
+            'parent_id' => $input['parent_id']
+        ];
         $insAspect = InstrumentAspect::create($data);
-        $this->sendResponse($insAspect, 'Success', $insAspect->count());
+        return $this->sendResponse($insAspect, 'Success', $insAspect->count());
     }
 
     public function update(Request $request, $id) {
@@ -71,12 +96,12 @@ class InstrumentAspectController extends BaseController implements ICrud
 
         ]);
         if($valid->fails()){
-            $this->sendError('Error', $valid->errors());
+            return $this->sendError('Error', $valid->errors());
         }
         
         $insAspect = InstrumentAspect::find($id);
 
         $insAspect->save();
-        $this->sendResponse($insAspect, 'Success', $insAspect->count());
+        return $this->sendResponse($insAspect, 'Success', $insAspect->count());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Instrument;
 use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -10,11 +11,17 @@ class InstrumentComponentController extends BaseController implements ICrud
 {
     //
     public function addNew($instrument_id){
-        $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
-            ->where('type', '=', 'main')->get();
-        if($InsComponent->count()>0){
-            $data['components'] = $InsComponent;
-            return $this->sendResponse($data, "Success", $InsComponent->count());
+        /*$InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main')->get();*/
+        $instrument = Instrument::find($instrument_id);
+        if(is_object($instrument)){
+            $data['instrument'] = $instrument;
+            $data['type'] = [
+                ['main' => 'Main'], 
+                ['sub_1' => 'Sub 1'], 
+                ['sub_2' => 'Sub 2']];
+            //$data['components'] = $InsComponent;
+            return $this->sendResponse($data, "Success", $instrument->count());
         }else{
             return $this->sendError('Error', 'Failed');
         }
@@ -64,14 +71,42 @@ class InstrumentComponentController extends BaseController implements ICrud
         $input = $request->all();
         $valid = Validator::make($input,
         [
-
+            'category' => 'required',
+            'name' => 'required',
+            'weight' => 'nullable',
+            'type' => 'required',
+            'instrument_id' => 'required',
+            'parent_id' => 'nullable'
         ]);
         if($valid->fails()){
             $this->sendError('Error', $valid->errors());
         }
-        $data = [];
-        $insAspect = InstrumentComponent::create($data);
-        $this->sendResponse($insAspect, 'Success', $insAspect->count());
+        $data = [
+            'category' => $input['category'],
+            'name' => $input['name'],
+            'weight' => $input['weight'],
+            'type' => $input['type'],
+            'instrument_id' => $input['instrument_id'],
+            'parent_id' => $input['parent_id'],
+            'order' => 1
+        ];
+        $findObj = InstrumentComponent::where('instrument_id', '=', $input['instrument_id'])
+            ->where('category', '=', $input['category'])
+            ->where('name', '=', $input['name'])
+            ->where('type', '=', $input['type'])->first();
+        if(is_object($findObj)){
+            $findObj->category = $input['category'];
+            $findObj->name = $input['name'];
+            $findObj->weight = $input['weight'];
+            $findObj->type = $input['type'];
+            $findObj->instrument_id = $input['instrument_id'];
+            $findObj->update();
+            $insAspect = $findObj;
+        }else{
+            $insAspect = InstrumentComponent::create($data);
+        }
+        
+        return $this->sendResponse($insAspect, 'Success', 1);
     }
 
     public function update(Request $request, $id) {
@@ -90,14 +125,29 @@ class InstrumentComponentController extends BaseController implements ICrud
         $this->sendResponse($insAspect, 'Success', $insAspect->count());
     }
 
-    public function getSubComponent($parent_id, $type){
+    public function addSubComponent(){
+
+    }
+
+    public function getComponent($parent_id, $type){
         $InsComponent = InstrumentComponent::where('parent_id', '=', $parent_id)
             ->where('type', '=', $type)->get();
         if($InsComponent->count()>0){
-            $data['components_'.$type] = $InsComponent;
+            $data[$type.'_components'] = $InsComponent;
             return $this->sendResponse($data, "Success", $InsComponent->count());
         }else{
-            return $this->sendError('Error', 'Failed');
+            return $this->sendResponse([], 'Record not found', 0);
+        }
+    }
+
+    public function getMainComponent($instrument_id){
+        $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main')->get();
+        if($InsComponent->count()>0){
+            $data['main_components'] = $InsComponent;
+            return $this->sendResponse($data, "Success", $InsComponent->count());
+        }else{
+            return $this->sendError('Failed', 'Record not found');
         }
     }
 }

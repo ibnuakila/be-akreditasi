@@ -18,7 +18,10 @@ use Illuminate\Support\Facades\Validator;
 class InstrumentController extends BaseController
 {
     public function addnew(){
-        $data['is_aktif'] = ['0' => 'Tidak Aktif', '1' => 'Aktif'];
+        $data['is_aktif'] = [
+            ['tidak_aktif' => 'Tidak Aktif'], 
+            ['aktif' => 'Aktif']
+        ];
         return $this->sendResponse($data, 'Success');
     }
     public function store(Request $request){
