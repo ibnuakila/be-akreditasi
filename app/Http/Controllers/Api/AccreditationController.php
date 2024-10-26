@@ -539,7 +539,7 @@ class AccreditationController extends BaseController //implements ICrud
             $obj_instrument->append($accre_content);
             $start_row++;
         }
-        return $obj_instrument;
+        return $obj_instrument->getArrayCopy();;
     }
 
     public function destroyFile($id)

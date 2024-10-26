@@ -37,7 +37,7 @@ class InstrumentComponentController extends BaseController implements ICrud
 
     public function list(Request $request) {//with filter
         $query = InstrumentComponent::query();       
-        if ($s = $request->input(key: 's')) {//filter berdasarkan library_name atau agency_name
+        if ($s = $request->input(key: 'search')) {//filter berdasarkan library_name atau agency_name
             $query->where('library_name', 'like', "%{$s}%")
                     ->orWhere('agency_name', 'like', "%{$s}%");
         }

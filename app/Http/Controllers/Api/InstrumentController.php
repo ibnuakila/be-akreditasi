@@ -17,6 +17,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Validator;
 class InstrumentController extends BaseController
 {
+    public function addnew(){
+        $data['is_aktif'] = ['0' => 'Tidak Aktif', '1' => 'Aktif'];
+        return $this->sendResponse($data, 'Success');
+    }
     public function store(Request $request){
         $input = $request->all();
 		//validating---------------------------
@@ -99,6 +103,9 @@ class InstrumentController extends BaseController
     }
 
     public function destroy(Instrument $model){
+        //delete component
+        //delete aspect
+        //delete aspect point
         $model->delete();
 		return $this->sendResponse([], 'Instrument Deleted!', $model->count());
     }
