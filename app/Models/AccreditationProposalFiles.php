@@ -18,7 +18,8 @@ class AccreditationProposalFiles extends Model
         'file_path',
         'proposal_document_id',
         'validation',
-        'notes'
+        'notes',
+        'document_url'
     ];
 
     public function proposalDocument()
