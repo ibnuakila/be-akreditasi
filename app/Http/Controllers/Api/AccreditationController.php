@@ -118,7 +118,7 @@ class AccreditationController extends BaseController //implements ICrud
         if(is_object($proposal)){
             $data['accreditation_proposal'] = $proposal;
             $message = 'Anda masih memiliki usulan akreditasi pada tahun yang sama!';
-            return $this->sendResponse($data, $message, 1);
+            return $this->sendError($data, $message, 500);
         }else{
             $region = Region::all();
             $category = Instrument::all();
