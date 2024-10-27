@@ -554,7 +554,7 @@ class AccreditationController extends BaseController //implements ICrud
 
     public function showFile($id)
     {
-        $accre_file = AccreditationProposalFiles::where('id', '=', $id)->first();
+        $accre_file = AccreditationProposalFiles::find($id);
         if(is_object($accre_file)){
             $file_path = $accre_file->file_path;
             $file_name = $accre_file->file_name;
