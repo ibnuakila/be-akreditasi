@@ -446,11 +446,11 @@ class AccreditationController extends BaseController //implements ICrud
             $proposal->save();
         }
         $file_path = '';
-        if ($request->file() && is_object($proposal)) {
+        if ($request->file()) {
             $file_path = $request->file('registration_form_file')->store($proposal->id);
-        } else {
+        } /*else {
             $file_path = $request->file('registration_form_file')->store($input['user_id']);
-        }
+        }*/
         
         $request = InstitutionRequest::query()
         ->where('accreditation_proposal_id', '=', $id)
