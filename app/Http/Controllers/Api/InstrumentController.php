@@ -80,7 +80,7 @@ class InstrumentController extends BaseController
         if ($request->file()) {
             $file_name = $request->file('file')->getClientOriginalName();
             $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
-            $file_path = $request->file('file')->store('/assets');
+            $file_path = $request->file('file')->store($id);
             if(is_object($instrument)){
                 $instrument->category = $input['category'];
                 $instrument->periode = $input['periode'];

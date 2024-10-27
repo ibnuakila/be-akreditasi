@@ -22,6 +22,10 @@ class InstrumentComponentController extends BaseController implements ICrud
         $query = InstrumentComponent::query()
             ->where('instrument_id', '=', $instrument_id)
             ->where('type', '=', 'main');
+        if ($s = $request->input(key: 'search')) {//filter berdasarkan library_name atau agency_name
+            $query->where('name', 'like', "%{$s}%")
+                    ->orWhere('name', 'like', "%{$s}%");
+        }
         $perPage = $request->input(key: 'pageSize', default: 10);
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
