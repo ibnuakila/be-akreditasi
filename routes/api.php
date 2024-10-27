@@ -155,8 +155,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/instrument-component/get-main-component/{instrument_id}', [InstrumentComponentController::class, 'getMainComponent']);
     Route::post('/instrument-component/store', [InstrumentComponentController::class, 'store']);
     Route::delete('/instrument-component/destroy/{id}', [InstrumentComponentController::class, 'destroy']);
-    Route::update('/instrument-component/update/{id}', [InstrumentComponentController::class, 'update']);
-    
+    Route::post('/instrument-component/update/{id}', [InstrumentComponentController::class, 'update']);
+
 
     Route::get('/assessor/index', [AssessorController::class, 'index']);
     Route::get('/assessor/show/{id}', [AssessorController::class, 'show']);
