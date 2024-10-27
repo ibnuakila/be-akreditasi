@@ -170,7 +170,7 @@ class AccreditationController extends BaseController //implements ICrud
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
-
+        $instrument = 
         $accreditation_proposal = [
             'institution_id' => $input['institution_id'],
             'proposal_date' => date('Y-m-d'),
@@ -204,11 +204,11 @@ class AccreditationController extends BaseController //implements ICrud
 
         $data['accreditation_proposal'] = $proposal;
         $file_path = '';
-        if ($request->file() && is_object($proposal)) {
+        if ($request->file()) {
             $file_path = $request->file('registration_form_file')->store($proposal->id);
-        } else {
+        } /*else {
             $file_path = $request->file('registration_form_file')->store($input['user_id']);
-        }
+        }*/
 
         $institution_request = [
             'category' => $input['category'],
