@@ -11,8 +11,8 @@ class InstrumentComponentController extends BaseController implements ICrud
 {
     //
     public function addNew($instrument_id){
-        /*$InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
-            ->where('type', '=', 'main')->get();*/
+        $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main')->get();
         $instrument = Instrument::find($instrument_id);
         if(is_object($instrument)){
             $data['instrument'] = $instrument;
@@ -20,7 +20,7 @@ class InstrumentComponentController extends BaseController implements ICrud
                 ['main' => 'Main'], 
                 ['sub_1' => 'Sub 1'], 
                 ['sub_2' => 'Sub 2']];
-            //$data['components'] = $InsComponent;
+            $data['components'] = $InsComponent;
             return $this->sendResponse($data, "Success", $instrument->count());
         }else{
             return $this->sendError('Error', 'Failed');
