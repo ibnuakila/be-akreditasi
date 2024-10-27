@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AccreditationController;
+use App\Http\Controllers\Api\AssessorController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\EvaluationAssignmentController;
 use App\Http\Controllers\Api\InstitutionController;
 use App\Http\Controllers\Api\InstrumentAspectController;
 use App\Http\Controllers\Api\InstrumentComponentController;
@@ -119,12 +121,12 @@ Route::middleware('auth:sanctum')->group(function(){
     //});
 
 //Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/evaluationassignment/index/', [EvaluationAssignment::class, 'index']);
-    Route::get('/evaluationassignment/list/', [EvaluationAssignment::class, 'list']);
-    Route::get('/evaluationassignment/show/{id}', [EvaluationAssignment::class, 'show']);
-    Route::post('/evaluationassignment/store/', [EvaluationAssignment::class, 'store']);
-    Route::post('/evaluationassignment/update/', [EvaluationAssignment::class, 'update']);
-    Route::delete('/evaluationassignment/destroy/{id}', [EvaluationAssignment::class, 'destroy']);
+    Route::get('/evaluation-assignment/index/', [EvaluationAssignmentController::class, 'index']);
+    Route::get('/evaluation-assignment/list/', [EvaluationAssignmentController::class, 'list']);
+    Route::get('/evaluation-assignment/show/{id}', [EvaluationAssignmentController::class, 'show']);
+    Route::post('/evaluation-assignment/store/', [EvaluationAssignmentController::class, 'store']);
+    Route::post('/evaluation-assignment/update/', [EvaluationAssignmentController::class, 'update']);
+    Route::delete('/evaluation-assignment/destroy/{id}', [EvaluationAssignmentController::class, 'destroy']);
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
@@ -144,8 +146,21 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/instrument-aspect/list/{instrument_id}', [InstrumentAspectController::class, 'list']);
     Route::get('/instrument-aspect/add-new/{instrument_id}', [InstrumentAspectController::class, 'addNew']);
     Route::post('/instrument-aspect/store/', [InstrumentAspectController::class, 'store']);
+    Route::delete('/instument-aspect/destroy/{id}', [InstrumentAspectController::class, 'destroy']);
+    Route::post('/instrument-aspect/update/{id}', [InstrumentAspectController::class, 'update']);
+    Route::get('/instrument-aspect/show/{id}', [InstrumentAspectController::class, 'show']);
 
     Route::get('/instrument-component/add-new/{instrument_id}', [InstrumentComponentController::class, 'addNew']);
     Route::get('/instrument-component/get-component/{parent_id}/{type}', [InstrumentComponentController::class, 'getComponent']);
     Route::get('/instrument-component/get-main-component/{instrument_id}', [InstrumentComponentController::class, 'getMainComponent']);
     Route::post('/instrument-component/store', [InstrumentComponentController::class, 'store']);
+    Route::delete('/instrument-component/destroy/{id}', [InstrumentComponentController::class, 'destroy']);
+    Route::update('/instrument-component/update/{id}', [InstrumentComponentController::class, 'update']);
+    
+
+    Route::get('/assessor/index', [AssessorController::class, 'index']);
+    Route::get('/assessor/show/{id}', [AssessorController::class, 'show']);
+    Route::delete('/assessor/destroy/{model}', [AssessorController::class, 'destroy']);
+    Route::post('/assessor/update/{model}', [AssessorController::class, 'update']);
+    Route::get('/assessor/edit/{id}', [AssessorController::class, 'edit']);
+    Route::post('/assessor/store/', [AssessorController::class, 'store']);

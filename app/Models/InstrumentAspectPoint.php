@@ -12,4 +12,10 @@ class InstrumentAspectPoint extends Model
     use HasUuids;
 
     protected $table = 'instrument_aspect_points';
+    protected $fillable = [
+        'instrument_aspect_id',
+        'statement',
+        'value',
+        'order'
+    ];
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\InstrumentAspect;
+use App\Models\InstrumentAspectPoint;
 use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -69,7 +70,8 @@ class InstrumentAspectController extends BaseController implements ICrud
             'statement_a' => 'required',
             'statement_b' => 'required',
             'statement_c' => 'required',
-            'statement_d' => 'required',            
+            'statement_d' => 'required',
+            'statement_e' => 'required',            
             'parent_id' => 'nullable'
         ]);
         if($valid->fails()){
@@ -86,6 +88,43 @@ class InstrumentAspectController extends BaseController implements ICrud
             'parent_id' => $input['parent_id']
         ];
         $insAspect = InstrumentAspect::create($data);
+        //simpan ke instrument aspect point
+        $dataAspectPointA = [
+            'instrument_aspect_id' => $insAspect->id,
+            'statement' => $input['statement_a'],
+            'value' => 5,
+            'order' => 1
+        ];
+        $dataAspectPointB = [
+            'instrument_aspect_id' => $insAspect->id,
+            'statement' => $input['statement_b'],
+            'value' => 4,
+            'order' => 2
+        ];
+        $dataAspectPointC = [
+            'instrument_aspect_id' => $insAspect->id,
+            'statement' => $input['statement_c'],
+            'value' => 3,
+            'order' => 3
+        ];
+        $dataAspectPointD = [
+            'instrument_aspect_id' => $insAspect->id,
+            'statement' => $input['statement_d'],
+            'value' => 2,
+            'order' => 4
+        ];
+        $dataAspectPointE = [
+            'instrument_aspect_id' => $insAspect->id,
+            'statement' => $input['statement_e'],
+            'value' => 1,
+            'order' => 5
+        ];
+        InstrumentAspectPoint::create($dataAspectPointA);
+        InstrumentAspectPoint::create($dataAspectPointB);
+        InstrumentAspectPoint::create($dataAspectPointC);
+        InstrumentAspectPoint::create($dataAspectPointD);
+        InstrumentAspectPoint::create($dataAspectPointE);
+
         return $this->sendResponse($insAspect, 'Success', $insAspect->count());
     }
 
@@ -93,7 +132,16 @@ class InstrumentAspectController extends BaseController implements ICrud
         $input = $request->all();
         $valid = Validator::make($input,
         [
-
+            'instrument_id' => 'required',
+            'aspect' => 'required',
+            'instrument_component_id' => 'required',
+            'type' => 'nullable',
+            'order' => 'nullable',
+            'statement_a' => 'required',
+            'statement_b' => 'required',
+            'statement_c' => 'required',
+            'statement_d' => 'required',            
+            'parent_id' => 'nullable'
         ]);
         if($valid->fails()){
             return $this->sendError('Error', $valid->errors());
