@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Validator;
 class InstrumentComponentController extends BaseController implements ICrud
 {
     //
-    public function addNew($instrument_id){
-        $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
-            ->where('type', '=', 'main')->get();
+    public function addNew(Request $request, $instrument_id){
+        
         $instrument = Instrument::find($instrument_id);
         if(is_object($instrument)){
             $data['instrument'] = $instrument;
@@ -20,8 +19,17 @@ class InstrumentComponentController extends BaseController implements ICrud
                 ['main' => 'Main'], 
                 ['sub_1' => 'Sub 1'], 
                 ['sub_2' => 'Sub 2']];
-            $data['components'] = $InsComponent;
-            return $this->sendResponse($data, "Success", $instrument->count());
+        $query = InstrumentComponent::query()
+            ->where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main');
+        $perPage = $request->input(key: 'pageSize', default: 10);
+        $page = $request->input(key: 'page', default: 1);
+        $total = $query->count();
+        $response = $query->offset(value: ($page - 1) * $perPage)
+                ->limit($perPage)
+                ->paginate();
+            $data['components'] = $response;
+            return $this->sendResponse($data, "Success", $total);
         }else{
             return $this->sendError('Error', 'Failed');
         }
