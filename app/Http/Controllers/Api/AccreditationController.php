@@ -267,7 +267,7 @@ class AccreditationController extends BaseController //implements ICrud
             'accreditation_proposal_id' => 'required',
             'proposal_document_id' => 'required',
             'instrument_component_id' => 'nullable',
-            'tautan_dokumen' => 'nullable'
+            'document_url' => 'nullable'
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
@@ -293,7 +293,7 @@ class AccreditationController extends BaseController //implements ICrud
                     $accre_files->file_name = $file_name;
                     $accre_files->file_type = $file_type;
                     $accre_files->file_path = $file_path;
-                    $accre_files->document_url = $input['tautan_dokumen'];
+                    //$accre_files->document_url = $input['document_url'];
                     $accre_files->update();
                 } else {
                     $data = [
@@ -304,7 +304,7 @@ class AccreditationController extends BaseController //implements ICrud
                         'file_name' => $file_name,
                         'file_type' => $file_type,
                         'file_path' => $file_path,
-                        'document_url' => $input['tautan_dokumen']
+                        //'document_url' => $input['document_url']
                     ];
 
                     $accre_files = AccreditationProposalFiles::create($data);
