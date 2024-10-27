@@ -156,7 +156,7 @@ class AccreditationController extends BaseController //implements ICrud
             'mobile_number' => 'required',
             'library_head_name' => 'required',
             'library_worker_name' => 'nullable',
-            'registration_form_file' => ['required', 'extensions:pdf,xlsx', 'max:2048'],
+            'registration_form_file' => ['nullable', 'extensions:pdf', 'max:2048'],
             'title_count' => 'required',
             'user_id' => 'required',
             'status' => 'nullable',
