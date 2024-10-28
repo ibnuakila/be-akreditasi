@@ -59,10 +59,10 @@ class ProposalController extends BaseController
         $query = AccreditationProposal::query()
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            ->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
-            ->join('cities', 'institution_requests.city_id', '=', 'cities.id')
-            ->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
-            ->join('villages', 'institution_requests.village_id', '=', 'villages.id')
+            //->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
+            //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
+            //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
+            //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
             ->select(['accreditation_proposals.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
@@ -72,22 +72,21 @@ class ProposalController extends BaseController
                 'institution_head_name',
                 'email',
                 'telephone_number',
-                'provinces.name as province',
-                'cities.name as city',
-                'subdistricts.name as subdistrict',
-                'villages.name as village',
-                'villages.postal_code']);
+                'province_name as province',
+                'city_name as city',
+                'subdistrict_name as subdistrict',
+                'village_name as village']);
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
         if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
-            $query->where('provinces.name', '=', "{$s}");
+            $query->where('province_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
-            $query->where('cities.name', '=', "{$s}");
+            $query->where('city_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
-            $query->where('subdistricts.name', '=', "{$s}");
+            $query->where('subdistrict_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
             $query->where('proposal_states.state_name', '=', "{$s}");
@@ -174,67 +173,7 @@ class ProposalController extends BaseController
         return $this->sendResponse(new AccreditationProposalResource($proposal), 'Proposal Created', $proposal->count);
     }
 
-    public function storeFiles(Request $request)
-    {        
-        /*$input = $request->all();
-        $validator = Validator::make($input, [
-            'file' => ['required', 'extensions:pdf,xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
-            'accreditation_proposal_id' => 'required',
-            'proposal_document_id' => 'required',
-            'instrument_component_id' => 'nullable'
-        ]);
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error!', $validator->errors());
-        }
-        if($request->file()){
-            $document = ProposalDocument::find($input['proposal_document_id']);
-            $file_name = $request->file('file')->getClientOriginalName();
-            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
-            $file_path = $request->file('file')->store($request->accreditation_proposal_id);
-            $accre_files = AccreditationProposalFiles::query()
-                ->where('accreditation_proposal_id', '=', $request->accreditation_proposal_id)
-                ->where('proposal_document_id', '=', $request->proposal_document_id)->first();
-            
-            $return['document'] = $document;
-            if(is_object($accre_files)){
-                $accre_files->accreditation_proposal_id = $request->accreditation_proposal_id;
-                $accre_files->proposal_document_id = $request->proposal_document_id;
-                $accre_files->instrument_component_id = $document->instrument_component_id;
-                $accre_files->aspect = $document->document_name;
-                $accre_files->file_name = $file_name;
-                $accre_files->file_type = $file_type;
-                $accre_files->file_path = $file_path;
-                $accre_files->update();
-            }else{
-                $data = [
-                    'accreditation_proposal_id' => $request->accreditation_proposal_id,
-                    'proposal_document_id' => $request->proposal_document_id,
-                    'instrument_component_id' => $document->instrument_document_id,
-                    'aspect' => $document->document_name,
-                    'file_name' => $file_name,
-                    'file_type' => $file_type,
-                    'file_path' => $file_path
-                ];
-                
-                $accre_files = AccreditationProposalFiles::create($data);                                
-            }
-            
-            if(is_object($document)){
-                if(trim($document->document_name) == 'Instrument Penilaian'){
-                    $params['file_path'] = $accre_files->file_path;
-                    $accre_contents = $this->readInstrument($params);
-                    //$return['accre_contents'] = $accre_contents;
-                }
-            }
-            $return['accre_files'] = $accre_files;
-            if(isset($accre_contents)){
-                $return['accre_contents'] = $accre_contents;
-            }
-        }else{
-            return $this->sendError('File Error!', $validator->errors());        
-        }
-        return $this->sendResponse($return, 'Success', $accre_files->count());*/
-    }
+    
 
     /**
      * @param $request
@@ -262,8 +201,8 @@ class ProposalController extends BaseController
             'certificate_file' => 'nullable',
             'recommendation_file' => 'nullable',
             'is_valid' => 'required',
-            'instrument_id' => 'required',
-            'category' => 'required'
+            'instrument_id' => 'nullable',
+            'category' => 'nullable'
         ]);
 
         if ($validator->fails()) {
@@ -275,31 +214,5 @@ class ProposalController extends BaseController
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
     }
     
-    /*private function readInstrument($params)
-    {
-        $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
-        $start_row = 6;
-        $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
-        $butir = str_replace('.', '', $butir);
-        $obj_instrument = new ArrayObject();
-        while(is_numeric($butir)){
-            $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
-            $butir = str_replace('.', '', $butir);
-            $value = $spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue();
-            $ins_component_id = $spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue();
-            $aspect_id = $spreadsheet->getActiveSheet(0)->getCell('J' . strval($start_row))->getCalculatedValue();
-            
-            $accre_content = new \App\Models\AccreditationContent();
-            $accre_content->aspectable_id = $ins_component_id;
-            $accre_content->main_component_id = '';
-            $accre_content->instrument_aspect_point_id = $aspect_id;
-            $accre_content->aspect = '';
-            $accre_content->statement = '';
-            $accre_content->value = $value;
-            $obj_instrument->append($accre_content);
-            $start_row++;
-        }
-        return $obj_instrument;
-    }*/
+    
 }

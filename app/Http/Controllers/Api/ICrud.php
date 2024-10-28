@@ -16,7 +16,7 @@ interface ICrud
 	 * 
 	 * @param $model
 	 */
-	public function destroy($model);
+	public function destroy($id);
 
 	public function index();
 
@@ -37,7 +37,7 @@ interface ICrud
 	 * @param $request
 	 * @param $model
 	 */
-	public function update(Request $request, $model);
+	public function update(Request $request, $id);
 
 }
 ?>

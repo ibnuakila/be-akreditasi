@@ -70,7 +70,11 @@ class AuthController extends Controller
 
     public function info()
     {
-        return "<h1>Api Info</h1>";
+        $return = [
+            'message' => 'Unauthorized',
+            'success' => true
+        ];
+        return response()->json($return);
     }
 
 

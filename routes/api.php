@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AccreditationController;
+use App\Http\Controllers\Api\AssessorController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\EvaluationAssignmentController;
 use App\Http\Controllers\Api\InstitutionController;
+use App\Http\Controllers\Api\InstrumentAspectController;
+use App\Http\Controllers\Api\InstrumentComponentController;
 use App\Http\Controllers\Api\InstrumentController;
+use App\Http\Controllers\Api\ProposalAssignmentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\ProposalDocumentController;
 use App\Http\Controllers\Api\ProvinceController;
@@ -12,12 +17,14 @@ use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
 use App\Models\EvaluationAssignment;
+use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/info', [AuthController::class,'info']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -104,17 +111,23 @@ Route::middleware('auth:sanctum')->group(function(){
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/instrument/add-new/', [InstrumentController::class, 'addnew']);
     Route::get('/instrument/get-instrument/{params}', [InstrumentController::class, 'getInstrument']);
-    Route::post('/instrument/generate-proposal-document/', [InstrumentController::class, 'generateProposalDocument']);
-//});
+    Route::get('/instrument/edit/{id}', [InstrumentController::class, 'edit']);
+    Route::get('/instrument/index', [InstrumentController::class, 'index']);
+    Route::post('/instrument/store', [InstrumentController::class, 'store']);
+    Route::post('/instrument/update/{id}', [InstrumentController::class, 'update']);
+    Route::delete('/instrument/destroy/{model}', [InstrumentController::class, 'destroy']);
+    Route::get('/instrument/get-document-sk/{id}', [InstrumentController::class, 'getDocumentSK']);
+    //});
 
 //Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/evaluationassignment/index/', [EvaluationAssignment::class, 'index']);
-    Route::get('/evaluationassignment/list/', [EvaluationAssignment::class, 'list']);
-    Route::get('/evaluationassignment/show/{id}', [EvaluationAssignment::class, 'show']);
-    Route::post('/evaluationassignment/store/', [EvaluationAssignment::class, 'store']);
-    Route::post('/evaluationassignment/update/', [EvaluationAssignment::class, 'update']);
-    Route::delete('/evaluationassignment/destroy/{id}', [EvaluationAssignment::class, 'destroy']);
+    Route::get('/evaluation-assignment/index/', [EvaluationAssignmentController::class, 'index']);
+    Route::get('/evaluation-assignment/list/', [EvaluationAssignmentController::class, 'list']);
+    Route::get('/evaluation-assignment/show/{id}', [EvaluationAssignmentController::class, 'show']);
+    Route::post('/evaluation-assignment/store/', [EvaluationAssignmentController::class, 'store']);
+    Route::post('/evaluation-assignment/update/', [EvaluationAssignmentController::class, 'update']);
+    Route::delete('/evaluation-assignment/destroy/{id}', [EvaluationAssignmentController::class, 'destroy']);
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
@@ -126,7 +139,32 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/accreditation/list', [AccreditationController::class, 'list']);
     Route::get('/accreditation/addnew/{user_id}', [AccreditationController::class, 'addNew']);
     Route::post('/accreditation/store-files', [AccreditationController::class, 'storeFiles']);
-    Route::get('/accreditation/edit/{user_id}', [AccreditationController::class, 'addNew']);
+    Route::get('/accreditation/edit/{id}', [AccreditationController::class, 'edit']);
     Route::delete('/accreditation/destroy-file/{id}', [AccreditationController::class, 'destroyFile']);
     Route::get('/accreditation/show-file/{id}', [AccreditationController::class, 'showFile']);
 //});
+
+    Route::get('/instrument-aspect/list/{instrument_id}', [InstrumentAspectController::class, 'list']);
+    Route::get('/instrument-aspect/add-new/{instrument_id}', [InstrumentAspectController::class, 'addNew']);
+    Route::post('/instrument-aspect/store/', [InstrumentAspectController::class, 'store']);
+    Route::delete('/instument-aspect/destroy/{id}', [InstrumentAspectController::class, 'destroy']);
+    Route::post('/instrument-aspect/update/{id}', [InstrumentAspectController::class, 'update']);
+    Route::get('/instrument-aspect/show/{id}', [InstrumentAspectController::class, 'show']);
+
+    Route::get('/instrument-component/add-new/{instrument_id}', [InstrumentComponentController::class, 'addNew']);
+    Route::get('/instrument-component/get-component/{parent_id}/{type}', [InstrumentComponentController::class, 'getComponent']);
+    Route::get('/instrument-component/get-main-component/{instrument_id}', [InstrumentComponentController::class, 'getMainComponent']);
+    Route::post('/instrument-component/store', [InstrumentComponentController::class, 'store']);
+    Route::delete('/instrument-component/destroy/{id}', [InstrumentComponentController::class, 'destroy']);
+    Route::post('/instrument-component/update/{id}', [InstrumentComponentController::class, 'update']);
+
+
+    Route::get('/assessor/index', [AssessorController::class, 'index']);
+    Route::get('/assessor/show/{id}', [AssessorController::class, 'show']);
+    Route::delete('/assessor/destroy/{model}', [AssessorController::class, 'destroy']);
+    Route::post('/assessor/update/{model}', [AssessorController::class, 'update']);
+    Route::get('/assessor/edit/{id}', [AssessorController::class, 'edit']);
+    Route::post('/assessor/store/', [AssessorController::class, 'store']);
+
+    Route::get('/proposal-assignment/index', [ProposalAssignmentController::class, 'index']);
+    Route::get('/proposal-assignment/list', [ProposalAssignmentController::class, 'list']);
