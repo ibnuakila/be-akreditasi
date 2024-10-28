@@ -236,7 +236,11 @@ class AccreditationController extends BaseController //implements ICrud
             'user_id' => $input['user_id'],
             'status' => 'tidak_valid',
             'last_predicate' => $input['last_predicate'],
-            'last_certification_date' => $input['last_certification_date'],
+            'last_certification_date' => function()use($input){
+                if($input['last_certification_date']==''){
+                    return '1980-01-01';
+                }
+            },
             'type' => $input['type'],
             'accreditation_proposal_id' => $proposal->id,
             'validated_at' => '',
