@@ -128,6 +128,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/evaluation-assignment/store/', [EvaluationAssignmentController::class, 'store']);
     Route::post('/evaluation-assignment/update/', [EvaluationAssignmentController::class, 'update']);
     Route::delete('/evaluation-assignment/destroy/{id}', [EvaluationAssignmentController::class, 'destroy']);
+    Route::post('/evaluation-assignment/upload-instrument/', [EvaluationAssignmentController::class, 'uploadInstrument']);
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
@@ -168,3 +169,8 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::get('/proposal-assignment/index', [ProposalAssignmentController::class, 'index']);
     Route::get('/proposal-assignment/list', [ProposalAssignmentController::class, 'list']);
+    Route::get('/proposal-assignment/add-new/{id}', [ProposalAssignmentController::class, 'addNew']);
+    Route::post('/proposal-assignment/store/', [ProposalAssignmentController::class, 'store']);
+    Route::delete('/proposal-assignment/destroy/{id}', [ProposalAssignmentController::class, 'destroy']);
+    Route::get('/proposal-assignment/edit/{id}', [ProposalAssignmentController::class, 'edit']);
+    Route::post('/proposal-assignment/update/{id}', [ProposalAssignmentController::class, 'update']);

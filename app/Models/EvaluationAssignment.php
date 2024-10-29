@@ -11,13 +11,13 @@ class EvaluationAssignment extends Model
     use HasFactory;
     use HasUuids;
     protected $table = 'evaluation_assignments';
-    protected $fillable = [
-        'schedule_date',
-        'methode',
+    protected $fillable = [        
+        'method',
         'accreditation_id',
-        'accreditaion_proposal_id',
-        'sent_date',
-        'expire_date',
-        'assignment_state_id'
+        'accreditation_proposal_id',
+        'scheduled_date',
+        'expired_date',
+        'assignment_state_id',
+        'assessor_id'
     ];
 }

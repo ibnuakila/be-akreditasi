@@ -31,11 +31,22 @@ class EvaluationAssignmentController extends BaseController
 
     public function list(Request $request)//with filter
     {
+        $temp_request_header = $request->header('Access-User');
+        $request_header = str_replace('\"', '"',$temp_request_header);
+        $request_header = json_decode($request_header, true);
+        $user_id = $request_header['id'];
+        $roles = $request_header['roles'];
+        $is_assessor = false;
+        foreach($roles as $role){
+            if($role['name'] == 'Assessor'){
+                $is_assessor = true;
+            }
+        }
         $query = EvaluationAssignment::query()
             ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            
+            //->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
             ->select(['accreditation_proposals.proposal_date',
                 'evaluation_assignments.*',
                 'proposal_states.state_name',
@@ -49,8 +60,12 @@ class EvaluationAssignmentController extends BaseController
                 'province_name as province',
                 'city_name as city',
                 'subdistrict_name as subdistrict',
-                'village_name as village']);
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
+                'village_name as village',
+            'assessor_id']);
+        if($is_assessor){
+            $query->where('evaluation_assignments.assessor_id', '=', $user_id);
+        }
+        if ($s = $request->input(key: 'library_name')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
         if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
@@ -71,6 +86,8 @@ class EvaluationAssignmentController extends BaseController
         $response = $query->offset(value: ($page - 1) * $perPage)
             ->limit($perPage)
             ->paginate();
+        //$data['evaluation_assignments'] = $response;
+        //$data['user_access'] = $request_header;
         return $this->sendResponse($response, "Success", $total);
     }
 
@@ -119,5 +136,85 @@ class EvaluationAssignmentController extends BaseController
         }
         $proposal = AccreditationProposal::create($input);
         return $this->sendResponse(new AccreditationProposalResource($proposal), 'Proposal Created', $proposal->count);
+    }
+
+    public function uploadInstrument(Request $request){
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'file' => ['required', 'extensions:xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
+            'accreditation_proposal_id' => 'required',
+            //'proposal_document_id' => 'required',
+            //'instrument_component_id' => 'nullable',
+            //'document_url' => 'nullable'
+        ]);
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error!', $validator->errors());
+        }
+        if ($request->file()) {
+            $document = ProposalDocument::find($input['proposal_document_id']);
+            $file_name = $request->file('file')->getClientOriginalName();
+            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
+            $file_path = $request->file('file')->store($input['accreditation_proposal_id']);
+            $accreditation = AccreditationProposal::find($input['accreditation_proposal_id']);
+            if (is_object($accreditation)) {
+
+                $accre_files = AccreditationProposalFiles::query()
+                    ->where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
+                    ->where('proposal_document_id', '=', $input['proposal_document_id'])->first();
+
+                
+                if (is_object($accre_files)) {
+                    $accre_files->accreditation_proposal_id = $input['accreditation_proposal_id'];
+                    $accre_files->proposal_document_id = $input['proposal_document_id'];
+                    $accre_files->instrument_component_id = $document->instrument_component_id;
+                    $accre_files->aspect = $document->document_name;
+                    $accre_files->file_name = $file_name;
+                    $accre_files->file_type = $file_type;
+                    $accre_files->file_path = $file_path;
+                    //$accre_files->document_url = $input['document_url'];
+                    $accre_files->update();
+                } else {
+                    $data = [
+                        'accreditation_proposal_id' => $input['accreditation_proposal_id'],
+                        'proposal_document_id' => $input['proposal_document_id'],
+                        'instrument_component_id' => $document->instrument_document_id,
+                        'aspect' => $document->document_name,
+                        'file_name' => $file_name,
+                        'file_type' => $file_type,
+                        'file_path' => $file_path,
+                        //'document_url' => $input['document_url']
+                    ];
+
+                    $accre_files = AccreditationProposalFiles::create($data);
+                }
+                $accreditation_proposal_files = AccreditationProposalFiles::where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
+                    ->with('proposalDocument')
+                    ->get();
+                $return['accreditation_files'] = $accreditation_proposal_files;
+                if (is_object($document)) {
+                    if (trim($document->document_name) == 'Instrument Penilaian') {
+                        $params['file_path'] = $accre_files->file_path;
+                        $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
+                        $instrument_id = $accreditation->instrument_id;
+                        $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
+                        if ($temp_file_name == $instrument_id) {
+                            $accre_contents = $this->readInstrument($params);
+                            $return['accreditation_contents'] = $accre_contents;
+                        } else {
+                            return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
+                        }
+                    }
+                    //$return['accre_files'] = $accre_files;
+                    if (isset($accre_contents)) {
+                        $return['accreditation_contents'] = $accre_contents;
+                    }
+                } 
+            } else {
+                return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
+            }
+        } else {
+            return $this->sendError('File Error!', $validator->errors());
+        }
+        return $this->sendResponse($return, 'Success', $accre_files->count());
     }
 }

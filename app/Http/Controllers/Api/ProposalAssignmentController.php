@@ -16,6 +16,10 @@ class ProposalAssignmentController extends BaseController
         $assessor = Assessor::all();
         $data['accreditation_proposal'] = $accreditation_proposal;
         $data['assessor'] = $assessor;
+        $data['method'] = [
+            ['Online' => 'Online'],
+            ['Onsite' => 'Onsite']
+        ];
         return $this->sendResponse($data, "Success", 1);
     }
     public function destroy($id){
@@ -43,6 +47,7 @@ class ProposalAssignmentController extends BaseController
             //->where('accreditation_proposals.is_valid', '=', 'valid')
             ->Where('institution_requests.status', '=', 'valid')
             ->select(['accreditation_proposals.*',
+                'evaluation_assignments.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
                 'library_name',
@@ -83,8 +88,13 @@ class ProposalAssignmentController extends BaseController
 	 * 
 	 * @param $id
 	 */
-	public function show($id){
-
+	public function edit($id){
+        $evaluation = EvaluationAssignment::find($id);
+        if(is_object($evaluation)){
+            return $this->sendResponse($evaluation, 'Success');
+        }else{
+            return $this->sendError('Error', 'Object not found');
+        }
     }
 
 	/**
@@ -95,8 +105,9 @@ class ProposalAssignmentController extends BaseController
         $input = $request->all();
         $valid = Validator::make($input, [
             'accreditation_proposal_id' => 'required',
-            'send_date' => 'required',
-            'expire_date' => 'required',
+            'method' => 'required',
+            'scheduled_date' => 'required',
+            'expired_date' => 'required',
             'assessor_id' => 'required'
         ]);
         if ($valid->fails()) {
@@ -105,8 +116,9 @@ class ProposalAssignmentController extends BaseController
 
         $data = [
             'accreditation_proposal_id' => $input['accreditation_proposal_id'],
-            'send_date' => $input['send_date'],
-            'expire_date' => $input['expire_date'],
+            'method' => $input['method'],
+            'scheduled_date' => $input['scheduled_date'],
+            'expired_date' => $input['expire_date'],
             'assessor_id' => $input['assessor_id'],
             'assignment_state_id' => 1
         ];
@@ -114,6 +126,8 @@ class ProposalAssignmentController extends BaseController
         //update accreditation proposal
         $accreProposal = AccreditationProposal::find($input['accreditation_proposal_id']);
         $accreProposal->proposal_state_id = 2;
+        $temp = $accreProposal->assignment_count;
+        $accreProposal->assignment_count = $temp++;
         $accreProposal->save();
         return $this->sendResponse($create,'Success', 1);
     }
@@ -124,6 +138,40 @@ class ProposalAssignmentController extends BaseController
 	 * @param $model
 	 */
 	public function update(Request $request, $id){
+        $input = $request->all();
+        $evaluation = EvaluationAssignment::find($id);
+        $valid = Validator::make($input, [
+            'accreditation_proposal_id' => 'required',
+            'method' => 'required',
+            'scheduled_date' => 'required',
+            'expired_date' => 'required',
+            'assessor_id' => 'required'
+        ]);
+        if ($valid->fails()) {
+            return $this->sendError('Error',$valid->errors());
+        }
 
+        $data = [
+            'accreditation_proposal_id' => $input['accreditation_proposal_id'],
+            'method' => $input['method'],
+            'scheduled_date' => $input['scheduled_date'],
+            'expired_date' => $input['expired_date'],
+            'assessor_id' => $input['assessor_id'],
+            'assignment_state_id' => 1
+        ];
+        if(is_object($evaluation)){
+            $evaluation->accreditation_proposal_id = $input['accreditation_proposal_id'];
+            $evaluation->method = $input['method'];
+            $evaluation->scheduled_date = $input['scheduled_date'];
+            $evaluation->expired_date = $input['expired_date'];
+            $evaluation->assessor_id = $input['assessor_id'];
+            $evaluation->update();
+        }
+        
+        //update accreditation proposal
+        $accreProposal = AccreditationProposal::find($input['accreditation_proposal_id']);
+        $accreProposal->proposal_state_id = 2;
+        $accreProposal->save();
+        return $this->sendResponse($evaluation,'Success', 1);
     }
 }

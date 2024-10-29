@@ -32,7 +32,8 @@ class AccreditationProposal extends Model
         'is_valid',
         'instrument_id',
         'category',
-        'user_id'
+        'user_id',
+        'assignment_count'
     ];
 
     public function proposalState()
