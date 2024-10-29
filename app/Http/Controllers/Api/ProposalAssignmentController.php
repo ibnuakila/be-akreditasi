@@ -47,7 +47,7 @@ class ProposalAssignmentController extends BaseController
             //->where('accreditation_proposals.is_valid', '=', 'valid')
             ->Where('institution_requests.status', '=', 'valid')
             ->select(['accreditation_proposals.*',
-                'evaluation_assignments.*',
+                //'evaluation_assignments.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
                 'library_name',
