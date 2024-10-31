@@ -38,15 +38,18 @@ class EvaluationAssignmentController extends BaseController
 
     public function list(Request $request)//with filter
     {
-        $temp_request_header = $request->header('Access-User');
-        $request_header = str_replace('\"', '"',$temp_request_header);
-        $request_header = json_decode($request_header, true);
-        $user_id = $request_header['id'];
-        $roles = $request_header['roles'];
+        
         $is_assessor = false;
-        foreach($roles as $role){
-            if($role['name'] == 'Assessor'){
-                $is_assessor = true;
+        if($request->hasHeader('Access-User')){
+            $temp_request_header = $request->header('Access-User');
+            $request_header = str_replace('\"', '"',$temp_request_header);
+            $request_header = json_decode($request_header, true);
+            $user_id = $request_header['id'];
+            $roles = $request_header['roles'];
+            foreach($roles as $role){
+                if($role['name'] == 'Assessor'){
+                    $is_assessor = true;
+                }
             }
         }
         $query = EvaluationAssignment::query()
@@ -94,7 +97,7 @@ class EvaluationAssignmentController extends BaseController
             ->limit($perPage)
             ->paginate();
         $data['evaluation_assignments'] = $response;
-        $data['user_access'] = $request_header;
+        //$data['user_access'] = $request_header;
         return $this->sendResponse($response, "Success", $total);
     }
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AssessorController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\EvaluationAssignmentController;
+use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\InstitutionController;
 use App\Http\Controllers\Api\InstrumentAspectController;
 use App\Http\Controllers\Api\InstrumentComponentController;
@@ -122,16 +123,6 @@ Route::middleware('auth:sanctum')->group(function(){
     //});
 
 //Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/evaluation-assignment/index/', [EvaluationAssignmentController::class, 'index']);
-    Route::get('/evaluation-assignment/list/', [EvaluationAssignmentController::class, 'list']);
-    Route::get('/evaluation-assignment/show/{id}', [EvaluationAssignmentController::class, 'show']);
-    Route::post('/evaluation-assignment/store/', [EvaluationAssignmentController::class, 'store']);
-    Route::post('/evaluation-assignment/update/', [EvaluationAssignmentController::class, 'update']);
-    Route::delete('/evaluation-assignment/destroy/{id}', [EvaluationAssignmentController::class, 'destroy']);
-    Route::post('/evaluation-assignment/upload-instrument/', [EvaluationAssignmentController::class, 'uploadInstrument']);
-//});
-
-//Route::middleware('auth:sanctum')->group(function(){
     Route::get('/accreditation/index/{user_id}', [AccreditationController::class, 'index']);
     Route::post('/accreditation/store', [AccreditationController::class, 'store']);
     Route::get('/accreditation/show/{id}', [AccreditationController::class, 'show']);
@@ -174,3 +165,15 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::delete('/proposal-assignment/destroy/{id}', [ProposalAssignmentController::class, 'destroy']);
     Route::get('/proposal-assignment/edit/{id}', [ProposalAssignmentController::class, 'edit']);
     Route::post('/proposal-assignment/update/{id}', [ProposalAssignmentController::class, 'update']);
+
+//Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/evaluation-assignment/index/', [EvaluationAssignmentController::class, 'index']);
+    Route::get('/evaluation-assignment/list/', [EvaluationAssignmentController::class, 'list']);
+    Route::get('/evaluation-assignment/show/{id}', [EvaluationAssignmentController::class, 'show']);
+    Route::post('/evaluation-assignment/store/', [EvaluationAssignmentController::class, 'store']);
+    Route::post('/evaluation-assignment/update/', [EvaluationAssignmentController::class, 'update']);
+    Route::delete('/evaluation-assignment/destroy/{id}', [EvaluationAssignmentController::class, 'destroy']);
+    Route::post('/evaluation-assignment/upload-instrument/', [EvaluationAssignmentController::class, 'uploadInstrument']);
+//});
+    
+Route::get('/evaluation/list', [EvaluationController::class,'list']);

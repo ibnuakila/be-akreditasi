@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
 use Illuminate\Http\Request;
 
@@ -29,13 +30,13 @@ class EvaluationController extends BaseController implements ICrud
 
     public function list(Request $request)//with filter
     {
-        $query = EvaluationAssignment::query()
-            ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignment.accreditation_proposal_id')
+        $query = Evaluation::query()
+            ->join('evaluation_assignments', 'evaluations.evaluation_assignment_id', '=', 'evaluation_assignments.id')
+            ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            
+            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')            
             ->select(['accreditation_proposals.proposal_date',
-                'evaluation_assignment.*',
+                'evaluation_assignments.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
                 'library_name',
