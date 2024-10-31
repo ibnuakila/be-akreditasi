@@ -118,7 +118,7 @@ class ProposalAssignmentController extends BaseController
             'accreditation_proposal_id' => $input['accreditation_proposal_id'],
             'method' => $input['method'],
             'scheduled_date' => $input['scheduled_date'],
-            'expired_date' => $input['expire_date'],
+            'expired_date' => $input['expired_date'],
             'assessor_id' => $input['assessor_id'],
             'assignment_state_id' => 1
         ];

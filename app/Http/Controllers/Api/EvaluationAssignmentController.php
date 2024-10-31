@@ -4,9 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EvaluasiAssignmentResource;
+use App\Models\AccreditationProposal;
+use App\Models\Assessor;
+use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
+use App\Models\EvaluationContent;
+use App\Models\InstrumentAspect;
+use App\Models\InstrumentAspectPoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Storage;
 
 class EvaluationAssignmentController extends BaseController
 {
@@ -86,8 +93,8 @@ class EvaluationAssignmentController extends BaseController
         $response = $query->offset(value: ($page - 1) * $perPage)
             ->limit($perPage)
             ->paginate();
-        //$data['evaluation_assignments'] = $response;
-        //$data['user_access'] = $request_header;
+        $data['evaluation_assignments'] = $response;
+        $data['user_access'] = $request_header;
         return $this->sendResponse($response, "Success", $total);
     }
 
@@ -140,6 +147,10 @@ class EvaluationAssignmentController extends BaseController
 
     public function uploadInstrument(Request $request){
         $input = $request->all();
+        $temp_request_header = $request->header('Access-User');
+        $request_header = str_replace('\"', '"',$temp_request_header);
+        $request_header = json_decode($request_header, true);
+        $user_id = $request_header['id'];
         $validator = Validator::make($input, [
             'file' => ['required', 'extensions:xlsx', 'max:2048'], //'required|mimes:xlsx,pdf| max:2048',
             'accreditation_proposal_id' => 'required',
@@ -151,70 +162,127 @@ class EvaluationAssignmentController extends BaseController
             return $this->sendError('Validation Error!', $validator->errors());
         }
         if ($request->file()) {
-            $document = ProposalDocument::find($input['proposal_document_id']);
+            //$document = ProposalDocument::find($input['proposal_document_id']);
             $file_name = $request->file('file')->getClientOriginalName();
             $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
             $file_path = $request->file('file')->store($input['accreditation_proposal_id']);
             $accreditation = AccreditationProposal::find($input['accreditation_proposal_id']);
-            if (is_object($accreditation)) {
-
-                $accre_files = AccreditationProposalFiles::query()
-                    ->where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
-                    ->where('proposal_document_id', '=', $input['proposal_document_id'])->first();
-
-                
-                if (is_object($accre_files)) {
-                    $accre_files->accreditation_proposal_id = $input['accreditation_proposal_id'];
-                    $accre_files->proposal_document_id = $input['proposal_document_id'];
-                    $accre_files->instrument_component_id = $document->instrument_component_id;
-                    $accre_files->aspect = $document->document_name;
-                    $accre_files->file_name = $file_name;
-                    $accre_files->file_type = $file_type;
-                    $accre_files->file_path = $file_path;
-                    //$accre_files->document_url = $input['document_url'];
-                    $accre_files->update();
+            $assessor = Assessor::where('user_id', '=', $user_id)->first();            
+            if(is_object($assessor)){
+                $evaluation_assignment = EvaluationAssignment::query()
+                ->where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
+                ->where('assessor_id','=',$assessor->id)->first();
+            }else{
+                $evaluation_assignment = null;
+            }
+            if (is_object($evaluation_assignment)) {   
+                $evaluation = Evaluation::where('evaluation_assignment_id', '=', $evaluation_assignment->id)->first();             
+                if (is_object($evaluation)) {          
+                    $evaluation->file_name = $file_name;
+                    $evaluation->file_type = $file_type;
+                    $evaluation->file_path = $file_path;                    
+                    $evaluation->update();
                 } else {
                     $data = [
                         'accreditation_proposal_id' => $input['accreditation_proposal_id'],
-                        'proposal_document_id' => $input['proposal_document_id'],
-                        'instrument_component_id' => $document->instrument_document_id,
-                        'aspect' => $document->document_name,
+                        'evaluation_assignment_id' => $evaluation_assignment->id,
+                        'assessor_id' => $assessor->id,
                         'file_name' => $file_name,
                         'file_type' => $file_type,
-                        'file_path' => $file_path,
-                        //'document_url' => $input['document_url']
+                        'file_path' => $file_path,                        
                     ];
 
-                    $accre_files = AccreditationProposalFiles::create($data);
+                    $evaluation = Evaluation::create($data);
                 }
-                $accreditation_proposal_files = AccreditationProposalFiles::where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
-                    ->with('proposalDocument')
-                    ->get();
-                $return['accreditation_files'] = $accreditation_proposal_files;
-                if (is_object($document)) {
-                    if (trim($document->document_name) == 'Instrument Penilaian') {
-                        $params['file_path'] = $accre_files->file_path;
-                        $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
-                        $instrument_id = $accreditation->instrument_id;
-                        $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
-                        if ($temp_file_name == $instrument_id) {
-                            $accre_contents = $this->readInstrument($params);
-                            $return['accreditation_contents'] = $accre_contents;
-                        } else {
-                            return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
-                        }
+                    $params['file_path'] = $file_path;
+                    $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
+                    $params['evaluation_id'] = $evaluation->id;
+                    $instrument_id = $accreditation->instrument_id;
+                    $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
+                    if ($temp_file_name == $instrument_id) {
+                        $evaluation_contents = $this->readInstrument($params);
+                        $return['evaluation_contents'] = $evaluation_contents;
+                        return $this->sendResponse($return, 'Success');
+                    } else {
+                        return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
                     }
-                    //$return['accre_files'] = $accre_files;
-                    if (isset($accre_contents)) {
-                        $return['accreditation_contents'] = $accre_contents;
-                    }
-                } 
+                                       
+                
             } else {
                 return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
             }
+            //return $this->sendResponse($request_header);
         } else {
             return $this->sendError('File Error!', $validator->errors());
         }
-        return $this->sendResponse($return, 'Success', $accre_files->count());
+        
+    }
+
+    private function readInstrument($params)
+    {
+        //delete penilaian terlebih dahulu
+        EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
+            ->delete();
+        $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
+        $start_row = 6;
+        $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+        $butir = str_replace('.', '', $butir);
+        $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
+        $main_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('A1')->getCalculatedValue());
+
+        $obj_instrument = new \ArrayObject();
+        while (is_numeric($butir)) {
+            $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+            $butir = str_replace('.', '', $butir);
+            $value = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
+            $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
+            $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
+            $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
+            $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
+            $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
+            
+            $instrument_aspect = InstrumentAspect::find($aspect_id);
+            $aspect = '-';
+            if(is_object($instrument_aspect)){
+                $aspect = $instrument_aspect->aspect;
+            }
+            $instrument_aspect_point = InstrumentAspectPoint::query()
+                ->where('instrument_aspect_id', '=', $aspect_id)
+                ->where('value', '=', $value)->first();
+            $statement = '-'; 
+            if(is_object($instrument_aspect_point)){
+                $statement = $instrument_aspect_point->statement;
+                $value = $instrument_aspect_point->value;
+            }else{
+                $value = 0;
+            }
+
+            $evaluation_content = new EvaluationContent();
+            $evaluation_content->evaluation_id = $params['evaluation_id'];
+            $evaluation_content->accreditation_content_id = '';
+            $evaluation_content->main_component_id = $ins_component_id;
+            $evaluation_content->instrument_aspect_point_id = $aspect_id;
+            //$evaluation_content->aspect = $aspect;
+            $evaluation_content->statement = $statement;
+            $evaluation_content->value = $value;
+            $evaluation_content->comment = $comment;
+            if(!is_numeric($pleno)){
+                $pleno = 0;
+            }
+            if(!is_numeric($banding)){
+                $banding = 0;
+            }
+            $evaluation_content->pleno = $pleno;
+            $evaluation_content->banding = $banding;
+            //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
+            //$evaluation_content->butir = $butir;
+            if($aspect_id != ''){
+                $evaluation_content->save();
+            }
+            $obj_instrument->append($evaluation_content);
+            $start_row++;
+        }
+        return $obj_instrument->getArrayCopy();;
     }
 }

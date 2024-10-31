@@ -21,7 +21,7 @@ class AccreditationContent extends Model
         'main_component_id',
         'instrument_aspect_point_id',
         'accreditation_proposal_id',
-        'butir'        
+        'butir',                
     ];
     
 }
