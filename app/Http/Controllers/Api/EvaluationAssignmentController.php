@@ -197,18 +197,26 @@ class EvaluationAssignmentController extends BaseController
 
                     $evaluation = Evaluation::create($data);
                 }
-                    $params['file_path'] = $file_path;
-                    $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
-                    $params['evaluation_id'] = $evaluation->id;
-                    $instrument_id = $accreditation->instrument_id;
-                    $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
-                    if ($temp_file_name == $instrument_id) {
-                        $evaluation_contents = $this->readInstrument($params);
-                        $return['evaluation_contents'] = $evaluation_contents;
-                        return $this->sendResponse($return, 'Success');
-                    } else {
-                        return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
-                    }
+                //update assignment state
+                $evaluation_assignment->assignment_state_id = 3; //selesai
+                $evaluation_assignment->update();
+                $accreditation = AccreditationProposal::find($input['accreditation_proposal_id']);
+                $accreditation->proposal_state_id = 3;
+                $accreditation->update();
+
+
+                $params['file_path'] = $file_path;
+                $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
+                $params['evaluation_id'] = $evaluation->id;
+                $instrument_id = $accreditation->instrument_id;
+                $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
+                if ($temp_file_name == $instrument_id) {
+                    $evaluation_contents = $this->readInstrument($params);
+                    $return['evaluation_contents'] = $evaluation_contents;
+                    return $this->sendResponse($return, 'Success');
+                } else {
+                    return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
+                }
                                        
                 
             } else {

@@ -35,15 +35,19 @@ class EvaluationController extends BaseController implements ICrud
             ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')            
+            ->join('assessors', 'assessors.id', '=', 'evaluations.assessor_id')
+            ->join('instruments', 'accreditation_proposals.instrument_id', '=', 'instruments.id')
             ->select(['accreditation_proposals.proposal_date',
-                'evaluation_assignments.*',
+                //'evaluation_assignments.*',
+                'evaluations.*',
                 'proposal_states.state_name',
-                'institution_requests.category',
+                'instruments.category',
+                'assessors.name as assessor_name',
                 'library_name',
                 'npp',
                 'agency_name',
                 'institution_head_name',
-                'email',
+                
                 'telephone_number',
                 'province_name as province',
                 'city_name as city',
@@ -78,7 +82,7 @@ class EvaluationController extends BaseController implements ICrud
 	 * @param $id
 	 */
 	public function show($id){
-        
+
     }
 
 	/**
