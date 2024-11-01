@@ -241,15 +241,15 @@ class AccreditationController extends BaseController //implements ICrud
             'validated_at' => '',
             'institution_id' => $input['institution_id'],
         ];
-        $temp_inrequest = InstitutionRequest::query()
-            ->where('user_id', '=', $input['user_id'])->first();
-        if (is_object($temp_inrequest)) {
-            $temp_inrequest->save($institution_request);
-            $data['institution_request'] = $temp_inrequest;
-        } else {
+        //$temp_inrequest = InstitutionRequest::query()
+        //    ->where('user_id', '=', $input['user_id'])->first();
+        //if (is_object($temp_inrequest)) {
+        //    $temp_inrequest->save($institution_request);
+        //    $data['institution_request'] = $temp_inrequest;
+        //} else {
             $temp_inrequest = InstitutionRequest::create($institution_request);
             $data['institution_request'] = $temp_inrequest;
-        }
+        //}
 
 
         $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $input['category'])->get();
