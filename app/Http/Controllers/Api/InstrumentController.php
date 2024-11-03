@@ -186,6 +186,30 @@ class InstrumentController extends BaseController
                 ],
             ];
 
+            $styleMainComponent = [
+                'font' => [
+                    'bold' => true,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    //'rotation' => 90,
+                    'startColor' => [
+                        'argb' => 'FFA0A0A0',
+                    ],
+                    /*'endColor' => [
+                        'argb' => 'FFFFFFFF',
+                    ],*/
+                ],
+            ];
+
             $activeWorksheet->getStyle('A2:L2')->applyFromArray($styleArray);
 
             $ins_com = DB::table('instrument_components')
@@ -201,6 +225,9 @@ class InstrumentController extends BaseController
             foreach ($ins_com as $component) {
                 $activeWorksheet->setCellValue('A' . strval($component_row), $butir);
                 $activeWorksheet->setCellValue('B' . strval($component_row), $component->name);
+                $activeWorksheet->setCellValue('M' . strval($component_row), $component->id);
+                $activeWorksheet->getStyle('A'.strval($component_row).':L'.strval($component_row))
+                ->applyFromArray($styleMainComponent);
                 $ins_sub_com = DB::table('instrument_components')
                     ->select('*')
                     ->where('type', '=', 'sub_1')

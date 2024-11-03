@@ -8,6 +8,7 @@ use App\Models\AccreditationContent;
 use App\Models\InstitutionRequest;
 use App\Models\InstrumentAspect;
 use App\Models\InstrumentAspectPoint;
+use App\Models\InstrumentComponent;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -33,26 +34,26 @@ class AccreditationController extends BaseController //implements ICrud
     public function destroy($id)
     {
         $insti_request = InstitutionRequest::where(['accreditation_proposal_id' => $id])->first();
-        if(is_object($insti_request)){
+        if (is_object($insti_request)) {
             $insti_request->delete();
         }
         $accre_files = AccreditationProposalFiles::where(['accreditation_proposal_id' => $id])->get();
-        if($accre_files->count()>0){
-            foreach($accre_files as $file){
+        if ($accre_files->count() > 0) {
+            foreach ($accre_files as $file) {
                 $file->delete();
             }
         }
         $accre_content = AccreditationContent::where(['accreditation_proposal_id' => $id])->get();
-        if($accre_content->count()>0){
-            foreach($accre_content as $row){
+        if ($accre_content->count() > 0) {
+            foreach ($accre_content as $row) {
                 $row->delete();
             }
         }
         $accre_proposal = AccreditationProposal::find($id);
-        if(is_object($accre_proposal)){
+        if (is_object($accre_proposal)) {
             $ret = $accre_proposal->delete();
             return $this->sendResponse([], 'Delete successful', $ret);
-        }else{
+        } else {
             return $this->sendError('Error', 'Object not found!');
         }
     }
@@ -71,7 +72,7 @@ class AccreditationController extends BaseController //implements ICrud
                 ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
                 ->where(['institution_requests.user_id' => $user_id])
                 ->with('proposalState')->get();
-                
+
         }
         if (is_object($accreditation_proposal)) {
             $data['accreditation_proposal'] = $accreditation_proposal;
@@ -115,14 +116,14 @@ class AccreditationController extends BaseController //implements ICrud
         $proposal = AccreditationProposal::where('user_id', '=', $user_id)
             ->whereBetween('proposal_date', [$Y . '-01-01', $Y . '-12-31'])
             ->first();
-        if(is_object($proposal)){
+        if (is_object($proposal)) {
             $data['accreditation_proposal'] = $proposal;
             $message = 'Anda masih memiliki usulan akreditasi pada tahun yang sama!';
             return $this->sendError($data, $message, 500);
-        }else{
+        } else {
             $region = Region::all();
             $category = Instrument::all();
-            $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];            
+            $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
             $data['region'] = $region;
             $data['category'] = $category;
             $data['type'] = $type;
@@ -165,32 +166,32 @@ class AccreditationController extends BaseController //implements ICrud
             'type' => 'required',
             'accreditation_proposal_id' => 'nullable',
             'validated_at' => 'nullable',
-            'institution_id' => 'required'            
+            'institution_id' => 'required'
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
-        $instrument = 
-        $accreditation_proposal = [
-            'institution_id' => $input['institution_id'],
-            'proposal_date' => date('Y-m-d'),
-            'proposal_state_id' => 0,
-            'finish_date' => date('Y-m-d'),
-            'type' => $input['type'],
-            'periode' => date('Y'),
-            'notes' => '',
-            //'accredited_at' => '',
-            'predicate' => '',
-            'certificate_status' => '',
-            //'certificate_expires_at' => '',
-            //'pleno_date' => '',
-            //'certificate_file' => '',
-            //'recommendation_file' => '',
-            'is_valid' => 'tidak_valid',
-            'instrument_id' => $input['category'],
-            'category' => $input['category'],
-            'user_id' => $input['user_id']
-        ];
+        $instrument =
+            $accreditation_proposal = [
+                'institution_id' => $input['institution_id'],
+                'proposal_date' => date('Y-m-d'),
+                'proposal_state_id' => 0,
+                'finish_date' => date('Y-m-d'),
+                'type' => $input['type'],
+                'periode' => date('Y'),
+                'notes' => '',
+                //'accredited_at' => '',
+                'predicate' => '',
+                'certificate_status' => '',
+                //'certificate_expires_at' => '',
+                //'pleno_date' => '',
+                //'certificate_file' => '',
+                //'recommendation_file' => '',
+                'is_valid' => 'tidak_valid',
+                'instrument_id' => $input['category'],
+                'category' => $input['category'],
+                'user_id' => $input['user_id']
+            ];
         //sebelum create cek dulu apakah sudah ada usulan berdasarkan user_di pada tahun yg sama
         $Y = date('Y');
         $proposal = AccreditationProposal::where('user_id', '=', $input['user_id'])
@@ -207,8 +208,8 @@ class AccreditationController extends BaseController //implements ICrud
         if ($request->file()) {
             $file_path = $request->file('registration_form_file')->store($proposal->id);
         } /*else {
-            $file_path = $request->file('registration_form_file')->store($input['user_id']);
-        }*/
+           $file_path = $request->file('registration_form_file')->store($input['user_id']);
+       }*/
 
         $institution_request = [
             'category' => $input['category'],
@@ -247,8 +248,8 @@ class AccreditationController extends BaseController //implements ICrud
         //    $temp_inrequest->save($institution_request);
         //    $data['institution_request'] = $temp_inrequest;
         //} else {
-            $temp_inrequest = InstitutionRequest::create($institution_request);
-            $data['institution_request'] = $temp_inrequest;
+        $temp_inrequest = InstitutionRequest::create($institution_request);
+        $data['institution_request'] = $temp_inrequest;
         //}
 
 
@@ -283,7 +284,7 @@ class AccreditationController extends BaseController //implements ICrud
                     ->where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
                     ->where('proposal_document_id', '=', $input['proposal_document_id'])->first();
 
-                
+
                 if (is_object($accre_files)) {
                     $accre_files->accreditation_proposal_id = $input['accreditation_proposal_id'];
                     $accre_files->proposal_document_id = $input['proposal_document_id'];
@@ -329,7 +330,7 @@ class AccreditationController extends BaseController //implements ICrud
                     if (isset($accre_contents)) {
                         $return['accreditation_contents'] = $accre_contents;
                     }
-                } 
+                }
             } else {
                 return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
             }
@@ -348,19 +349,23 @@ class AccreditationController extends BaseController //implements ICrud
             ->where('accreditation_proposal_id', '=', $id)
             ->with('proposalDocument')
             ->get();
-            //ambil hanya dokumen yg belum diupload
+        //ambil hanya dokumen yg belum diupload
         //$proposal_document = ProposalDocument::query()
         //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
-        $proposal_document = ProposalDocument::join('instruments', 
-        'proposal_documents.instrument_id', '=', 'instruments.id')
-        ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
-        ->whereNotIn('proposal_documents.id', function($query)use($id){
-            $query->select('proposal_document_id')
-            ->from('accreditation_proposal_files')
-            ->where('accreditation_proposal_id', $id);
-        })
-        ->select(['proposal_documents.*'])
-        ->get();
+        $proposal_document = ProposalDocument::join(
+            'instruments',
+            'proposal_documents.instrument_id',
+            '=',
+            'instruments.id'
+        )
+            ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
+            ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
+                $query->select('proposal_document_id')
+                    ->from('accreditation_proposal_files')
+                    ->where('accreditation_proposal_id', $id);
+            })
+            ->select(['proposal_documents.*'])
+            ->get();
         $accreditation_contents = AccreditationContent::query()
             ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
         /*$provinces = Province::all();
@@ -424,22 +429,22 @@ class AccreditationController extends BaseController //implements ICrud
             'validated_at' => 'nullable',
             'institution_id' => 'required',
 
-            
+
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
 
-        
+
         $proposal = AccreditationProposal::find($id);
-        if(is_object($proposal)){
+        if (is_object($proposal)) {
             $proposal->institution_id = $input['institution_id'];
             //$proposal->proposal_date = date('Y-m-d');
             $proposal->finish_date = date('Y-m-d');
             $proposal->type = $input['type'];
             $proposal->instrument_id = $input['category'];
             $proposal->category = $input['category'];
-            if($input['status'] == 'valid'){
+            if ($input['status'] == 'valid') {
                 $proposal->proposal_state_id = 1;
             }
             $proposal->save();
@@ -448,13 +453,13 @@ class AccreditationController extends BaseController //implements ICrud
         if ($request->file()) {
             $file_path = $request->file('registration_form_file')->store($proposal->id);
         } /*else {
-            $file_path = $request->file('registration_form_file')->store($input['user_id']);
-        }*/
-        
+           $file_path = $request->file('registration_form_file')->store($input['user_id']);
+       }*/
+
         $request = InstitutionRequest::query()
-        ->where('accreditation_proposal_id', '=', $id)
-        ->first();
-        if(is_object($request)){
+            ->where('accreditation_proposal_id', '=', $id)
+            ->first();
+        if (is_object($request)) {
             $request->category = $input['category'];
             $request->region_id = $input['region_id'];
             $request->library_name = $input['library_name'];
@@ -497,11 +502,11 @@ class AccreditationController extends BaseController //implements ICrud
             ->delete();
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
-        $start_row = 6;
+        $start_row = 3;
         $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
         $butir = str_replace('.', '', $butir);
         $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
-        $main_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('A1')->getCalculatedValue());
+        $main_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
 
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
@@ -509,68 +514,75 @@ class AccreditationController extends BaseController //implements ICrud
             $butir = str_replace('.', '', $butir);
             $value = trim($spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue());
             $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
-            $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
-            
-            $instrument_aspect = InstrumentAspect::find($aspect_id);
-            $aspect = '-';
-            if(is_object($instrument_aspect)){
-                $aspect = $instrument_aspect->aspect;
+            if (!empty($ins_component_id)) {
+                $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
+                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
+                    ->where('type', '=', 'main')->first();
+                if (is_object($instrument_component)) {
+                    $main_component_id = $instrument_component->id;
+                } 
+                $instrument_aspect = InstrumentAspect::find($aspect_id);
+                $aspect = '-';
+                if (is_object($instrument_aspect)) {
+                    $aspect = $instrument_aspect->aspect;
+                }
+                $instrument_aspect_point = InstrumentAspectPoint::query()
+                    ->where('instrument_aspect_id', '=', $aspect_id)
+                    ->where('value', '=', $value)->first();
+                $statement = '-';
+                if (is_object($instrument_aspect_point)) {
+                    $statement = $instrument_aspect_point->statement;
+                    $value = $instrument_aspect_point->value;
+                } else {
+                    $value = 0;
+                }
+                $accre_content = new AccreditationContent();
+                $accre_content->aspectable_id = $ins_component_id;
+                $accre_content->main_component_id = $main_component_id;
+                $accre_content->instrument_aspect_point_id = $aspect_id;
+                $accre_content->aspect = $aspect;
+                $accre_content->statement = $statement;
+                $accre_content->value = $value;
+                $accre_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
+                $accre_content->butir = $butir;
+                if ($aspect_id != '') {
+                    $accre_content->save();
+                }
+                $obj_instrument->append($accre_content);
             }
-            $instrument_aspect_point = InstrumentAspectPoint::query()
-                ->where('instrument_aspect_id', '=', $aspect_id)
-                ->where('value', '=', $value)->first();
-            $statement = '-'; 
-            if(is_object($instrument_aspect_point)){
-                $statement = $instrument_aspect_point->statement;
-                $value = $instrument_aspect_point->value;
-            }else{
-                $value = 0;
-            }
-            $accre_content = new AccreditationContent();
-            $accre_content->aspectable_id = $ins_component_id;
-            $accre_content->main_component_id = $main_component_id;
-            $accre_content->instrument_aspect_point_id = $aspect_id;
-            $accre_content->aspect = $aspect;
-            $accre_content->statement = $statement;
-            $accre_content->value = $value;
-            $accre_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
-            $accre_content->butir = $butir;
-            if($aspect_id != ''){
-                $accre_content->save();
-            }
-            $obj_instrument->append($accre_content);
             $start_row++;
         }
-        return $obj_instrument->getArrayCopy();;
+        return $obj_instrument->getArrayCopy();
+        ;
     }
 
     public function destroyFile($id)
     {
         $accre_file = AccreditationProposalFiles::where('id', '=', $id)
-        ->delete();
+            ->delete();
         return $this->sendResponse([], 'Delete succesfull', $accre_file);
     }
 
     public function showFile($id)
     {
         $accre_file = AccreditationProposalFiles::find($id);
-        if(is_object($accre_file)){
+        if (is_object($accre_file)) {
             $file_path = $accre_file->file_path;
             $file_name = $accre_file->file_name;
             $file_type = $accre_file->file_type;
-            try{
+            try {
                 $file_content = Storage::get($file_path);
                 return response($file_content, 200)
-                ->header('Content-Type', $file_type) // Set Content-Type header
-                ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                    ->header('Content-Type', $file_type) // Set Content-Type header
+                    ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
                 //return Storage::download($file_path, $accre_file->file_name);
-            }catch(FileNotFoundException $e){
-                return $this->sendError('File not Found','File not available in hard drive!');
-            }            
-                
-        }else{
-            return $this->sendError('Record not Found','Record not available in database!');
+            } catch (FileNotFoundException $e) {
+                return $this->sendError('File not Found', 'File not available in hard drive!');
+            }
+
+        } else {
+            return $this->sendError('Record not Found', 'Record not available in database!');
         }
-        
+
     }
 }
