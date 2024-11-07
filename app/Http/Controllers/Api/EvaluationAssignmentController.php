@@ -204,7 +204,6 @@ class EvaluationAssignmentController extends BaseController
                 $accreditation->proposal_state_id = 3;
                 $accreditation->update();
 
-
                 $params['file_path'] = $file_path;
                 $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
                 $params['evaluation_id'] = $evaluation->id;
