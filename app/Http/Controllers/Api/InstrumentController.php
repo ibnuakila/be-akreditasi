@@ -245,7 +245,7 @@ class InstrumentController extends BaseController
                 $sub_row = $row;
                 foreach ($ins_sub_com as $sub_component) {//looping sub_1 component =========================================
                     
-                    $activeWorksheet->setCellValue('A' . strval($sub_row + 1), $idx_main . '.' . $idx_sub_com);
+                    $activeWorksheet->setCellValue('A' . strval($sub_row + 1), $idx_main . '.' . $idx_sub_com . ' (' .$sub_component->type.')');
                     $activeWorksheet->setCellValue('B' . strval($sub_row + 1), $sub_component->name);
                     $activeWorksheet->getStyle('B' . strval($sub_row + 1))->getAlignment()->setWrapText(true);
 
@@ -267,7 +267,7 @@ class InstrumentController extends BaseController
                         foreach ($ins_aspect as $row_aspect) {//looping multi aspect
                             
                             if (is_null($row_aspect->parent_id)) {
-                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_sub_sub_com_aspect);
+                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_sub_sub_com_aspect . ' (' .$row_aspect->type.')');
                             } else {
                                 $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), '');
                             }
@@ -276,8 +276,8 @@ class InstrumentController extends BaseController
                             $activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
 
                             //$activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getFont()->setColor(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_DARKBLUE);
-                            $activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))
-                                ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
+                            $activeWorksheet->getStyle('A' . strval($sub_sub_row + 1))
+                                ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_GREEN);
                                 
                             //ambil instrument-aspect-points ===================
                             $aspect_points = DB::table('instrument_aspect_points')
@@ -327,8 +327,8 @@ class InstrumentController extends BaseController
                             }
                             $idx_sub_sub_com++;                            
                             $sub_sub_row++;
-                        }
-                        $sub_row = $sub_sub_row;
+                        }//end looping aspect
+                        $sub_row = --$sub_sub_row;
                         $idx_sub_com++;
                         $is_multi_aspect = true;
                     } else {//choice ====================================
@@ -338,7 +338,8 @@ class InstrumentController extends BaseController
                         $sub_sub_row = $sub_row + 1;
                         foreach ($ins_sub_sub_com as $sub_sub_component) {//looping sub_2 component =============================
                             
-                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com);
+                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com .
+                            ' (' .$sub_sub_component->type.')');
                             $activeWorksheet->setCellValue('B' . strval($sub_sub_row + 1), $sub_sub_component->name);
                             $activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
 
@@ -355,11 +356,13 @@ class InstrumentController extends BaseController
                                 foreach ($instrument_aspect as $row_aspect) {//looping aspect ============================
                                     
                                     if (is_null($row_aspect->parent_id)) {                                        
-                                        $activeWorksheet->setCellValue('A' . strval($aspect_row + 1), $idx_sub_sub_com_aspect);
+                                        $activeWorksheet->setCellValue('A' . strval($aspect_row + 1), $idx_sub_sub_com_aspect . ' (' . $row_aspect->type . ')');
                                     } else {
                                         $activeWorksheet->setCellValue('A' . strval($aspect_row + 1), '');
                                     }
-                                                                        
+                                    $activeWorksheet->getStyle('A' . strval($aspect_row + 1))
+                                        ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_MAGENTA);
+
                                     $activeWorksheet->setCellValue('B' . strval($aspect_row + 1), $row_aspect->aspect);
                                     $activeWorksheet->getStyle('B' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
                                     if (is_null($row_aspect->parent_id)) {
@@ -408,17 +411,19 @@ class InstrumentController extends BaseController
                                     $activeWorksheet->setCellValue('N' . strval($aspect_row + 1), $row_aspect->instrument_component_id);
                                     
                                     $aspect_row++;
-                                }
-                                $sub_sub_row = $aspect_row;
+                                }//end looping aspect
+                                
                             }
 
                             $idx_sub_sub_com++;
-                            $sub_sub_row++;
-                        }
+                            $sub_sub_row = $aspect_row;
+                            //$sub_sub_row++;
+                        }//end looping sub_2 component
 
                         $idx_sub_com++;
-                        $sub_row = $sub_sub_row;
+                        
                     }
+                    $sub_row = $sub_sub_row;
                     $sub_row++;
                 }
                 
