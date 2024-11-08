@@ -242,12 +242,12 @@ class InstrumentController extends BaseController
                 //$data['instrument_component_sub_1'] = $ins_sub_com;
                 $idx_sub_com = 1;
                 $idx_sub_sub_com_aspect = 1;
-                $sub_row = $row;
+                $sub_row = $row + 1;
                 foreach ($ins_sub_com as $sub_component) {//looping sub_1 component =========================================
                     
-                    $activeWorksheet->setCellValue('A' . strval($sub_row + 1), $idx_main . '.' . $idx_sub_com . ' (' .$sub_component->type.')');
-                    $activeWorksheet->setCellValue('B' . strval($sub_row + 1), $sub_component->name);
-                    $activeWorksheet->getStyle('B' . strval($sub_row + 1))->getAlignment()->setWrapText(true);
+                    $activeWorksheet->setCellValue('A' . strval($sub_row ), $idx_main . '.' . $idx_sub_com . ' (' .$sub_component->type.')');
+                    $activeWorksheet->setCellValue('B' . strval($sub_row ), $sub_component->name);
+                    $activeWorksheet->getStyle('B' . strval($sub_row ))->getAlignment()->setWrapText(true);
 
                     $ins_sub_sub_com = DB::table('instrument_components')//query sub_2 component
                         ->select('*')
@@ -268,16 +268,16 @@ class InstrumentController extends BaseController
                         foreach ($ins_aspect as $row_aspect) {//looping multi aspect
                             
                             if (is_null($row_aspect->parent_id)) {
-                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_sub_sub_com_aspect . ' (' .$row_aspect->type.')');
+                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_sub_sub_com_aspect . ' (' .$row_aspect->type.')');
                             } else {
-                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), '');
+                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), '');
                             }
                                                         
-                            $activeWorksheet->setCellValue('B' . strval($sub_sub_row + 1),  $row_aspect->aspect);
-                            $activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('B' . strval($sub_sub_row ),  $row_aspect->aspect);
+                            $activeWorksheet->getStyle('B' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
 
                             //$activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getFont()->setColor(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_DARKBLUE);
-                            $activeWorksheet->getStyle('A' . strval($sub_sub_row + 1))
+                            $activeWorksheet->getStyle('A' . strval($sub_sub_row ))
                                 ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_GREEN);
                                 
                             //ambil instrument-aspect-points ===================
@@ -294,34 +294,34 @@ class InstrumentController extends BaseController
                             $obj_2 = $array_asp_points[2];
                             $obj_3 = $array_asp_points[3];
                             $obj_4 = $array_asp_points[4];
-                            $activeWorksheet->setCellValue('C' . strval($sub_sub_row + 1), $obj_0->statement);
-                            $activeWorksheet->getStyle('C' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
-                            $activeWorksheet->setCellValue('D' . strval($sub_sub_row + 1), $obj_1->statement);
-                            $activeWorksheet->getStyle('D' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
-                            $activeWorksheet->setCellValue('E' . strval($sub_sub_row + 1), $obj_2->statement);
-                            $activeWorksheet->getStyle('E' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
-                            $activeWorksheet->setCellValue('F' . strval($sub_sub_row + 1), $obj_3->statement);
-                            $activeWorksheet->getStyle('F' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
-                            $activeWorksheet->setCellValue('G' . strval($sub_sub_row + 1), $obj_4->statement);
-                            $activeWorksheet->getStyle('G' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('C' . strval($sub_sub_row ), $obj_0->statement);
+                            $activeWorksheet->getStyle('C' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('D' . strval($sub_sub_row ), $obj_1->statement);
+                            $activeWorksheet->getStyle('D' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('E' . strval($sub_sub_row ), $obj_2->statement);
+                            $activeWorksheet->getStyle('E' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('F' . strval($sub_sub_row ), $obj_3->statement);
+                            $activeWorksheet->getStyle('F' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('G' . strval($sub_sub_row ), $obj_4->statement);
+                            $activeWorksheet->getStyle('G' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
 
-                            $activeWorksheet->getStyle('H' . strval($sub_sub_row + 1))->getFill()
+                            $activeWorksheet->getStyle('H' . strval($sub_sub_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('f8fc03');
-                            $activeWorksheet->getStyle('I' . strval($sub_sub_row + 1))->getFill()
+                            $activeWorksheet->getStyle('I' . strval($sub_sub_row ))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('dafcb1');
-                            $activeWorksheet->getStyle('J' . strval($sub_sub_row + 1))->getFill()
+                            $activeWorksheet->getStyle('J' . strval($sub_sub_row ))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('dafcb1');
-                            $activeWorksheet->getStyle('K' . strval($sub_sub_row + 1))->getFill()
+                            $activeWorksheet->getStyle('K' . strval($sub_sub_row ))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('dafcb1');
-                            $activeWorksheet->getStyle('L' . strval($sub_sub_row + 1))->getFill()
+                            $activeWorksheet->getStyle('L' . strval($sub_sub_row ))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('dafcb1');
-                            $activeWorksheet->setCellValue('M' . strval($sub_sub_row + 1), $row_aspect->id);
-                            $activeWorksheet->setCellValue('N' . strval($sub_sub_row + 1), $row_aspect->instrument_component_id);
+                            $activeWorksheet->setCellValue('M' . strval($sub_sub_row ), $row_aspect->id);
+                            $activeWorksheet->setCellValue('N' . strval($sub_sub_row ), $row_aspect->instrument_component_id);
                             
                             if (is_null($row_aspect->parent_id)) {
                                 $idx_sub_sub_com_aspect++;
@@ -339,10 +339,10 @@ class InstrumentController extends BaseController
                         $sub_sub_row = $sub_row + 1;
                         foreach ($ins_sub_sub_com as $sub_sub_component) {//looping sub_2 component =============================
                             
-                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row + 1), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com .
+                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com .
                             ' (' .$sub_sub_component->type.')');
-                            $activeWorksheet->setCellValue('B' . strval($sub_sub_row + 1), $sub_sub_component->name);
-                            $activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getAlignment()->setWrapText(true);
+                            $activeWorksheet->setCellValue('B' . strval($sub_sub_row ), $sub_sub_component->name);
+                            $activeWorksheet->getStyle('B' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
 
                             //ambil data aspect =============================
                             $instrument_aspect = DB::table('instrument_components')//query aspect
@@ -357,15 +357,15 @@ class InstrumentController extends BaseController
                                 foreach ($instrument_aspect as $row_aspect) {//looping aspect ============================
                                     
                                     if (is_null($row_aspect->parent_id)) {                                        
-                                        $activeWorksheet->setCellValue('A' . strval($aspect_row + 1), $idx_sub_sub_com_aspect . ' (' . $row_aspect->type . ')');
+                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), $idx_sub_sub_com_aspect . ' (' . $row_aspect->type . ')');
                                     } else {
-                                        $activeWorksheet->setCellValue('A' . strval($aspect_row + 1), '');
+                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), '');
                                     }
-                                    $activeWorksheet->getStyle('A' . strval($aspect_row + 1))
+                                    $activeWorksheet->getStyle('A' . strval($aspect_row ))
                                         ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_MAGENTA);
 
-                                    $activeWorksheet->setCellValue('B' . strval($aspect_row + 1), $row_aspect->aspect);
-                                    $activeWorksheet->getStyle('B' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('B' . strval($aspect_row ), $row_aspect->aspect);
+                                    $activeWorksheet->getStyle('B' . strval($aspect_row ))->getAlignment()->setWrapText(true);
                                     if (is_null($row_aspect->parent_id)) {
                                         $idx_sub_sub_com_aspect++;
                                     }
@@ -382,34 +382,34 @@ class InstrumentController extends BaseController
                                     $obj_2 = $array_asp_points[2];
                                     $obj_3 = $array_asp_points[3];
                                     $obj_4 = $array_asp_points[4];
-                                    $activeWorksheet->setCellValue('C' . strval($aspect_row + 1), $obj_0->statement);
-                                    $activeWorksheet->getStyle('C' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
-                                    $activeWorksheet->setCellValue('D' . strval($aspect_row + 1), $obj_1->statement);
-                                    $activeWorksheet->getStyle('D' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
-                                    $activeWorksheet->setCellValue('E' . strval($aspect_row + 1), $obj_2->statement);
-                                    $activeWorksheet->getStyle('E' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
-                                    $activeWorksheet->setCellValue('F' . strval($aspect_row + 1), $obj_3->statement);
-                                    $activeWorksheet->getStyle('F' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
-                                    $activeWorksheet->setCellValue('G' . strval($aspect_row + 1), $obj_4->statement);
-                                    $activeWorksheet->getStyle('G' . strval($aspect_row + 1))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('C' . strval($aspect_row ), $obj_0->statement);
+                                    $activeWorksheet->getStyle('C' . strval($aspect_row ))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('D' . strval($aspect_row ), $obj_1->statement);
+                                    $activeWorksheet->getStyle('D' . strval($aspect_row ))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('E' . strval($aspect_row ), $obj_2->statement);
+                                    $activeWorksheet->getStyle('E' . strval($aspect_row ))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('F' . strval($aspect_row ), $obj_3->statement);
+                                    $activeWorksheet->getStyle('F' . strval($aspect_row ))->getAlignment()->setWrapText(true);
+                                    $activeWorksheet->setCellValue('G' . strval($aspect_row ), $obj_4->statement);
+                                    $activeWorksheet->getStyle('G' . strval($aspect_row ))->getAlignment()->setWrapText(true);
 
-                                    $activeWorksheet->getStyle('H' . strval($aspect_row + 1))->getFill()
+                                    $activeWorksheet->getStyle('H' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('f8fc03');
-                                    $activeWorksheet->getStyle('I' . strval($aspect_row + 1))->getFill()
+                                    $activeWorksheet->getStyle('I' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('dafcb1');
-                                    $activeWorksheet->getStyle('J' . strval($aspect_row + 1))->getFill()
+                                    $activeWorksheet->getStyle('J' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('dafcb1');
-                                    $activeWorksheet->getStyle('K' . strval($aspect_row + 1))->getFill()
+                                    $activeWorksheet->getStyle('K' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('dafcb1');
-                                    $activeWorksheet->getStyle('L' . strval($aspect_row + 1))->getFill()
+                                    $activeWorksheet->getStyle('L' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('dafcb1');
-                                    $activeWorksheet->setCellValue('M' . strval($aspect_row + 1), $row_aspect->id);
-                                    $activeWorksheet->setCellValue('N' . strval($aspect_row + 1), $row_aspect->instrument_component_id);
+                                    $activeWorksheet->setCellValue('M' . strval($aspect_row ), $row_aspect->id);
+                                    $activeWorksheet->setCellValue('N' . strval($aspect_row ), $row_aspect->instrument_component_id);
                                     
                                     $aspect_row++;
                                 }//end looping aspect
@@ -425,11 +425,11 @@ class InstrumentController extends BaseController
                         
                     }//end choice
                     $sub_row = $sub_sub_row;
-                    $sub_row++;
+                    //$sub_row++;
                 }//looping sub_1 component
                 
                 $row = $sub_row;
-                $row++;
+                //$row++;
                 $idx_main++;
             }//end loop main component
 
