@@ -256,14 +256,15 @@ class InstrumentController extends BaseController
                         ->where('instrument_id', '=', $category)
                         ->get();
                     //$is_multi_aspect = false;
+                    $idx_sub_sub_com = 1;
+                    $sub_sub_row = $sub_row + 1;
                     if ($ins_sub_sub_com->count() == 0) {//khusus multi aspect ==================
                         //ambil data aspects ==================================
                         $ins_aspect = DB::table('instrument_aspects')//query aspect untuk multi-aspect
                             ->where('instrument_id', '=', $category)
                             ->where('instrument_component_id', '=', $sub_component->id)
                             ->get();
-                        $idx_sub_sub_com = 1;
-                        $sub_sub_row = $sub_row + 1;
+                        
                         foreach ($ins_aspect as $row_aspect) {//looping multi aspect
                             
                             if (is_null($row_aspect->parent_id)) {
@@ -328,7 +329,7 @@ class InstrumentController extends BaseController
                             $idx_sub_sub_com++;                            
                             $sub_sub_row++;
                         }//end looping aspect
-                        $sub_row = --$sub_sub_row;
+                        $sub_row = $sub_sub_row;
                         $idx_sub_com++;
                         $is_multi_aspect = true;
                     } else {//choice ====================================
@@ -422,15 +423,15 @@ class InstrumentController extends BaseController
 
                         $idx_sub_com++;
                         
-                    }
+                    }//end choice
                     $sub_row = $sub_sub_row;
                     $sub_row++;
-                }
+                }//looping sub_1 component
                 
                 $row = $sub_row;
                 $row++;
                 $idx_main++;
-            }
+            }//end loop main component
 
             $styleBorder = [
                 'borders' => [
