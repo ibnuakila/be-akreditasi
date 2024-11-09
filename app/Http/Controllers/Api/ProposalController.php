@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\AccreditationProposalResource;
+use App\Models\AccreditationContent;
 use App\Models\InstitutionRequest;
 use ArrayObject;
 use File;
@@ -15,6 +16,8 @@ use App\Models\Instrument;
 use App\Models\Province;
 use App\Models\Region;
 use App\Models\ProvinceRegion;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Storage;
 class ProposalController extends BaseController
@@ -123,15 +126,38 @@ class ProposalController extends BaseController
             ->where(['accreditation_proposal_id' => $id])
             ->with('proposalDocument')
             ->get();
+        $accre_contents = AccreditationContent::query()
+        //$results = DB::table('accreditation_contents')
+            ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+            ->select(
+                'instrument_components.name',
+                'instrument_components.weight',
+                DB::raw('SUM(value) as skor'),
+                DB::raw('(SUM(value) * instrument_components.weight) / 100 as total_skor'),
+                'main_component_id'
+            )
+            ->where('accreditation_proposal_id', $id)
+            ->groupBy('main_component_id', 'instrument_components.name', 'instrument_components.weight')
+            ->get();
+
         $proposal_states = ProposalState::all();
         $is_valid = [['label' => 'Valid', 'value' => 'valid'], 
             ['label' => 'Tidak Valid', 'value' => 'tidak_valid']];
+        $certicate_status = [
+            ['label' => 'Cetak Sertifikat', 'value'=> 'cetak_sertifikat'],
+            ['label'=> 'Dikirim', 'value'=> 'dikirim'],
+            ['label'=> 'Ditandatangani', 'value' => 'ditandatangani'],
+            ['label' => 'Terakreditasi', 'value' => 'terakreditasi'],
+        ];
 
         $data['accreditation_proposal'] = $accreditation;
         $data['institution_request'] = $institution_request;
         $data['accreditation_proposal_files'] = $accre_files;
         $data['proposal_states'] = $proposal_states;
+        $data['certificate_status'] = $certicate_status;
         $data['is_valid'] = $is_valid;
+        $data['accreditation_content_skor'] = $accre_contents; 
+        
 
         if (is_null($accreditation)) {
             return $this->sendError('Proposal not found!');
@@ -182,7 +208,7 @@ class ProposalController extends BaseController
      * @param request
      * @param model
      */
-    public function update(Request $request, AccreditationProposal $model)
+    public function update(Request $request, $id)
     {
         $input = $request->all();
 
@@ -198,20 +224,80 @@ class ProposalController extends BaseController
             'certificate_status' => 'nullable',
             'certificate_expires_at' => 'nullable',
             'pleno_date' => 'nullable',
-            'certificate_file' => 'nullable',
-            'recommendation_file' => 'nullable',
+            'certificate_file' => ['nullable', 'extensions:pdf', 'max:2048'],
+            'recommendation_file' => ['nullable', 'extensions:pdf', 'max:2048'],
             'is_valid' => 'required',
-            'instrument_id' => 'nullable',
-            'category' => 'nullable'
+            'instrument_id' => 'required',
+            'category' => 'required'
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
-        
-        $model->update($input);
-
+        $model = AccreditationProposal::find($id);
+        if(is_object($model)) {
+            $model->institution_id = $input['institution_id'];
+            $model->proposal_date = $input['proposal_date'];
+            $model->proposal_state_id = $input['proposal_state_id'];
+            $model->finish_date = $input['finish_date'];
+            $model->type = $input['type'];
+            $model->notes = $input['notes'];
+            $model->accredited_at = $input['accredited_at'];
+            $model->predicate = $input['predicate'];
+            $model->certificate_status = $input['certificate_status'];
+            $model->certificate_expires_at = $input['certificate_expires_at'];
+            $model->pleno_date = $input['pleno_date'];
+            $model->is_valid = $input['is_valid'];
+            $model->instrument_id = $input['instrument_id'];
+            $model->category = $input['category'];
+            //certificate-file
+            if($request->file('certificate_file')){
+                $file_certificate = $request->file('certificate_file')->store('certifications/'.$model->id.'/');
+                $model->certificate_file = $file_certificate;
+            }
+            if($request->file('recommendation_file')){
+                $file_recommendation = $request->file('recommendation_file')->store('recommendations/'.$model->id.'/');
+                $model->recommendation_file = $file_recommendation;
+            }
+            $model->update($input);
+        }else{
+            $this->sendError('Error', 'Object not found!');
+        }
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
+    }
+
+    public function showFile($id, $file)
+    {
+        $accre_file = AccreditationProposal::find($id);
+            
+        /*if($file == 'certificate_file'){
+            $accre_file->where('certificate_file','=', $file)->first();
+        }elseif($file == 'recommendation_file'){
+            $accre_file->where('recommendation_file', '=', $file)->first();
+        }*/
+        //return json_encode($accre_file);
+        if (is_object($accre_file)) {
+            if($file == 'certificate_file'){
+                $file_path = $accre_file->certificate_file;
+                $file_name = 'certificate_file.pdf';
+            }elseif($file == 'recommendation_file'){
+                $file_path = $accre_file->recommendation_file;
+                $file_name = 'recommendation_file.pdf';
+            }
+            try {
+                $file_content = Storage::get($file_path);
+                return response($file_content, 200)
+                    ->header('Content-Type', 'application/pdf') // Set Content-Type header
+                    ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                //return Storage::download($file_path, $accre_file->file_name);
+            } catch (FileNotFoundException $e) {
+                return $this->sendError('File not Found', 'File not available in hard drive!');
+            }
+
+        } else {
+            return $this->sendError('Record not Found', 'Record not available in database!');
+        }
+
     }
     
     

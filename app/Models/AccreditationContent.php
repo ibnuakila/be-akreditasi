@@ -17,6 +17,7 @@ class AccreditationContent extends Model
         'statement',
         'value',
         'type',
+        'aspectable_type',
         'aspectable_id',
         'main_component_id',
         'instrument_aspect_point_id',

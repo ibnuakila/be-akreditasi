@@ -206,7 +206,7 @@ class AccreditationController extends BaseController //implements ICrud
         $data['accreditation_proposal'] = $proposal;
         $file_path = '';
         if ($request->file()) {
-            $file_path = $request->file('registration_form_file')->store($proposal->id);
+            $file_path = $request->file('registration_form_file')->store('institutions/forms/');
         } /*else {
            $file_path = $request->file('registration_form_file')->store($input['user_id']);
        }*/
@@ -435,7 +435,6 @@ class AccreditationController extends BaseController //implements ICrud
             return $this->sendError('Validation Error!', $validator->errors());
         }
 
-
         $proposal = AccreditationProposal::find($id);
         if (is_object($proposal)) {
             $proposal->institution_id = $input['institution_id'];
@@ -483,7 +482,7 @@ class AccreditationController extends BaseController //implements ICrud
             $request->registration_form_file = $file_path;
             $request->title_count = $input['title_count'];
             $request->user_id = $input['user_id'];
-            $request->status = 'tidak_valid';
+            $request->status = $input['status'];
             $request->last_predicate = $input['last_predicate'];
             $request->last_certification_date = $input['last_certification_date'];
             //$request->type = $input['type'];
@@ -516,8 +515,8 @@ class AccreditationController extends BaseController //implements ICrud
             $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
             if (!empty($ins_component_id)) {
                 $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
-                    ->where('type', '=', 'main')->first();
+                $instrument_component = InstrumentComponent::find($ins_component_id);
+                    //->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {
                     $main_component_id = $instrument_component->id;
                 } 
@@ -529,17 +528,24 @@ class AccreditationController extends BaseController //implements ICrud
                 $instrument_aspect_point = InstrumentAspectPoint::query()
                     ->where('instrument_aspect_id', '=', $aspect_id)
                     ->where('value', '=', $value)->first();
-                $statement = '-';
+                $statement = '-'; $instrument_aspect_point_id = '';
                 if (is_object($instrument_aspect_point)) {
                     $statement = $instrument_aspect_point->statement;
                     $value = $instrument_aspect_point->value;
+                    $instrument_aspect_point_id = $instrument_aspect_point->id;
                 } else {
                     $value = 0;
                 }
                 $accre_content = new AccreditationContent();
-                $accre_content->aspectable_id = $ins_component_id;
+                $accre_content->aspectable_id = $aspect_id;
                 $accre_content->main_component_id = $main_component_id;
-                $accre_content->instrument_aspect_point_id = $aspect_id;
+                $accre_content->instrument_aspect_point_id = $instrument_aspect_point_id;
+                if($instrument_aspect_point_id==''){
+                    $accre_content->aspectable_type = 'App\Models\InstrumentComponent';
+                }else{
+                    $accre_content->aspectable_type = 'App\Models\InstrumentAspect';
+                }
+                
                 $accre_content->aspect = $aspect;
                 $accre_content->statement = $statement;
                 $accre_content->value = $value;

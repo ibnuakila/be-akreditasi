@@ -245,7 +245,7 @@ class InstrumentController extends BaseController
                 $sub_row = $row + 1;
                 foreach ($ins_sub_com as $sub_component) {//looping sub_1 component =========================================
                     
-                    $activeWorksheet->setCellValue('A' . strval($sub_row ), $idx_main . '.' . $idx_sub_com . ' (' .$sub_component->type.')');
+                    $activeWorksheet->setCellValue('A' . strval($sub_row ), $idx_main . '.' . $idx_sub_com);
                     $activeWorksheet->setCellValue('B' . strval($sub_row ), $sub_component->name);
                     $activeWorksheet->getStyle('B' . strval($sub_row ))->getAlignment()->setWrapText(true);
 
@@ -268,9 +268,9 @@ class InstrumentController extends BaseController
                         foreach ($ins_aspect as $row_aspect) {//looping multi aspect
                             
                             if (is_null($row_aspect->parent_id)) {
-                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_sub_sub_com_aspect . ' (' .$row_aspect->type.')');
+                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_sub_sub_com_aspect);
                             } else {
-                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), '');
+                                $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), '0');
                             }
                                                         
                             $activeWorksheet->setCellValue('B' . strval($sub_sub_row ),  $row_aspect->aspect);
@@ -278,7 +278,7 @@ class InstrumentController extends BaseController
 
                             //$activeWorksheet->getStyle('B' . strval($sub_sub_row + 1))->getFont()->setColor(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_DARKBLUE);
                             $activeWorksheet->getStyle('A' . strval($sub_sub_row ))
-                                ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_GREEN);
+                                ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_DARKBLUE);
                                 
                             //ambil instrument-aspect-points ===================
                             $aspect_points = DB::table('instrument_aspect_points')
@@ -320,8 +320,9 @@ class InstrumentController extends BaseController
                             $activeWorksheet->getStyle('L' . strval($sub_sub_row ))->getFill()
                                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('dafcb1');
-                            $activeWorksheet->setCellValue('M' . strval($sub_sub_row ), $row_aspect->id);
-                            $activeWorksheet->setCellValue('N' . strval($sub_sub_row ), $row_aspect->instrument_component_id);
+                            $activeWorksheet->setCellValue('M' . strval($sub_sub_row ), $row_aspect->instrument_component_id);
+                            $activeWorksheet->setCellValue('N' . strval($sub_sub_row ), $row_aspect->id);//instrument_aspects.id
+                            //$activeWorksheet->setCellValue('O' . strval($sub_sub_row ), $row_aspect->);
                             
                             if (is_null($row_aspect->parent_id)) {
                                 $idx_sub_sub_com_aspect++;
@@ -339,8 +340,7 @@ class InstrumentController extends BaseController
                         $sub_sub_row = $sub_row + 1;
                         foreach ($ins_sub_sub_com as $sub_sub_component) {//looping sub_2 component =============================
                             
-                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com .
-                            ' (' .$sub_sub_component->type.')');
+                            $activeWorksheet->setCellValue('A' . strval($sub_sub_row ), $idx_main.'.'.$idx_sub_com.'.'.$idx_sub_sub_com);
                             $activeWorksheet->setCellValue('B' . strval($sub_sub_row ), $sub_sub_component->name);
                             $activeWorksheet->getStyle('B' . strval($sub_sub_row ))->getAlignment()->setWrapText(true);
 
@@ -357,12 +357,12 @@ class InstrumentController extends BaseController
                                 foreach ($instrument_aspect as $row_aspect) {//looping aspect ============================
                                     
                                     if (is_null($row_aspect->parent_id)) {                                        
-                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), $idx_sub_sub_com_aspect . ' (' . $row_aspect->type . ')');
+                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), $idx_sub_sub_com_aspect);
                                     } else {
-                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), '');
+                                        $activeWorksheet->setCellValue('A' . strval($aspect_row ), '0');
                                     }
                                     $activeWorksheet->getStyle('A' . strval($aspect_row ))
-                                        ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_MAGENTA);
+                                        ->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_DARKBLUE);
 
                                     $activeWorksheet->setCellValue('B' . strval($aspect_row ), $row_aspect->aspect);
                                     $activeWorksheet->getStyle('B' . strval($aspect_row ))->getAlignment()->setWrapText(true);
@@ -408,8 +408,9 @@ class InstrumentController extends BaseController
                                     $activeWorksheet->getStyle('L' . strval($aspect_row ))->getFill()
                                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                                         ->getStartColor()->setARGB('dafcb1');
-                                    $activeWorksheet->setCellValue('M' . strval($aspect_row ), $row_aspect->id);
-                                    $activeWorksheet->setCellValue('N' . strval($aspect_row ), $row_aspect->instrument_component_id);
+                                    $activeWorksheet->setCellValue('M' . strval($aspect_row ), $row_aspect->instrument_component_id);
+                                    $activeWorksheet->setCellValue('N' . strval($aspect_row ), $row_aspect->id);//instrument_aspects.id
+                                    //$activeWorksheet->setCellValue('O' . strval($aspect_row ), $row_aspect->instrument_component_id);
                                     
                                     $aspect_row++;
                                 }//end looping aspect
@@ -418,18 +419,18 @@ class InstrumentController extends BaseController
 
                             $idx_sub_sub_com++;
                             $sub_sub_row = $aspect_row;
-                            //$sub_sub_row++;
+                            
                         }//end looping sub_2 component
 
                         $idx_sub_com++;
                         
                     }//end choice
                     $sub_row = $sub_sub_row;
-                    //$sub_row++;
+                    
                 }//looping sub_1 component
                 
                 $row = $sub_row;
-                //$row++;
+                
                 $idx_main++;
             }//end loop main component
 

@@ -107,8 +107,9 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/proposal/store', [ProposalController::class, 'store']);
     Route::post('/proposal/store-files', [ProposalController::class, 'storefiles']);
     Route::get('/proposal/show/{id}', [ProposalController::class, 'show']);
-    Route::put('/proposal/update/{model}', [ProposalController::class, 'update']);
+    Route::post('/proposal/update/{id}', [ProposalController::class, 'update']);
     Route::delete('/proposal/destroy/{model}', [ProposalController::class, 'destroy']);
+    Route::get('/proposal/show-file/{id}/{file}', [ProposalController::class, 'showFile']);
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
