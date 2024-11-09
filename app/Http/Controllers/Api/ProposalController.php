@@ -263,7 +263,7 @@ class ProposalController extends BaseController
         }else{
             $this->sendError('Error', 'Object not found!');
         }
-        return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!');
+        return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
     }
 
     public function showFile($id, $file)
