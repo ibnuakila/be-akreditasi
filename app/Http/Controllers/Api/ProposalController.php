@@ -239,8 +239,8 @@ class ProposalController extends BaseController
             'certificate_status' => 'nullable',
             'certificate_expires_at' => 'nullable',
             'pleno_date' => 'nullable',
-            'certificate_file' => ['nullable', 'extensions:pdf', 'max:2048'],
-            'recommendation_file' => ['nullable', 'extensions:pdf', 'max:2048'],
+            'certificate_file' => ['required', 'extensions:pdf', 'max:2048'],
+            'recommendation_file' => ['required', 'extensions:pdf', 'max:2048'],
             'is_valid' => 'required',
             'instrument_id' => 'required',
             'category' => 'required'
@@ -266,19 +266,16 @@ class ProposalController extends BaseController
             $model->instrument_id = $input['instrument_id'];
             $model->category = $input['category'];
             //certificate-file
-            if($request->file('certificate_file')){
+            if($request->file()){
                 $directory = 'certifications/'.$model->id;
-                $file_certificate = $request->file('certificate_file')->store(($directory.'/'.$request->file('certificate_file')->getClientOriginalName()),
-                    'public' );
+                $file_certificate = $request->file('certificate_file')->store($directory);
                 $model->certificate_file = $file_certificate;//Storage::url($file_certificate);
-            }
-            if($request->file('recommendation_file')){
                 $directory = 'recommendations/'.$model->id;
-                $file_recommendation = $request->file('recommendation_file')->store(($directory.'/'.$request->file('recommendation_file')->getClientOriginalName()),
-                'public' );
+                $file_recommendation = $request->file('recommendation_file')->store($directory);
                 $model->recommendation_file = $file_recommendation;//Storage::url($file_recommendation);
             }
-            $model->update($input);
+            
+            $model->save();
         }else{
             $this->sendError('Error', 'Object not found!');
         }
