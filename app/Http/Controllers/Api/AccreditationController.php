@@ -275,7 +275,7 @@ class AccreditationController extends BaseController //implements ICrud
         if ($request->file()) {
             $document = ProposalDocument::find($input['proposal_document_id']);
             $file_name = $request->file('file')->getClientOriginalName();
-            $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
+            $file_type = $request->file('file')->getMimeType(); //getClientOriginalExtension() //; //getClientMimeType();
             $file_path = $request->file('file')->store($input['accreditation_proposal_id']);
             $accreditation = AccreditationProposal::find($input['accreditation_proposal_id']);
             if (is_object($accreditation)) {
