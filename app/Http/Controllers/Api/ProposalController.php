@@ -126,7 +126,7 @@ class ProposalController extends BaseController
             ->where(['accreditation_proposal_id' => $id])
             ->with('proposalDocument')
             ->get();
-        $accre_contents = AccreditationContent::query()
+        /*$accre_contents = AccreditationContent::query()
         //$results = DB::table('accreditation_contents')
             ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
             ->select(
@@ -138,6 +138,21 @@ class ProposalController extends BaseController
             )
             ->where('accreditation_proposal_id', $id)
             ->groupBy('main_component_id', 'instrument_components.name', 'instrument_components.weight')
+            ->get();*/
+            $accre_contents = DB::table('evaluation_contents')
+            ->join('accreditation_contents', 'evaluation_contents.accreditation_content_id', '=', 'accreditation_contents.id')
+            ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+            ->select(
+                'instrument_components.name',
+                'instrument_components.weight',
+                DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
+                DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
+                DB::raw('SUM(evaluation_contents.value) as nilai_evaluasi'),
+                DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
+                'accreditation_contents.main_component_id'
+            )
+            ->where('accreditation_proposal_id', $id)
+            ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
             ->get();
 
         $proposal_states = ProposalState::all();
@@ -156,7 +171,7 @@ class ProposalController extends BaseController
         $data['proposal_states'] = $proposal_states;
         $data['certificate_status'] = $certicate_status;
         $data['is_valid'] = $is_valid;
-        $data['accreditation_content_skor'] = $accre_contents; 
+        $data['accreditation_evaluation'] = $accre_contents; 
         
 
         if (is_null($accreditation)) {
