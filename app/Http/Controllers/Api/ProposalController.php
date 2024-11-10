@@ -253,14 +253,14 @@ class ProposalController extends BaseController
             //certificate-file
             if($request->file('certificate_file')){
                 $directory = 'certifications/'.$model->id;
-                $file_certificate = $request->file('certificate_file')->store(($directory),
-                    $request->file('certificate_file')->getClientOriginalName() );
+                $file_certificate = $request->file('certificate_file')->store(($directory.'/'.$request->file('certificate_file')->getClientOriginalName()),
+                    'public' );
                 $model->certificate_file = $file_certificate;//Storage::url($file_certificate);
             }
             if($request->file('recommendation_file')){
                 $directory = 'recommendations/'.$model->id;
-                $file_recommendation = $request->file('recommendation_file')->store(($directory),
-                $request->file('recommendation_file')->getClientOriginalName() );
+                $file_recommendation = $request->file('recommendation_file')->store(($directory.'/'.$request->file('recommendation_file')->getClientOriginalName()),
+                'public' );
                 $model->recommendation_file = $file_recommendation;//Storage::url($file_recommendation);
             }
             $model->update($input);
