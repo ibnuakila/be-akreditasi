@@ -504,7 +504,7 @@ class AccreditationController extends BaseController //implements ICrud
         $start_row = 3;
         $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
         $butir = str_replace('.', '', $butir);
-        $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
+        //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
         $main_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
 
         $obj_instrument = new \ArrayObject();
