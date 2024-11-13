@@ -63,7 +63,7 @@ class AccreditationController extends BaseController //implements ICrud
         $institution_request = InstitutionRequest::query()
             ->where(['user_id' => $user_id])->get();
         if (is_object($institution_request)) {
-            $data['institution_request'] = $institution_request;
+            //$data['institution_request'] = $institution_request;
         }
         $accreditation_proposal = null;
         if (is_object($institution_request)) {
@@ -450,7 +450,7 @@ class AccreditationController extends BaseController //implements ICrud
         }
         $file_path = '';
         if ($request->file()) {
-            $file_path = $request->file('registration_form_file')->store($proposal->id);
+            //$file_path = $request->file('registration_form_file')->store($proposal->id);
         } /*else {
            $file_path = $request->file('registration_form_file')->store($input['user_id']);
        }*/
