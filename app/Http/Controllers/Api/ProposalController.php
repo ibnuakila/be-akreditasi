@@ -170,7 +170,7 @@ class ProposalController extends BaseController
             ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
             ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
             ->where('accreditation_contents.accreditation_proposal_id', $id)
-            ->groupBy('accreditation_contents.main_component_id')
+            ->groupBy(['accreditation_contents.main_component_id','instrument_components.name','instrument_components.weight'])
             ->get();
 
         $proposal_states = ProposalState::all();
