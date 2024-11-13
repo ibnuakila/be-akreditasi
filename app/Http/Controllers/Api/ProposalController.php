@@ -40,9 +40,9 @@ class ProposalController extends BaseController
      */
     public function destroy(AccreditationProposal $model)
     {
-        $proposal_files = AccreditationProposalFiles::find()->where('accreditation_proposal_id','=', $model->id)->get();
+        $proposal_files = AccreditationProposalFiles::find()->where('accreditation_proposal_id', '=', $model->id)->get();
         //delete files
-        foreach($proposal_files as $file){
+        foreach ($proposal_files as $file) {
             $file->delete();
         }
         $model->delete();
@@ -66,7 +66,8 @@ class ProposalController extends BaseController
             //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
             //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
             //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
-            ->select(['accreditation_proposals.*',
+            ->select([
+                'accreditation_proposals.*',
                 'proposal_states.state_name',
                 'institution_requests.category',
                 'library_name',
@@ -78,7 +79,8 @@ class ProposalController extends BaseController
                 'province_name as province',
                 'city_name as city',
                 'subdistrict_name as subdistrict',
-                'village_name as village']);
+                'village_name as village'
+            ]);
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
@@ -139,9 +141,23 @@ class ProposalController extends BaseController
             ->where('accreditation_proposal_id', $id)
             ->groupBy('main_component_id', 'instrument_components.name', 'instrument_components.weight')
             ->get();*/
-            $accre_contents = DB::table('evaluation_contents')
-            ->join('accreditation_contents', 'evaluation_contents.accreditation_content_id', '=', 'accreditation_contents.id')
-            ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+        /*$accre_contents = DB::table('evaluation_contents')
+        ->join('accreditation_contents', 'evaluation_contents.accreditation_content_id', '=', 'accreditation_contents.id')
+        ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+        ->select(
+            'instrument_components.name',
+            'instrument_components.weight',
+            DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
+            DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
+            DB::raw('SUM(evaluation_contents.value) as nilai_evaluasi'),
+            DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
+            'accreditation_contents.main_component_id'
+        )
+        ->where('accreditation_proposal_id', $id)
+        ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
+        ->get();*/
+
+        $accre_contents = DB::table('accreditation_contents')
             ->select(
                 'instrument_components.name',
                 'instrument_components.weight',
@@ -151,17 +167,21 @@ class ProposalController extends BaseController
                 DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
                 'accreditation_contents.main_component_id'
             )
-            ->where('accreditation_proposal_id', $id)
-            ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
+            ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+            ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
+            ->where('accreditation_contents.accreditation_proposal_id', $id)
+            ->groupBy('accreditation_contents.main_component_id')
             ->get();
 
         $proposal_states = ProposalState::all();
-        $is_valid = [['label' => 'Valid', 'value' => 'valid'], 
-            ['label' => 'Tidak Valid', 'value' => 'tidak_valid']];
+        $is_valid = [
+            ['label' => 'Valid', 'value' => 'valid'],
+            ['label' => 'Tidak Valid', 'value' => 'tidak_valid']
+        ];
         $certicate_status = [
-            ['label' => 'Cetak Sertifikat', 'value'=> 'cetak_sertifikat'],
-            ['label'=> 'Dikirim', 'value'=> 'dikirim'],
-            ['label'=> 'Ditandatangani', 'value' => 'ditandatangani'],
+            ['label' => 'Cetak Sertifikat', 'value' => 'cetak_sertifikat'],
+            ['label' => 'Dikirim', 'value' => 'dikirim'],
+            ['label' => 'Ditandatangani', 'value' => 'ditandatangani'],
             ['label' => 'Terakreditasi', 'value' => 'terakreditasi'],
         ];
 
@@ -171,8 +191,8 @@ class ProposalController extends BaseController
         $data['proposal_states'] = $proposal_states;
         $data['certificate_status'] = $certicate_status;
         $data['is_valid'] = $is_valid;
-        $data['accreditation_evaluation'] = $accre_contents; 
-        
+        $data['accreditation_evaluation'] = $accre_contents;
+
 
         if (is_null($accreditation)) {
             return $this->sendError('Proposal not found!');
@@ -214,7 +234,7 @@ class ProposalController extends BaseController
         return $this->sendResponse(new AccreditationProposalResource($proposal), 'Proposal Created', $proposal->count);
     }
 
-    
+
 
     /**
      * @param $request
@@ -250,7 +270,7 @@ class ProposalController extends BaseController
             return $this->sendError('Validation Error!', $validator->errors());
         }
         $model = AccreditationProposal::find($id);
-        if(is_object($model)) {
+        if (is_object($model)) {
             $model->institution_id = $input['institution_id'];
             $model->proposal_date = $input['proposal_date'];
             $model->proposal_state_id = $input['proposal_state_id'];
@@ -266,17 +286,17 @@ class ProposalController extends BaseController
             $model->instrument_id = $input['instrument_id'];
             $model->category = $input['category'];
             //certificate-file
-            if($request->file()){
-                $directory = 'certifications/'.$model->id;
+            if ($request->file()) {
+                $directory = 'certifications/' . $model->id;
                 $file_certificate = $request->file('certificate_file')->store($directory);
                 $model->certificate_file = $file_certificate;//Storage::url($file_certificate);
-                $directory = 'recommendations/'.$model->id;
+                $directory = 'recommendations/' . $model->id;
                 $file_recommendation = $request->file('recommendation_file')->store($directory);
                 $model->recommendation_file = $file_recommendation;//Storage::url($file_recommendation);
             }
-            
+
             $model->save();
-        }else{
+        } else {
             $this->sendError('Error', 'Object not found!');
         }
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
@@ -285,7 +305,7 @@ class ProposalController extends BaseController
     public function showFile($id, $file)
     {
         $accre_file = AccreditationProposal::find($id);
-            
+
         /*if($file == 'certificate_file'){
             $accre_file->where('certificate_file','=', $file)->first();
         }elseif($file == 'recommendation_file'){
@@ -293,10 +313,10 @@ class ProposalController extends BaseController
         }*/
         //return json_encode($accre_file);
         if (is_object($accre_file)) {
-            if($file == 'certificate_file'){
+            if ($file == 'certificate_file') {
                 $file_path = $accre_file->certificate_file;
                 $file_name = 'certificate_file.pdf';
-            }elseif($file == 'recommendation_file'){
+            } elseif ($file == 'recommendation_file') {
                 $file_path = $accre_file->recommendation_file;
                 $file_name = 'recommendation_file.pdf';
             }
@@ -315,6 +335,6 @@ class ProposalController extends BaseController
         }
 
     }
-    
-    
+
+
 }
