@@ -580,7 +580,7 @@ class AccreditationController extends BaseController //implements ICrud
                 $file_content = Storage::get($file_path);
                 return response($file_content, 200)
                     ->header('Content-Type', $file_type) // Set Content-Type header
-                    ->headers('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type')
+                    ->header('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type')
                     ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
                 //return Storage::download($file_path, $accre_file->file_name);
             } catch (FileNotFoundException $e) {
