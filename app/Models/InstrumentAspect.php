@@ -20,4 +20,14 @@ class InstrumentAspect extends Model
         'order',
         'parent_id'
     ];
+
+    public function instrumentComponent()
+    {
+        return $this->belongsTo(InstrumentComponent::class);
+    }
+
+    public function instrumentAspectPoint()
+    {
+        return $this->hasMany(InstrumentAspectPoint::class);
+    }
 }

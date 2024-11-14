@@ -21,4 +21,24 @@ class InstrumentComponent extends Model
         'parent_id',
         'instrument_id'
     ];
+
+    public function instrument()
+    {
+        return $this->belongsTo(Instrument::class);
+    }
+
+    public function children()
+    {
+        return $this->hasMany(InstrumentComponent::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(InstrumentComponent::class, 'parent_id');
+    }
+
+    public function instrumentAspect()
+    {
+        return $this->hasMany(InstrumentAspect::class, 'instrument_component_id');
+    }
 }

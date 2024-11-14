@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Instrument extends Model
 {
@@ -20,4 +21,9 @@ class Instrument extends Model
         'file_type',
         'is_active'
     ];
+
+    public function instrumentComponent()
+    {
+        return $this->hasMany(InstrumentComponent::class)->whereNull('parent_id');
+    }
 }

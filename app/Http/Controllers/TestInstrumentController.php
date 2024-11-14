@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Instrument;
+use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -51,16 +52,16 @@ class TestInstrumentController extends Controller
                 if ($ins_sub_sub_com->count() == 0) {//khusus multi aspect ==================
                     //ambil data aspects ==================================
                     $ins_aspect = DB::table('instrument_aspects')//query aspect untuk multi-aspect
-                    ->where('instrument_id', '=', $category)
-                    ->where('instrument_component_id', '=', $sub_component->id)
-                    ->get();
+                        ->where('instrument_id', '=', $category)
+                        ->where('instrument_component_id', '=', $sub_component->id)
+                        ->get();
                     $idx_sub_sub_com = 1;
-                    foreach ($ins_aspect as $row_aspect){
+                    foreach ($ins_aspect as $row_aspect) {
                         echo '<tr style="background-color:#00FF00">';
-                        
-                        if(is_null($row_aspect->parent_id)){
+
+                        if (is_null($row_aspect->parent_id)) {
                             echo '<td>' . $idx_sub_sub_com_aspect . '</td>';
-                        }else{
+                        } else {
                             echo '<td></td>';
                         }
                         echo '<td>' . $row_aspect->id . '</td>';
@@ -83,14 +84,14 @@ class TestInstrumentController extends Controller
                         $obj_3 = $array_asp_points[3];
                         $obj_4 = $array_asp_points[4];
                         //foreach ($aspect_points as $row_ap){
-                            echo '<td>'.$obj_0->statement.'</td>';
-                            echo '<td>'.$obj_1->statement.'</td>';
-                            echo '<td>'.$obj_2->statement.'</td>';
-                            echo '<td>'.$obj_3->statement.'</td>';
-                            echo '<td>'.$obj_4->statement.'</td>';
+                        echo '<td>' . $obj_0->statement . '</td>';
+                        echo '<td>' . $obj_1->statement . '</td>';
+                        echo '<td>' . $obj_2->statement . '</td>';
+                        echo '<td>' . $obj_3->statement . '</td>';
+                        echo '<td>' . $obj_4->statement . '</td>';
                         //}
                         echo '</tr>';
-                        if(is_null($row_aspect->parent_id)){
+                        if (is_null($row_aspect->parent_id)) {
                             $idx_sub_sub_com_aspect++;
                         }
                         $idx_sub_sub_com++;
@@ -102,7 +103,7 @@ class TestInstrumentController extends Controller
 
 
                     $idx_sub_sub_com = 1;
-                    
+
                     foreach ($ins_sub_sub_com as $sub_sub_component) {//looping sub_2 component =============================
                         echo '<tr>';
                         echo '<td>' . $idx_main . '.' . $idx_sub_com . '.' . $idx_sub_sub_com . '</td>';
@@ -116,24 +117,24 @@ class TestInstrumentController extends Controller
                             ->where('instrument_component_id', '=', $sub_sub_component->id)
                             ->where('instrument_components.instrument_id', '=', $category)
                             ->get();
-                        
+
                         if ($instrument_aspect->count() > 0) {
                             foreach ($instrument_aspect as $row_aspect) {//looping aspect ============================
                                 echo '<tr>';
-                                if(is_null($row_aspect->parent_id)){
+                                if (is_null($row_aspect->parent_id)) {
                                     echo '<td>' . $idx_sub_sub_com_aspect . '</td>';
-                                }else{
+                                } else {
                                     echo '<td></td>';
                                 }
                                 echo '<td>' . $row_aspect->id . '</td>';
                                 echo '<td>' . "&ensp;" . $row_aspect->aspect . '</td>';
                                 //echo '</tr>';
-                                if(is_null($row_aspect->parent_id)){
+                                if (is_null($row_aspect->parent_id)) {
                                     $idx_sub_sub_com_aspect++;
                                 }
                                 //ambil instrument-aspect-points ===================
                                 $aspect_points = DB::table('instrument_aspect_points')
-                                ->where('instrument_aspect_id', '=', $row_aspect->id)->get();
+                                    ->where('instrument_aspect_id', '=', $row_aspect->id)->get();
                                 $idx_asp_point = 0;
                                 foreach ($aspect_points as $row_ap) {
                                     $array_asp_points[$idx_asp_point] = $row_ap;
@@ -145,15 +146,15 @@ class TestInstrumentController extends Controller
                                 $obj_3 = $array_asp_points[3];
                                 $obj_4 = $array_asp_points[4];
                                 //foreach ($aspect_points as $row_ap){
-                                    echo '<td>'.$obj_0->statement.'</td>';
-                                    echo '<td>'.$obj_1->statement.'</td>';
-                                    echo '<td>'.$obj_2->statement.'</td>';
-                                    echo '<td>'.$obj_3->statement.'</td>';
-                                    echo '<td>'.$obj_4->statement.'</td>';
+                                echo '<td>' . $obj_0->statement . '</td>';
+                                echo '<td>' . $obj_1->statement . '</td>';
+                                echo '<td>' . $obj_2->statement . '</td>';
+                                echo '<td>' . $obj_3->statement . '</td>';
+                                echo '<td>' . $obj_4->statement . '</td>';
                                 //}
                                 echo '</tr>';
                             }
-                        } 
+                        }
 
                         $idx_sub_sub_com++;
                     }
@@ -165,5 +166,61 @@ class TestInstrumentController extends Controller
             $idx_main++;
         }
         echo '</table>';
+    }
+
+    public function getDetailInstrument($category)
+    {
+        /*$ins_com = Instrument::query()//query main component
+            ->select('*')
+            //->where('type', '=', 'main')
+            ->where('id', '=', $category)
+            ->with('instrumentComponent')
+            ->where('instrument_components.type', '=', 'main')
+            ->get();*/
+        /*$ins_com = Instrument::query()
+        ->select('*')
+        ->where('id', '=', $category)
+        ->whereHas('instrumentComponent', function ($query) {
+            $query->where('type', '=', 'main');
+        })
+        ->with(['instrumentComponent' => function ($query) {
+            $query->where('type', '=', 'main');
+        }])
+        ->get();*/
+        /*$ins_com = Instrument::query()
+            ->where('id', $category)
+            ->with(['instrumentComponent' => function ($query) {
+                $query->where('type', 'main')
+                ->with('children.children')
+                ->with('instrumentAspect'); // Recursively load children
+            }])
+            ->get();*/
+
+        $instrument = Instrument::query()
+            ->where('id', $category)  // Or another condition to filter the Instrument
+            ->with([
+                'instrumentComponent' => function ($query) {
+                    $query->where('type', 'main')
+                        ->with([
+                            'children' => function ($query) { // Load child components
+                                $query->with([
+                                    'children',         // Recursively load more children if needed
+                                    'instrumentAspect' => function ($query) { // Load aspects of each component
+                                    $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                },
+                                ]);
+                            },
+                            'instrumentAspect' => function ($query) { // Load aspects of main components
+                                $query->with('instrumentAspectPoint'); // Load aspect points
+                            },
+                        ]);
+                },
+            ])
+            ->first();
+
+
+
+
+        return ($instrument);
     }
 }

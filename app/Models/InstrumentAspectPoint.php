@@ -18,4 +18,9 @@ class InstrumentAspectPoint extends Model
         'value',
         'order'
     ];
+
+    public function instrumentAspect()
+    {
+        return $this->belongsTo(InstrumentAspect::class);
+    }
 }
