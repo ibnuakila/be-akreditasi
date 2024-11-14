@@ -229,6 +229,7 @@ class InstrumentController extends BaseController
                 
                 $activeWorksheet->setCellValue('A' . strval($row), $idx_main);
                 $activeWorksheet->setCellValue('B' . strval($row), $component->name);
+                $activeWorksheet->setCellValue('M' . strval($row), $component->id);
                 $activeWorksheet->getStyle('B' . strval($row))->getAlignment()->setWrapText(true);
                 $activeWorksheet->getStyle('A' . strval($row) . ':L' . strval($row))
                     ->applyFromArray($styleMainComponent);

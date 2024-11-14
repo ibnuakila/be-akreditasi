@@ -505,7 +505,7 @@ class AccreditationController extends BaseController //implements ICrud
         $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
         $butir = str_replace('.', '', $butir);
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
-        $main_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
+        $main_component_id = ''; //trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
 
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
@@ -515,8 +515,8 @@ class AccreditationController extends BaseController //implements ICrud
             $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
             if (!empty($ins_component_id)) {
                 $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::find($ins_component_id);
-                    //->where('type', '=', 'main')->first();
+                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
+                    ->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {
                     $main_component_id = $instrument_component->id;
                 } 

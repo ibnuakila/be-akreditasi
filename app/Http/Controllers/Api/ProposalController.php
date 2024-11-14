@@ -129,7 +129,7 @@ class ProposalController extends BaseController
             ->with('proposalDocument')
             ->get();
         //$accre_contents = AccreditationContent::query()
-        $accre_contents = DB::table('accreditation_contents')
+        /*$accre_contents = DB::table('accreditation_contents')
             ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
             ->select(
                 'instrument_components.name',
@@ -142,7 +142,7 @@ class ProposalController extends BaseController
             )
             ->where('accreditation_proposal_id', $id)
             ->groupBy('main_component_id', 'instrument_components.name', 'instrument_components.weight')
-            ->get();
+            ->get();*/
         /*$accre_contents = DB::table('evaluation_contents')
         ->join('accreditation_contents', 'evaluation_contents.accreditation_content_id', '=', 'accreditation_contents.id')
         ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
@@ -159,7 +159,7 @@ class ProposalController extends BaseController
         ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
         ->get();*/
 
-        /*$accre_contents = DB::table('accreditation_contents')
+        $accre_contents = DB::table('accreditation_contents')
             ->select(
                 'instrument_components.name',
                 'instrument_components.weight',
@@ -173,7 +173,7 @@ class ProposalController extends BaseController
             ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
             ->where('accreditation_contents.accreditation_proposal_id', $id)
             ->groupBy('accreditation_contents.main_component_id','instrument_components.name','instrument_components.weight')
-            ->get();*/
+            ->get();
 
         $proposal_states = ProposalState::all();
         $is_valid = [
