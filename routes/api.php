@@ -178,3 +178,4 @@ Route::middleware('auth:sanctum')->group(function(){
 //});
     
 Route::get('/evaluation/list', [EvaluationController::class,'list']);
+Route::get('/evaluation/show/{id}', [EvaluationController::class,'show']);

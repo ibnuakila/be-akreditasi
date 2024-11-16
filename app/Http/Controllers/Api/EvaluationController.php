@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccreditationProposal;
 use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
+use App\Models\Instrument;
 use Illuminate\Http\Request;
 
 class EvaluationController extends BaseController implements ICrud
@@ -82,6 +84,31 @@ class EvaluationController extends BaseController implements ICrud
 	 * @param $id
 	 */
 	public function show($id){
+        $accre_propose = AccreditationProposal::find($id);
+        if(is_object($accre_propose)){
+            $instrument = Instrument::query()
+            ->where('id', $accre_propose->instrument_id)  // Or another condition to filter the Instrument
+            ->with([
+                'instrumentComponent' => function ($query) {
+                    $query->where('type', 'main')
+                        ->with([
+                            'children' => function ($query) { // Load child components
+                                $query->with([
+                                    'children',         // Recursively load more children if needed
+                                    'instrumentAspect' => function ($query) { // Load aspects of each component
+                                    $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                },
+                                ]);
+                            },
+                            'instrumentAspect' => function ($query) { // Load aspects of main components
+                                $query->with('instrumentAspectPoint'); // Load aspect points
+                            },
+                        ]);
+                },
+            ])
+            ->first();
+        }
+        return $this->sendResponse($instrument, 'Success', $instrument->count());
         
     }
 
