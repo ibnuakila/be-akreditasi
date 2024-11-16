@@ -39,6 +39,6 @@ class InstrumentComponent extends Model
 
     public function instrumentAspect()
     {
-        return $this->hasMany(InstrumentAspect::class, 'instrument_component_id');
+        return $this->hasMany(InstrumentAspect::class);
     }
 }

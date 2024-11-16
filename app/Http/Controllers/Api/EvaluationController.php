@@ -85,6 +85,7 @@ class EvaluationController extends BaseController implements ICrud
 	 */
 	public function show($id){
         $accre_propose = AccreditationProposal::find($id);
+        $instrument = [];
         if(is_object($accre_propose)){
             $instrument = Instrument::query()
             ->where('id', $accre_propose->instrument_id)  // Or another condition to filter the Instrument
@@ -94,7 +95,13 @@ class EvaluationController extends BaseController implements ICrud
                         ->with([
                             'children' => function ($query) { // Load child components
                                 $query->with([
-                                    'children',         // Recursively load more children if needed
+                                    'children' => function ($query){
+                                        $query->with([
+                                            'instrumentAspect' => function ($query) { // Load aspects of each component
+                                                $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                            },
+                                        ]);
+                                    },        // Recursively load more children if needed
                                     'instrumentAspect' => function ($query) { // Load aspects of each component
                                     $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
                                 },
@@ -108,7 +115,7 @@ class EvaluationController extends BaseController implements ICrud
             ])
             ->first();
         }
-        return $this->sendResponse($instrument, 'Success', $instrument->count());
+        return $this->sendResponse($instrument, 'Success', null);
         
     }
 
@@ -117,7 +124,7 @@ class EvaluationController extends BaseController implements ICrud
 	 * @param $request
 	 */
 	public function store(Request $request){
-        
+
     }
 
 	/**

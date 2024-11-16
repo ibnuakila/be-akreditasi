@@ -204,7 +204,14 @@ class TestInstrumentController extends Controller
                         ->with([
                             'children' => function ($query) { // Load child components
                                 $query->with([
-                                    'children',         // Recursively load more children if needed
+                                    'children' => function ($query){
+                                        $query->with([
+                                            'instrumentAspect' => function ($query) { // Load aspects of each component
+                                                $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                            },
+                                        ]);
+                                    },       // Recursively load more children if needed
+                                    
                                     'instrumentAspect' => function ($query) { // Load aspects of each component
                                     $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
                                 },

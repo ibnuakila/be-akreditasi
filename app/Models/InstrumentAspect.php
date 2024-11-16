@@ -28,6 +28,6 @@ class InstrumentAspect extends Model
 
     public function instrumentAspectPoint()
     {
-        return $this->hasMany(InstrumentAspectPoint::class);
+        return $this->hasMany(InstrumentAspectPoint::class, 'instrument_aspect_id');
     }
 }
