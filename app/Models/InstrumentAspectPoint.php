@@ -23,4 +23,9 @@ class InstrumentAspectPoint extends Model
     {
         return $this->belongsTo(InstrumentAspect::class);
     }
+
+    public function accreditationContent()
+    {
+        return $this->hasMany(AccreditationContent::class);
+    }
 }

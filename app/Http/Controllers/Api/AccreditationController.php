@@ -502,19 +502,19 @@ class AccreditationController extends BaseController //implements ICrud
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 3;
-        $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+        $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
         $butir = str_replace('.', '', $butir);
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
         $main_component_id = ''; //trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
 
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
-            $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+            $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
             $butir = str_replace('.', '', $butir);
             $value = trim($spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue());
-            $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
+            $ins_component_id = trim($spreadsheet->getActiveSheet()->getCell('M' . strval($start_row))->getCalculatedValue());
             if (!empty($ins_component_id)) {
-                $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
+                $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
                 $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
                     ->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {

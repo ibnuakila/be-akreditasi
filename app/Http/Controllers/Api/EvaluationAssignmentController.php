@@ -243,31 +243,30 @@ class EvaluationAssignmentController extends BaseController
         $butir = str_replace('.', '', $butir);
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
         
-
+        $main_component_id = '';
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
-            $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+            $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
             $butir = str_replace('.', '', $butir);
             $value = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
             $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
-            $ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('M' . strval($start_row))->getCalculatedValue());
+            $ins_component_id = trim($spreadsheet->getActiveSheet()->getCell('M' . strval($start_row))->getCalculatedValue());
             
             if (!empty($ins_component_id)) {
-                $aspect_id = trim($spreadsheet->getActiveSheet(0)->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::find($ins_component_id);
+                $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
+                $instrument_component = InstrumentComponent::where('id','=',$ins_component_id)->first();
                     //->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {
                     $main_component_id = $instrument_component->id;
                 } 
-                $instrument_aspect = InstrumentAspect::find($aspect_id);
+                $instrument_aspect = InstrumentAspect::where('id','=',$aspect_id)->first();
                 $aspect = '-';
                 if (is_object($instrument_aspect)) {
                     $aspect = $instrument_aspect->aspect;
                 }
-                $instrument_aspect_point = InstrumentAspectPoint::query()
-                    ->where('instrument_aspect_id', '=', $aspect_id)
+                $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
                     ->where('value', '=', $value)->first();
                 $statement = '-';
                 $instrument_aspect_point_id = '';
@@ -279,8 +278,7 @@ class EvaluationAssignmentController extends BaseController
                     $value = 0;
                 }
 
-                $accreditation_content = AccreditationContent::query()
-                    ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
+                $accreditation_content = AccreditationContent::where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
                     ->where('main_component_id', '=', $ins_component_id)
                     ->where('aspectable_id', '=', $aspect_id)
                     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();

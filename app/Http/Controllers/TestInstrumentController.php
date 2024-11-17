@@ -199,19 +199,25 @@ class TestInstrumentController extends Controller
         $instrument = Instrument::query()
             ->where('id', $category)  // Or another condition to filter the Instrument
             ->with([
-                'instrumentComponent' => function ($query) {
+                'instrumentComponent' => function ($query) use ($category) {
                     $query->where('type', 'main')
                         ->with([
-                            'children' => function ($query) { // Load child components
+                            'children' => function ($query) use ($category) { // Load child components
                                 $query->with([
-                                    'children' => function ($query){
-                                        $query->with([
-                                            'instrumentAspect' => function ($query) { // Load aspects of each component
-                                                $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
-                                            },
-                                        ]);
-                                    },       // Recursively load more children if needed
-                                    
+                                    'children' => function ($query) use ($category) {
+                                    $query->with([
+                                        'instrumentAspect' => function ($query) use ($category) { // Load aspects of each component
+                                            $query->with([
+                                                'instrumentAspectPoint' => function ($query) use ($category) {
+                                                $query->with(['accreditationContent' => function ($query) use ($category){
+                                                    $query->where('accreditation_proposal_id', $category);
+                                                }])->get();
+                                            }
+                                            ]); // Load aspect points for each aspect
+                                        },
+                                    ]);
+                                },       // Recursively load more children if needed
+                
                                     'instrumentAspect' => function ($query) { // Load aspects of each component
                                     $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
                                 },

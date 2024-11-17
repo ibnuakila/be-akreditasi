@@ -24,5 +24,10 @@ class AccreditationContent extends Model
         'accreditation_proposal_id',
         'butir',                
     ];
+
+    public function instrumentAspectPoint()
+    {
+        return $this->belongsTo(InstrumentAspectPoint::class);
+    }
     
 }
