@@ -56,14 +56,14 @@ class ProposalAssignmentController extends BaseController
         if ($is_assessor) {
             $user_access = $request_header;
             $response = AccreditationProposal::query()
-            ->select('accreditation_proposals.*')
+                //->select('accreditation_proposals.*')
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
                 ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
-                ->where('accreditation_proposals.proposal_state_id', '=', 2)
-                //->where('accreditation_proposals.is_valid', '=', 'valid')
+                ->where('accreditation_proposals.proposal_state_id', '=', 2)                
                 ->Where('institution_requests.status', '=', 'valid')
+                ->where('assessors.user_id', '=', $user_id)
                 ->select([
                     'accreditation_proposals.*',
                     //'evaluation_assignments.*',
