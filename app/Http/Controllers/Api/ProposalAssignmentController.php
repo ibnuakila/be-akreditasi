@@ -54,7 +54,7 @@ class ProposalAssignmentController extends BaseController
             }
         }
         if ($is_assessor) {
-            $response = $temp_request_header;
+            $response = $request_header;
             $total = 0;
         } else {
             $query = AccreditationProposal::query()
