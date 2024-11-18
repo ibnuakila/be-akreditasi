@@ -55,6 +55,7 @@ class ProposalAssignmentController extends BaseController
         }
         if ($is_assessor) {
             $response = $temp_request_header;
+            $total = 0;
         } else {
             $query = AccreditationProposal::query()
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
