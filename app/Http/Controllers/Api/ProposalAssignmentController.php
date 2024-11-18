@@ -54,8 +54,33 @@ class ProposalAssignmentController extends BaseController
             }
         }
         if ($is_assessor) {
-            $response = $request_header;
-            $total = 0;
+            $user_access = $request_header;
+            $response = AccreditationProposal::query()
+            ->select('accreditation_proposals.*')
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                ->join('assessor', 'evaluation_assignments.assessor_id', '=', 'assessor.id')
+                ->where('accreditation_proposals.proposal_state_id', '=', 2)
+                //->where('accreditation_proposals.is_valid', '=', 'valid')
+                ->Where('institution_requests.status', '=', 'valid')
+                ->select([
+                    'accreditation_proposals.*',
+                    //'evaluation_assignments.*',
+                    'proposal_states.state_name',
+                    'institution_requests.category',
+                    'library_name',
+                    'npp',
+                    'agency_name',
+                    'institution_head_name',
+                    'email',
+                    'telephone_number',
+                    'province_name as province',
+                    'city_name as city',
+                    'subdistrict_name as subdistrict',
+                    'village_name as village'
+                ]);
+            $total = $response->count();
         } else {
             $query = AccreditationProposal::query()
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
