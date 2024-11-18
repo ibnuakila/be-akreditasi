@@ -179,3 +179,5 @@ Route::middleware('auth:sanctum')->group(function(){
     
 Route::get('/evaluation/list', [EvaluationController::class,'list']);
 Route::get('/evaluation/show/{id}', [EvaluationController::class,'show']);
+Route::post('/evaluation/store', [EvaluationController::class,'store']);
+Route::post('/evaluation/update/{id}', [EvaluationController::class, 'update']);

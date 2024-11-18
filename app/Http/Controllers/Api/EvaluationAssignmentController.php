@@ -54,56 +54,108 @@ class EvaluationAssignmentController extends BaseController
                 }
             }
         }
-        $query = EvaluationAssignment::query()
-            ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            //->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
-            ->select([
-                'accreditation_proposals.proposal_date',
-                'evaluation_assignments.*',
-                'proposal_states.state_name',
-                'institution_requests.category',
-                'library_name',
-                'npp',
-                'agency_name',
-                'institution_head_name',
-                'email',
-                'telephone_number',
-                'province_name as province',
-                'city_name as city',
-                'subdistrict_name as subdistrict',
-                'village_name as village',
-                'assessor_id'
-            ]);
         if ($is_assessor) {
-            $assessor = Assessor::where('user_id', '=', $user_id)->first();
-            $query->where('evaluation_assignments.assessor_id', '=', $assessor->id);
+            $user_access = $request_header;
+            $query = AccreditationProposal::query()
+                //->select('accreditation_proposals.*')
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
+                ->where('accreditation_proposals.proposal_state_id', '=', 2)
+                ->Where('institution_requests.status', '=', 'valid')
+                ->where('assessors.user_id', '=', $user_id)
+                ->select([
+                    'accreditation_proposals.*',
+                    //'evaluation_assignments.*',
+                    'proposal_states.state_name',
+                    'institution_requests.category',
+                    'library_name',
+                    'npp',
+                    'agency_name',
+                    'institution_head_name',
+                    'institution_requests.email',
+                    'telephone_number',
+                    'province_name as province',
+                    'city_name as city',
+                    'subdistrict_name as subdistrict',
+                    'village_name as village'
+                ]);
+            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
+                $query->where('institution_requests.library_name', 'like', "%{$s}%");
+            }
+            if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
+                $query->where('province_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
+                $query->where('city_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
+                $query->where('subdistrict_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
+                $query->where('proposal_states.state_name', '=', "{$s}");
+            }
+            $perPage = $request->input(key: 'pageSize', default: 10);
+            $page = $request->input(key: 'page', default: 1);
+            $total = $query->count();
+            $response = $query->offset(value: ($page - 1) * $perPage)
+                ->limit($perPage)
+                ->paginate();
+            $total = $response->count();
+        } else {
+
+            $query = EvaluationAssignment::query()
+                ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                //->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
+                ->select([
+                    'accreditation_proposals.proposal_date',
+                    'evaluation_assignments.*',
+                    'proposal_states.state_name',
+                    'institution_requests.category',
+                    'library_name',
+                    'npp',
+                    'agency_name',
+                    'institution_head_name',
+                    'email',
+                    'telephone_number',
+                    'province_name as province',
+                    'city_name as city',
+                    'subdistrict_name as subdistrict',
+                    'village_name as village',
+                    'assessor_id'
+                ]);
+            if ($is_assessor) {
+                $assessor = Assessor::where('user_id', '=', $user_id)->first();
+                $query->where('evaluation_assignments.assessor_id', '=', $assessor->id);
+            }
+            if ($s = $request->input(key: 'library_name')) { //filter berdasarkan name            
+                $query->where('institution_requests.library_name', 'like', "%{$s}%");
+            }
+            if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
+                $query->where('province_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
+                $query->where('city_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
+                $query->where('subdistrict_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
+                $query->where('proposal_states.state_name', '=', "{$s}");
+            }
+            $perPage = $request->input(key: 'pageSize', default: 10);
+            $page = $request->input(key: 'page', default: 1);
+            $total = $query->count();
+            $response = $query->offset(value: ($page - 1) * $perPage)
+                ->limit($perPage)
+                ->paginate();
+            $data['evaluation_assignments'] = $response;
+            $data['user_access'] = $request_header;
         }
-        if ($s = $request->input(key: 'library_name')) { //filter berdasarkan name            
-            $query->where('institution_requests.library_name', 'like', "%{$s}%");
-        }
-        if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
-            $query->where('province_name', '=', "{$s}");
-        }
-        if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
-            $query->where('city_name', '=', "{$s}");
-        }
-        if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
-            $query->where('subdistrict_name', '=', "{$s}");
-        }
-        if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
-            $query->where('proposal_states.state_name', '=', "{$s}");
-        }
-        $perPage = $request->input(key: 'pageSize', default: 10);
-        $page = $request->input(key: 'page', default: 1);
-        $total = $query->count();
-        $response = $query->offset(value: ($page - 1) * $perPage)
-            ->limit($perPage)
-            ->paginate();
-        $data['evaluation_assignments'] = $response;
-        $data['user_access'] = $request_header;
-        return $this->sendResponse($data, "Success", $total);
+        return $this->sendResponse($response, "Success", $total);
     }
 
     /**
@@ -242,7 +294,7 @@ class EvaluationAssignmentController extends BaseController
         $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
         $butir = str_replace('.', '', $butir);
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
-        
+
         $main_component_id = '';
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
@@ -253,15 +305,15 @@ class EvaluationAssignmentController extends BaseController
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
             $ins_component_id = trim($spreadsheet->getActiveSheet()->getCell('M' . strval($start_row))->getCalculatedValue());
-            
+
             if (!empty($ins_component_id)) {
                 $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::where('id','=',$ins_component_id)->first();
-                    //->where('type', '=', 'main')->first();
+                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)->first();
+                //->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {
                     $main_component_id = $instrument_component->id;
-                } 
-                $instrument_aspect = InstrumentAspect::where('id','=',$aspect_id)->first();
+                }
+                $instrument_aspect = InstrumentAspect::where('id', '=', $aspect_id)->first();
                 $aspect = '-';
                 if (is_object($instrument_aspect)) {
                     $aspect = $instrument_aspect->aspect;
