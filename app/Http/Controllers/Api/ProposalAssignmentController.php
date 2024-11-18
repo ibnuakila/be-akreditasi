@@ -60,7 +60,7 @@ class ProposalAssignmentController extends BaseController
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-                ->join('assessor', 'evaluation_assignments.assessor_id', '=', 'assessor.id')
+                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
                 ->where('accreditation_proposals.proposal_state_id', '=', 2)
                 //->where('accreditation_proposals.is_valid', '=', 'valid')
                 ->Where('institution_requests.status', '=', 'valid')
