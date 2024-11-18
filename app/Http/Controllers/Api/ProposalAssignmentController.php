@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Validator;
 
 class ProposalAssignmentController extends BaseController
 {
-    public function addNew($id){
+    public function addNew($id)
+    {
         $accreditation_proposal = AccreditationProposal::find($id);
         $assessor = Assessor::all();
         $data['accreditation_proposal'] = $accreditation_proposal;
@@ -22,86 +23,106 @@ class ProposalAssignmentController extends BaseController
         ];
         return $this->sendResponse($data, "Success", 1);
     }
-    public function destroy($id){
+    public function destroy($id)
+    {
         $evaluation = EvaluationAssignment::find($id);
-        if(is_object($evaluation)){
-            if($evaluation->assignment_state_id == 1){
+        if (is_object($evaluation)) {
+            if ($evaluation->assignment_state_id == 1) {
                 $evaluation->delete();
                 return $this->sendResponse([], "Success", 1);
-            }else{
+            } else {
                 return $this->sendError("Error", "Proposal Sedang dinilai, tidak dapat dihapus!", 500);
             }
-            
         }
     }
 
-	public function index(){
+    public function index() {}
 
-    }
-
-    public function list(Request $request){
-        $query = AccreditationProposal::query()
-            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            ->where('accreditation_proposals.proposal_state_id', '=', 2)
-            //->where('accreditation_proposals.is_valid', '=', 'valid')
-            ->Where('institution_requests.status', '=', 'valid')
-            ->select(['accreditation_proposals.*',
-                //'evaluation_assignments.*',
-                'proposal_states.state_name',
-                'institution_requests.category',
-                'library_name',
-                'npp',
-                'agency_name',
-                'institution_head_name',
-                'email',
-                'telephone_number',
-                'province_name as province',
-                'city_name as city',
-                'subdistrict_name as subdistrict',
-                'village_name as village']);
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
-            $query->where('institution_requests.library_name', 'like', "%{$s}%");
+    public function list(Request $request)
+    {
+        $is_assessor = false;
+        if ($request->hasHeader('Access-User')) {
+            $temp_request_header = $request->header('Access-User');
+            $request_header = str_replace('\"', '"', $temp_request_header);
+            $request_header = json_decode($request_header, true);
+            $user_id = $request_header['id'];
+            $roles = $request_header['roles'];
+            foreach ($roles as $role) {
+                if ($role['name'] == 'Asesor') {
+                    $is_assessor = true;
+                }
+            }
         }
-        if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
-            $query->where('province_name', '=', "{$s}");
+        if ($is_assessor) {
+            $response = $temp_request_header;
+        } else {
+            $query = AccreditationProposal::query()
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                ->where('accreditation_proposals.proposal_state_id', '=', 2)
+                //->where('accreditation_proposals.is_valid', '=', 'valid')
+                ->Where('institution_requests.status', '=', 'valid')
+                ->select([
+                    'accreditation_proposals.*',
+                    //'evaluation_assignments.*',
+                    'proposal_states.state_name',
+                    'institution_requests.category',
+                    'library_name',
+                    'npp',
+                    'agency_name',
+                    'institution_head_name',
+                    'email',
+                    'telephone_number',
+                    'province_name as province',
+                    'city_name as city',
+                    'subdistrict_name as subdistrict',
+                    'village_name as village'
+                ]);
+            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
+                $query->where('institution_requests.library_name', 'like', "%{$s}%");
+            }
+            if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
+                $query->where('province_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
+                $query->where('city_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
+                $query->where('subdistrict_name', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
+                $query->where('proposal_states.state_name', '=', "{$s}");
+            }
+            $perPage = $request->input(key: 'pageSize', default: 10);
+            $page = $request->input(key: 'page', default: 1);
+            $total = $query->count();
+            $response = $query->offset(value: ($page - 1) * $perPage)
+                ->limit($perPage)
+                ->paginate();
         }
-        if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
-            $query->where('city_name', '=', "{$s}");
-        }
-        if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
-            $query->where('subdistrict_name', '=', "{$s}");
-        }
-        if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
-            $query->where('proposal_states.state_name', '=', "{$s}");
-        }
-        $perPage = $request->input(key: 'pageSize', default: 10);
-        $page = $request->input(key: 'page', default: 1);
-        $total = $query->count();
-        $response = $query->offset(value: ($page - 1) * $perPage)
-            ->limit($perPage)
-            ->paginate();
         return $this->sendResponse($response, "Success", $total);
     }
 
-	/**
-	 * 
-	 * @param $id
-	 */
-	public function edit($id){
+    /**
+     * 
+     * @param $id
+     */
+    public function edit($id)
+    {
         $evaluation = EvaluationAssignment::find($id);
-        if(is_object($evaluation)){
+        if (is_object($evaluation)) {
             return $this->sendResponse($evaluation, 'Success');
-        }else{
+        } else {
             return $this->sendError('Error', 'Object not found');
         }
     }
 
-	/**
-	 * 
-	 * @param $request
-	 */
-	public function store(Request $request){
+    /**
+     * 
+     * @param $request
+     */
+    public function store(Request $request)
+    {
         $input = $request->all();
         $valid = Validator::make($input, [
             'accreditation_proposal_id' => 'required',
@@ -111,7 +132,7 @@ class ProposalAssignmentController extends BaseController
             'assessor_id' => 'required'
         ]);
         if ($valid->fails()) {
-            return $this->sendError('Error',$valid->errors());
+            return $this->sendError('Error', $valid->errors());
         }
 
         $data = [
@@ -129,15 +150,16 @@ class ProposalAssignmentController extends BaseController
         $temp = $accreProposal->assignment_count;
         $accreProposal->assignment_count = $temp++;
         $accreProposal->save();
-        return $this->sendResponse($create,'Success', 1);
+        return $this->sendResponse($create, 'Success', 1);
     }
 
-	/**
-	 * 
-	 * @param $request
-	 * @param $model
-	 */
-	public function update(Request $request, $id){
+    /**
+     * 
+     * @param $request
+     * @param $model
+     */
+    public function update(Request $request, $id)
+    {
         $input = $request->all();
         $evaluation = EvaluationAssignment::find($id);
         $valid = Validator::make($input, [
@@ -148,7 +170,7 @@ class ProposalAssignmentController extends BaseController
             'assessor_id' => 'required'
         ]);
         if ($valid->fails()) {
-            return $this->sendError('Error',$valid->errors());
+            return $this->sendError('Error', $valid->errors());
         }
 
         $data = [
@@ -159,7 +181,7 @@ class ProposalAssignmentController extends BaseController
             'assessor_id' => $input['assessor_id'],
             'assignment_state_id' => 1
         ];
-        if(is_object($evaluation)){
+        if (is_object($evaluation)) {
             $evaluation->accreditation_proposal_id = $input['accreditation_proposal_id'];
             $evaluation->method = $input['method'];
             $evaluation->scheduled_date = $input['scheduled_date'];
@@ -167,11 +189,11 @@ class ProposalAssignmentController extends BaseController
             $evaluation->assessor_id = $input['assessor_id'];
             $evaluation->update();
         }
-        
+
         //update accreditation proposal
         $accreProposal = AccreditationProposal::find($input['accreditation_proposal_id']);
         $accreProposal->proposal_state_id = 2;
         $accreProposal->save();
-        return $this->sendResponse($evaluation,'Success', 1);
+        return $this->sendResponse($evaluation, 'Success', 1);
     }
 }

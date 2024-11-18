@@ -90,16 +90,22 @@ class EvaluationController extends BaseController implements ICrud
             $instrument = Instrument::query()
             ->where('id', $accre_propose->instrument_id)  // Or another condition to filter the Instrument
             ->with([
-                'instrumentComponent' => function ($query) {
+                'instrumentComponent' => function ($query) use ($id) {
                     $query->where('type', 'main')
                         ->with([
-                            'children' => function ($query) { // Load child components
+                            'children' => function ($query) use ($id) { // Load child components
                                 $query->with([
-                                    'children' => function ($query){
+                                    'children' => function ($query) use ($id){
                                         $query->with([
-                                            'instrumentAspect' => function ($query) { // Load aspects of each component
-                                                $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
-                                            },
+                                            'instrumentAspect' => function ($query) use ($id) { // Load aspects of each component
+                                            $query->with([
+                                                'instrumentAspectPoint' => function ($query) use ($id) {
+                                                $query->with(['accreditationContent' => function ($query) use ($id){
+                                                    $query->where('accreditation_proposal_id', $id);
+                                                }])->get();
+                                            }
+                                            ]); // Load aspect points for each aspect
+                                        },
                                         ]);
                                     },        // Recursively load more children if needed
                                     'instrumentAspect' => function ($query) { // Load aspects of each component
