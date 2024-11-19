@@ -95,6 +95,7 @@ class ProposalAssignmentController extends BaseController
                 if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
                     $query->where('proposal_states.state_name', '=', "{$s}");
                 }
+                $query->orderBy('proposal_date','desc');
                 $perPage = $request->input(key: 'pageSize', default: 10);
                 $page = $request->input(key: 'page', default: 1);
                 $total = $query->count();
@@ -140,6 +141,7 @@ class ProposalAssignmentController extends BaseController
             if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
                 $query->where('proposal_states.state_name', '=', "{$s}");
             }
+            $query->orderBy('proposal_date','desc');
             $perPage = $request->input(key: 'pageSize', default: 10);
             $page = $request->input(key: 'page', default: 1);
             $total = $query->count();
