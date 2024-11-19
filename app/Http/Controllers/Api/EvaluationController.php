@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\AccreditationProposal;
 use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
+use App\Models\EvaluationContent;
 use App\Models\Instrument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class EvaluationController extends BaseController implements ICrud
 {
@@ -102,7 +104,12 @@ class EvaluationController extends BaseController implements ICrud
                                                 'instrumentAspectPoint' => function ($query) use ($id) {
                                                 $query->with(['accreditationContent' => function ($query) use ($id){
                                                     $query->where('accreditation_proposal_id', $id);
-                                                }])->get();
+                                                }])
+                                                ->with(['evaluationContent' => function ($query) use ($id) {
+                                                    $query->join('evaluations', 'evaluations.id', '=', 'evaluation_contents.evaluation_id')
+                                                    ->where('evaluations.accreditation_proposal_id', '=', $id);
+                                                }])
+                                                ->get();
                                             }
                                             ]); // Load aspect points for each aspect
                                         },
@@ -139,6 +146,21 @@ class EvaluationController extends BaseController implements ICrud
 	 * @param $model
 	 */
 	public function update(Request $request, $id){
-        
+
+    }
+
+    public function updateRow(Request $request){
+        $input = $request->all();
+        $valid = Validator::make($input, [
+            'id' => 'required',
+            'value' => 'required'
+        ]);
+        if ($valid->fails()) {
+            return $this->sendError('Error', $valid->errors());
+        }
+        $evaluation_content = EvaluationContent::find($input['id']);
+        $evaluation_content->value = $input['value'];
+        $evaluation_content->save();
+        return $this->sendResponse($evaluation_content, 'Success', null);
     }
 }

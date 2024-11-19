@@ -291,7 +291,7 @@ class EvaluationAssignmentController extends BaseController
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 3;
-        $butir = $spreadsheet->getActiveSheet(0)->getCell('A' . $start_row)->getCalculatedValue();
+        $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue());
         $butir = str_replace('.', '', $butir);
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
 
@@ -308,8 +308,8 @@ class EvaluationAssignmentController extends BaseController
 
             if (!empty($ins_component_id)) {
                 $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)->first();
-                //->where('type', '=', 'main')->first();
+                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
+                    ->where('type', '=', 'main')->first();
                 if (is_object($instrument_component)) {
                     $main_component_id = $instrument_component->id;
                 }
@@ -330,18 +330,19 @@ class EvaluationAssignmentController extends BaseController
                     $value = 0;
                 }
 
-                $accreditation_content = AccreditationContent::where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
-                    ->where('main_component_id', '=', $ins_component_id)
-                    ->where('aspectable_id', '=', $aspect_id)
+                $accreditation_content = AccreditationContent::query()
+                    ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
+                    //->where('main_component_id', '=', $ins_component_id)
+                    //->where('aspectable_id', '=', $aspect_id)
                     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
 
-                if (is_object($accreditation_content)) {
-                    $accre_content_id = $accreditation_content->id;
+                //if (is_object($accreditation_content)) {
+                    //$accre_content_id = ;
                     $evaluation_content = new EvaluationContent();
                     $evaluation_content->evaluation_id = $params['evaluation_id'];
-                    $evaluation_content->accreditation_content_id = $accre_content_id;
+                    $evaluation_content->accreditation_content_id = '-';//$accreditation_content->id;
                     $evaluation_content->main_component_id = $main_component_id;
-                    $evaluation_content->instrument_aspect_point_id = $aspect_id;
+                    $evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
                     //$evaluation_content->aspect = $aspect;
                     $evaluation_content->statement = $statement;
                     $evaluation_content->value = $value;
@@ -356,11 +357,11 @@ class EvaluationAssignmentController extends BaseController
                     $evaluation_content->banding = $banding;
                     //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
                     //$evaluation_content->butir = $butir;
-                    if ($aspect_id != '') {
+                    //if (!empty($aspect_id)) {
                         $evaluation_content->save();
-                    }
+                    //}
                     $obj_instrument->append($evaluation_content);
-                }
+                //}
             }
 
             $start_row++;

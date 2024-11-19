@@ -509,7 +509,7 @@ class AccreditationController extends BaseController //implements ICrud
 
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
-            $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
+            $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue());
             $butir = str_replace('.', '', $butir);
             $value = trim($spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue());
             $ins_component_id = trim($spreadsheet->getActiveSheet()->getCell('M' . strval($start_row))->getCalculatedValue());

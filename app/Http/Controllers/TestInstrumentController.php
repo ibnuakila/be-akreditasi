@@ -209,10 +209,15 @@ class TestInstrumentController extends Controller
                                         'instrumentAspect' => function ($query) use ($category) { // Load aspects of each component
                                             $query->with([
                                                 'instrumentAspectPoint' => function ($query) use ($category) {
-                                                $query->with(['accreditationContent' => function ($query) use ($category){
-                                                    $query->where('accreditation_proposal_id', $category);
-                                                }])->get();
-                                            }
+                                                    $query->with(['accreditationContent' => function ($query) use ($category){
+                                                        $query->where('accreditation_proposal_id', $category);
+                                                    }])
+                                                    ->with(['evaluationContent' => function ($query) use ($category) {
+                                                        $query->join('evaluations', 'evaluations.id', '=', 'evaluation_contents.evaluation_id')
+                                                        ->where('evaluations.accreditation_proposal_id', '=', $category)->first();
+                                                    }])
+                                                    ->get();
+                                                }
                                             ]); // Load aspect points for each aspect
                                         },
                                     ]);

@@ -23,4 +23,9 @@ class EvaluationContent extends Model
         'main_component_id',
         'instrument_aspect_point_id'
     ];
+
+    public function instrumentAspectPoint()
+    {
+        return $this->belongsTo(InstrumentAspectPoint::class);
+    }
 }
