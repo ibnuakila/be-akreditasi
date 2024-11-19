@@ -262,8 +262,8 @@ class ProposalController extends BaseController
             'certificate_status' => 'nullable',
             'certificate_expires_at' => 'nullable',
             'pleno_date' => 'nullable',
-            'certificate_file' => ['extensions:pdf', 'max:2048'],
-            'recommendation_file' => ['extensions:pdf', 'max:2048'],
+            'certificate_file' => 'nullable',
+            'recommendation_file' => 'nullable',
             'is_valid' => 'required',
             'instrument_id' => 'required',
             'category' => 'required'
