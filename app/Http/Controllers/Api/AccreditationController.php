@@ -197,8 +197,10 @@ class AccreditationController extends BaseController //implements ICrud
         $proposal = AccreditationProposal::where('user_id', '=', $input['user_id'])
             ->whereBetween('proposal_date', [$Y . '-01-01', $Y . '-12-31'])
             ->first();
+        $isExist = false;
         if (is_object($proposal)) {
             $proposal->update($accreditation_proposal);
+            $isExist = true;
         } else {
             $proposal = AccreditationProposal::create($accreditation_proposal);
         }
@@ -248,9 +250,10 @@ class AccreditationController extends BaseController //implements ICrud
         //    $temp_inrequest->save($institution_request);
         //    $data['institution_request'] = $temp_inrequest;
         //} else {
-        $temp_inrequest = InstitutionRequest::create($institution_request);
-        $data['institution_request'] = $temp_inrequest;
-        //}
+        if (!$isExist) {
+            $temp_inrequest = InstitutionRequest::create($institution_request);
+            $data['institution_request'] = $temp_inrequest;
+        }
 
 
         $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $input['category'])->get();
@@ -436,13 +439,16 @@ class AccreditationController extends BaseController //implements ICrud
         }
 
         $proposal = AccreditationProposal::find($id);
+        $instrument = Instrument::find($input['category']);
         if (is_object($proposal)) {
             $proposal->institution_id = $input['institution_id'];
             //$proposal->proposal_date = date('Y-m-d');
             $proposal->finish_date = date('Y-m-d');
             $proposal->type = $input['type'];
             $proposal->instrument_id = $input['category'];
-            $proposal->category = $input['category'];
+            if(is_object($instrument)){
+                $proposal->category = $instrument->category;
+            }
             if ($input['status'] == 'valid') {
                 $proposal->proposal_state_id = 1;
             }
@@ -459,7 +465,9 @@ class AccreditationController extends BaseController //implements ICrud
             ->where('accreditation_proposal_id', '=', $id)
             ->first();
         if (is_object($request)) {
-            $request->category = $input['category'];
+            if(is_object($instrument)){
+                $request->category = $instrument->category;
+            }
             $request->region_id = $input['region_id'];
             $request->library_name = $input['library_name'];
             $request->npp = $input['npp'];

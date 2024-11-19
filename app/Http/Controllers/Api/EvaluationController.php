@@ -153,14 +153,19 @@ class EvaluationController extends BaseController implements ICrud
         $input = $request->all();
         $valid = Validator::make($input, [
             'id' => 'required',
-            'value' => 'required'
+            'value' => 'nullable',
+            'pleno' => 'nullable'
         ]);
         if ($valid->fails()) {
             return $this->sendError('Error', $valid->errors());
         }
         $evaluation_content = EvaluationContent::find($input['id']);
-        $evaluation_content->value = $input['value'];
-        $evaluation_content->save();
-        return $this->sendResponse($evaluation_content, 'Success', null);
+        if(is_object($evaluation_content)){
+            $evaluation_content->value = $input['value'];
+            $evaluation_content->save();
+            return $this->sendResponse($evaluation_content, 'Success', null);
+        }else{
+            return $this->sendError('Error', 'Object not found');
+        }
     }
 }
