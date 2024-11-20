@@ -65,7 +65,7 @@ class ProposalAssignmentController extends BaseController
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('assessors.user_id', '=', $user_id)
                 ->select([
-                    //'accreditation_proposals.*',
+                    'accreditation_proposals.*',
                     //'evaluation_assignments.*',
                     'proposal_date',
                     'proposal_states.state_name',
@@ -112,7 +112,7 @@ class ProposalAssignmentController extends BaseController
                 ->where('is_valid', '=', 'valid')
                 ->Where('institution_requests.status', '=', 'valid')
                 ->select([
-                    //'accreditation_proposals.*',
+                    'accreditation_proposals.*',
                     'proposal_date',
                     'proposal_states.state_name',
                     'institution_requests.category',
