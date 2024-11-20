@@ -196,7 +196,7 @@ class ProposalAssignmentController extends BaseController
         $create = EvaluationAssignment::create($data);
         //update accreditation proposal
         $accreProposal = AccreditationProposal::find($input['accreditation_proposal_id']);
-        $accreProposal->proposal_state_id = 3;
+        $accreProposal->proposal_state_id = 2;
         $temp = $accreProposal->assignment_count;
         $accreProposal->assignment_count = $temp + 1;
         $accreProposal->save();

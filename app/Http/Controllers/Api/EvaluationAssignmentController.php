@@ -340,7 +340,9 @@ class EvaluationAssignmentController extends BaseController
                     //$accre_content_id = ;
                     $evaluation_content = new EvaluationContent();
                     $evaluation_content->evaluation_id = $params['evaluation_id'];
-                    $evaluation_content->accreditation_content_id = '-';//$accreditation_content->id;
+                    if(is_object($accreditation_content)){
+                        $evaluation_content->accreditation_content_id = $accreditation_content->id;
+                    }                    
                     $evaluation_content->main_component_id = $main_component_id;
                     $evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
                     //$evaluation_content->aspect = $aspect;
