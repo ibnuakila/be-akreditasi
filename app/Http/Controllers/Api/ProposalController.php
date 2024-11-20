@@ -276,7 +276,11 @@ class ProposalController extends BaseController
         if (is_object($model)) {
             $model->institution_id = $input['institution_id'];
             $model->proposal_date = $input['proposal_date'];
-            $model->proposal_state_id = $input['proposal_state_id'];
+            if($input['is_valid'] == 'valid'){
+                $model->proposal_state_id = 2;
+            }else{
+                $model->proposal_state_id = $input['proposal_state_id'];
+            }
             $model->finish_date = $input['finish_date'];
             $model->type = $input['type'];
             $model->notes = $input['notes'];

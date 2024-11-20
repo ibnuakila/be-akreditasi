@@ -107,8 +107,8 @@ class ProposalAssignmentController extends BaseController
             $query = AccreditationProposal::query()
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-                ->where('accreditation_proposals.proposal_state_id', '=', 2)
-                ->where('accreditation_proposals.is_valid', '=', 'valid')
+                ->where('proposal_state_id', '=', 2)
+                ->where('is_valid', '=', 'valid')
                 ->Where('institution_requests.status', '=', 'valid')
                 ->select([
                     'accreditation_proposals.*',
