@@ -65,7 +65,7 @@ class ProposalAssignmentController extends BaseController
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('assessors.user_id', '=', $user_id)
                 ->select([
-                    'accreditation_proposals.*',
+                    //'accreditation_proposals.*',
                     //'evaluation_assignments.*',
                     'proposal_states.state_name',
                     'institution_requests.category',
@@ -102,7 +102,7 @@ class ProposalAssignmentController extends BaseController
                 $response = $query->offset(value: ($page - 1) * $perPage)
                     ->limit($perPage)
                     ->paginate();
-            $total = $response->count();
+            
         } else {
             $query = AccreditationProposal::query()
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
@@ -111,7 +111,7 @@ class ProposalAssignmentController extends BaseController
                 ->where('is_valid', '=', 'valid')
                 ->Where('institution_requests.status', '=', 'valid')
                 ->select([
-                    'accreditation_proposals.*',
+                    //'accreditation_proposals.*',
                     //'evaluation_assignments.*',
                     'proposal_states.state_name',
                     'institution_requests.category',
