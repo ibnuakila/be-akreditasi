@@ -33,6 +33,7 @@ class AccreditationController extends BaseController //implements ICrud
     //
     public function destroy($id)
     {
+        //tambahkan pengecekan status jika sudah 2 tidak bisa dihapus
         $insti_request = InstitutionRequest::where(['accreditation_proposal_id' => $id])->first();
         if (is_object($insti_request)) {
             $insti_request->delete();
