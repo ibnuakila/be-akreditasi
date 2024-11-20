@@ -67,6 +67,7 @@ class ProposalAssignmentController extends BaseController
                 ->select([
                     //'accreditation_proposals.*',
                     //'evaluation_assignments.*',
+                    'proposal_date',
                     'proposal_states.state_name',
                     'institution_requests.category',
                     'library_name',
@@ -112,7 +113,7 @@ class ProposalAssignmentController extends BaseController
                 ->Where('institution_requests.status', '=', 'valid')
                 ->select([
                     //'accreditation_proposals.*',
-                    //'evaluation_assignments.*',
+                    'proposal_date',
                     'proposal_states.state_name',
                     'institution_requests.category',
                     'library_name',
