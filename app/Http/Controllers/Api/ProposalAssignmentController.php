@@ -105,7 +105,7 @@ class ProposalAssignmentController extends BaseController
             $total = $response->count();
         } else {
             $query = AccreditationProposal::query()
-                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('institution_requestsX', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->where('proposal_state_id', '=', 2)
                 ->where('is_valid', '=', 'valid')
