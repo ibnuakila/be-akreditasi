@@ -154,7 +154,8 @@ class EvaluationController extends BaseController implements ICrud
         $valid = Validator::make($input, [
             'id' => 'required',
             'value' => 'nullable',
-            'pleno' => 'nullable'
+            'pleno' => 'nullable',
+            'banding' => 'nullable'
         ]);
         if ($valid->fails()) {
             return $this->sendError('Error', $valid->errors());
