@@ -169,9 +169,9 @@ class EvaluationAssignmentController extends BaseController
 
         if (is_null($evaluasi)) {
 
-            return $this->sendError('Proposal not found!');
+            return $this->sendError('Assignment not found!');
         }
-        return $this->sendResponse(new EvaluationAssignmentResource($accreditation), 'Proposal Available', $accreditation->count());
+        return $this->sendResponse($evaluasi, 'Assignment Available', 1);
     }
 
     /**

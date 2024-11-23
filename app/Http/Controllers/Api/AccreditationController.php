@@ -330,10 +330,15 @@ class AccreditationController extends BaseController //implements ICrud
                             return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
                         }
                     }
+                    if(trim($document->document_name) == 'Permohonan Banding'){
+                        $accreditation->proposal_state_id = 5; //banding
+                        $accreditation->update();
+                    }
                     //$return['accre_files'] = $accre_files;
                     if (isset($accre_contents)) {
                         $return['accreditation_contents'] = $accre_contents;
                     }
+
                 }
             } else {
                 return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
@@ -432,9 +437,8 @@ class AccreditationController extends BaseController //implements ICrud
             'accreditation_proposal_id' => 'nullable',
             'validated_at' => 'nullable',
             'institution_id' => 'required',
-
-
         ]);
+        $status = $input['status'];
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
         }
