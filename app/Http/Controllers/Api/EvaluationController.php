@@ -162,8 +162,16 @@ class EvaluationController extends BaseController implements ICrud
         }
         $evaluation_content = EvaluationContent::find($input['id']);
         if(is_object($evaluation_content)){
-            $evaluation_content->value = $input['value'];
-            $evaluation_content->save();
+            if(!empty($input['value'])){
+                $evaluation_content->value = $input['value'];
+            }
+            if(!empty($input['pleno'])){
+                $evaluation_content->pleno = $input['pleno'];
+            }
+            if(!empty($input['banding'])){
+                $evaluation_content->value = $input['banding'];
+            }
+            $evaluation_content->update();
             return $this->sendResponse($evaluation_content, 'Success', null);
         }else{
             return $this->sendError('Error', 'Object not found');
