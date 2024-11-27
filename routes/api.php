@@ -182,3 +182,5 @@ Route::get('/evaluation/show/{id}', [EvaluationController::class,'show']);
 Route::post('/evaluation/store', [EvaluationController::class,'store']);
 Route::post('/evaluation/update/{id}', [EvaluationController::class, 'update']);
 Route::post('/evaluation/update-row/', [EvaluationController::class, 'updateRow']);
+
+Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);

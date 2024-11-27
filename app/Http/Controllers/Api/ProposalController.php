@@ -96,7 +96,7 @@ class ProposalController extends BaseController
         if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
             $query->where('proposal_states.state_name', '=', "{$s}");
         }
-        $query->orderBy('proposal_date','desc');
+        $query->orderBy('proposal_date', 'desc');
         $perPage = $request->input(key: 'pageSize', default: 10);
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
@@ -173,7 +173,7 @@ class ProposalController extends BaseController
             ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
             ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
             ->where('accreditation_contents.accreditation_proposal_id', $id)
-            ->groupBy('accreditation_contents.main_component_id','instrument_components.name','instrument_components.weight')
+            ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
             ->get();
 
         $proposal_states = ProposalState::all();
@@ -249,62 +249,79 @@ class ProposalController extends BaseController
     public function update(Request $request, $id)
     {
         $input = $request->all();
+        $user_role = '';
+        if ($request->hasHeader('Access-User')) {
+            $temp_request_header = $request->header('Access-User');
+            $request_header = str_replace('\"', '"', $temp_request_header);
+            $request_header = json_decode($request_header, true);
+            $userid = $request_header['id'];
+            $roles = $request_header['roles'];
 
-        $validator = Validator::make($input, [
-            'institution_id' => 'required',
-            'proposal_date' => 'required',
-            'proposal_state_id' => 'required',
-            'finish_date' => 'nullable',
-            'type' => 'required',
-            'notes' => 'nullable',
-            'accredited_at' => 'nullable',
-            'predicate' => 'nullable',
-            'certificate_status' => 'nullable',
-            'certificate_expires_at' => 'nullable',
-            'pleno_date' => 'nullable',
-            'certificate_file' => 'nullable',
-            'recommendation_file' => 'nullable',
-            'is_valid' => 'required',
-            'instrument_id' => 'required',
-            'category' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error!', $validator->errors());
+            foreach ($roles as $role) {
+                if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
+                    $user_role = $role['name'];
+                }
+            }
         }
-        $model = AccreditationProposal::find($id);
-        if (is_object($model)) {
-            $model->institution_id = $input['institution_id'];
-            $model->proposal_date = $input['proposal_date'];
-            if($input['is_valid'] == 'valid'){
-                $model->proposal_state_id = 2;
-            }else{
-                $model->proposal_state_id = $input['proposal_state_id'];
-            }
-            $model->finish_date = $input['finish_date'];
-            $model->type = $input['type'];
-            $model->notes = $input['notes'];
-            $model->accredited_at = $input['accredited_at'];
-            $model->predicate = $input['predicate'];
-            $model->certificate_status = $input['certificate_status'];
-            $model->certificate_expires_at = $input['certificate_expires_at'];
-            $model->pleno_date = $input['pleno_date'];
-            $model->is_valid = $input['is_valid'];
-            $model->instrument_id = $input['instrument_id'];
-            $model->category = $input['category'];
-            //certificate-file
-            if ($request->file()) {
-                $directory = 'certifications/' . $model->id;
-                $file_certificate = $request->file('certificate_file')->store($directory);
-                $model->certificate_file = $file_certificate;//Storage::url($file_certificate);
-                $directory = 'recommendations/' . $model->id;
-                $file_recommendation = $request->file('recommendation_file')->store($directory);
-                $model->recommendation_file = $file_recommendation;//Storage::url($file_recommendation);
-            }
+        if ($user_role != 'ADMIN PERPUSTAKAAN') {
+            $validator = Validator::make($input, [
+                'institution_id' => 'required',
+                'proposal_date' => 'required',
+                'proposal_state_id' => 'required',
+                'finish_date' => 'nullable',
+                'type' => 'required',
+                'notes' => 'nullable',
+                'accredited_at' => 'nullable',
+                'predicate' => 'nullable',
+                'certificate_status' => 'nullable',
+                'certificate_expires_at' => 'nullable',
+                'pleno_date' => 'nullable',
+                'certificate_file' => 'nullable',
+                'recommendation_file' => 'nullable',
+                'is_valid' => 'required',
+                'instrument_id' => 'required',
+                'category' => 'required'
+            ]);
 
-            $model->save();
-        } else {
-            $this->sendError('Error', 'Object not found!');
+            if ($validator->fails()) {
+                return $this->sendError('Validation Error!', $validator->errors());
+            }
+            $model = AccreditationProposal::find($id);
+            if (is_object($model)) {
+                $model->institution_id = $input['institution_id'];
+                $model->proposal_date = $input['proposal_date'];
+                if ($input['is_valid'] == 'valid') {
+                    $model->proposal_state_id = 2;
+                } else {
+                    $model->proposal_state_id = $input['proposal_state_id'];
+                }
+                $model->finish_date = $input['finish_date'];
+                $model->type = $input['type'];
+                $model->notes = $input['notes'];
+                $model->accredited_at = $input['accredited_at'];
+                $model->predicate = $input['predicate'];
+                $model->certificate_status = $input['certificate_status'];
+                $model->certificate_expires_at = $input['certificate_expires_at'];
+                $model->pleno_date = $input['pleno_date'];
+                $model->is_valid = $input['is_valid'];
+                $model->instrument_id = $input['instrument_id'];
+                $model->category = $input['category'];
+                //certificate-file
+                if ($request->file()) {
+                    $directory = 'certifications/' . $model->id;
+                    $file_certificate = $request->file('certificate_file')->store($directory);
+                    $model->certificate_file = $file_certificate;//Storage::url($file_certificate);
+                    $directory = 'recommendations/' . $model->id;
+                    $file_recommendation = $request->file('recommendation_file')->store($directory);
+                    $model->recommendation_file = $file_recommendation;//Storage::url($file_recommendation);
+                }
+
+                $model->save();
+            } else {
+                $this->sendError('Error', 'Object not found!');
+            }
+        }else{
+            $model = [];
         }
         return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
     }

@@ -152,9 +152,10 @@ class EvaluationAssignmentController extends BaseController
             $response = $query->offset(value: ($page - 1) * $perPage)
                 ->limit($perPage)
                 ->paginate();
-            $data['evaluation_assignments'] = $response;
-            $data['user_access'] = $request_header;
+            
         }
+        //$data['evaluation_assignments'] = $response;
+        //$data['user_access'] = $request_header;
         return $this->sendResponse($response, "Success", $total);
     }
 
