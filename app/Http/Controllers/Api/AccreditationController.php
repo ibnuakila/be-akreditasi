@@ -83,7 +83,7 @@ class AccreditationController extends BaseController //implements ICrud
         if (is_object($institution_request)) {
             $accreditation_proposal = AccreditationProposal::query()
                 ->select('accreditation_proposals.*')
-                ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
+                //->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
                 ->where(['accreditation_proposals.user_id' => $userid])
                 ->with('proposalState')->get();
 
