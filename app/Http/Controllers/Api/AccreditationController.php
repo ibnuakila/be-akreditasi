@@ -59,10 +59,23 @@ class AccreditationController extends BaseController //implements ICrud
         }
     }
 
-    public function index($user_id)
+    public function index($user_id, Request $request)
     {
+        if ($request->hasHeader('Access-User')) {
+            $temp_request_header = $request->header('Access-User');
+            $request_header = str_replace('\"', '"', $temp_request_header);
+            $request_header = json_decode($request_header, true);
+            $userid = $request_header['id'];
+            $roles = $request_header['roles'];
+            $user_role = '';
+            foreach ($roles as $role) {
+                if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
+                    $user_role = $role['name'];
+                }
+            }
+        }
         $institution_request = InstitutionRequest::query()
-            ->where(['user_id' => $user_id])->get();
+            ->where(['user_id' => $userid])->get();
         if (is_object($institution_request)) {
             //$data['institution_request'] = $institution_request;
         }
@@ -71,7 +84,7 @@ class AccreditationController extends BaseController //implements ICrud
             $accreditation_proposal = AccreditationProposal::query()
                 ->select('accreditation_proposals.*')
                 ->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
-                ->where(['institution_requests.user_id' => $user_id])
+                ->where(['accreditation_proposals.user_id' => $userid])
                 ->with('proposalState')->get();
 
         }
