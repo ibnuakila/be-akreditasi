@@ -110,6 +110,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/proposal/update/{id}', [ProposalController::class, 'update']);
     Route::delete('/proposal/destroy/{model}', [ProposalController::class, 'destroy']);
     Route::get('/proposal/show-file/{id}/{file}', [ProposalController::class, 'showFile']);
+    Route::get('/proposal/show-file/{id}', [ProposalController::class, 'showFiles']);
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){

@@ -13,6 +13,7 @@ use App\Models\EvaluationContent;
 use App\Models\InstrumentAspect;
 use App\Models\InstrumentAspectPoint;
 use App\Models\InstrumentComponent;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Storage;
@@ -66,7 +67,7 @@ class EvaluationAssignmentController extends BaseController
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('assessors.user_id', '=', $user_id)
                 ->select([
-                    'accreditation_proposals.*',                    
+                    'accreditation_proposals.*',
                     'proposal_states.state_name',
                     'institution_requests.category',
                     'library_name',
@@ -107,31 +108,31 @@ class EvaluationAssignmentController extends BaseController
         } else {
 
             $query = AccreditationProposal::query()
-            //->select('accreditation_proposals.*')
-            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-            ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
-            //->where('accreditation_proposals.proposal_state_id', '=', 2)
-            ->Where('institution_requests.status', '=', 'valid')
-            //->where('assessors.user_id', '=', $user_id)
-            ->select([
-                'accreditation_proposals.*',                    
-                'proposal_states.state_name',
-                'institution_requests.category',
-                'library_name',
-                'npp',
-                'agency_name',
-                'institution_head_name',
-                'institution_requests.email',
-                'telephone_number',
-                'province_name as province',
-                'city_name as city',
-                'subdistrict_name as subdistrict',
-                'village_name as village',
-                'assessor_id',
-                'assessors.name as assessor'
-            ]);
+                //->select('accreditation_proposals.*')
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
+                //->where('accreditation_proposals.proposal_state_id', '=', 2)
+                ->Where('institution_requests.status', '=', 'valid')
+                //->where('assessors.user_id', '=', $user_id)
+                ->select([
+                    'accreditation_proposals.*',
+                    'proposal_states.state_name',
+                    'institution_requests.category',
+                    'library_name',
+                    'npp',
+                    'agency_name',
+                    'institution_head_name',
+                    'institution_requests.email',
+                    'telephone_number',
+                    'province_name as province',
+                    'city_name as city',
+                    'subdistrict_name as subdistrict',
+                    'village_name as village',
+                    'assessor_id',
+                    'assessors.name as assessor'
+                ]);
             if ($is_assessor) {
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();
                 $query->where('evaluation_assignments.assessor_id', '=', $assessor->id);
@@ -157,7 +158,7 @@ class EvaluationAssignmentController extends BaseController
             $response = $query->offset(value: ($page - 1) * $perPage)
                 ->limit($perPage)
                 ->paginate();
-            
+
         }
         //$data['evaluation_assignments'] = $response;
         //$data['user_access'] = $request_header;
@@ -258,7 +259,7 @@ class EvaluationAssignmentController extends BaseController
                         'file_type' => $file_type,
                         'file_path' => $file_path,
                     ];
-
+                    
                     $evaluation = Evaluation::create($data);
                 }
                 //update assignment state
@@ -276,6 +277,27 @@ class EvaluationAssignmentController extends BaseController
                 if ($temp_file_name == $instrument_id) {
                     $evaluation_contents = $this->readInstrument($params);
                     $return['evaluation_contents'] = $evaluation_contents;
+
+                    //update skor evaluasi
+                    $eval_contents = DB::table('accreditation_contents')
+                        ->select(
+                            'instrument_components.name',
+                            'instrument_components.weight',
+                            DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
+                            DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
+                            DB::raw('SUM(evaluation_contents.value) as nilai_evaluasi'),
+                            DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
+                            'accreditation_contents.main_component_id'
+                        )
+                        ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+                        ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
+                        ->where('accreditation_contents.accreditation_proposal_id', $input['accreditation_proposal_id'])
+                        ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
+                        ->get();
+                    $skor = 0;
+                    foreach($eval_contents as $ec){
+
+                    }
                     return $this->sendResponse($return, 'Success');
                 } else {
                     return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
@@ -343,37 +365,38 @@ class EvaluationAssignmentController extends BaseController
                     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
 
                 //if (is_object($accreditation_content)) {
-                    //$accre_content_id = ;
-                    $evaluation_content = new EvaluationContent();
-                    $evaluation_content->evaluation_id = $params['evaluation_id'];
-                    if(is_object($accreditation_content)){
-                        $evaluation_content->accreditation_content_id = $accreditation_content->id;
-                    }                    
-                    $evaluation_content->main_component_id = $main_component_id;
-                    $evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
-                    //$evaluation_content->aspect = $aspect;
-                    $evaluation_content->statement = $statement;
-                    $evaluation_content->value = $value;
-                    $evaluation_content->comment = $comment;
-                    if (!is_numeric($pleno)) {
-                        $pleno = 0;
-                    }
-                    if (!is_numeric($banding)) {
-                        $banding = 0;
-                    }
-                    $evaluation_content->pleno = $pleno;
-                    $evaluation_content->banding = $banding;
-                    //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
-                    //$evaluation_content->butir = $butir;
-                    //if (!empty($aspect_id)) {
-                        $evaluation_content->save();
-                    //}
-                    $obj_instrument->append($evaluation_content);
+                //$accre_content_id = ;
+                $evaluation_content = new EvaluationContent();
+                $evaluation_content->evaluation_id = $params['evaluation_id'];
+                if (is_object($accreditation_content)) {
+                    $evaluation_content->accreditation_content_id = $accreditation_content->id;
+                }
+                $evaluation_content->main_component_id = $main_component_id;
+                $evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
+                //$evaluation_content->aspect = $aspect;
+                $evaluation_content->statement = $statement;
+                $evaluation_content->value = $value;
+                $evaluation_content->comment = $comment;
+                if (!is_numeric($pleno)) {
+                    $pleno = 0;
+                }
+                if (!is_numeric($banding)) {
+                    $banding = 0;
+                }
+                $evaluation_content->pleno = $pleno;
+                $evaluation_content->banding = $banding;
+                //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
+                //$evaluation_content->butir = $butir;
+                //if (!empty($aspect_id)) {
+                $evaluation_content->save();
+                //}
+                $obj_instrument->append($evaluation_content);
                 //}
             }
 
             $start_row++;
         }
-        return $obj_instrument->getArrayCopy();;
+        return $obj_instrument->getArrayCopy();
+        ;
     }
 }

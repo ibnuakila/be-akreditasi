@@ -360,5 +360,32 @@ class ProposalController extends BaseController
 
     }
 
+    public function showFiles($id, Request $request)
+    {
+        if ($request->hasHeader('Access-User')) {
+            $accre_file = AccreditationProposalFiles::find($id);
+            if (is_object($accre_file)) {
+                $file_path = $accre_file->file_path;
+                $file_name = $accre_file->file_name;
+                $file_type = $accre_file->file_type;
+                try {
+                    $file_content = Storage::get($file_path);
+                    return response($file_content, 200)
+                        ->header('Content-Type', $file_type) // Set Content-Type header
+                        ->header('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type')
+                        ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                    //return Storage::download($file_path, $accre_file->file_name);
+                } catch (FileNotFoundException $e) {
+                    return $this->sendError('File not Found', 'File not available in hard drive!');
+                }
+
+            } else {
+                return $this->sendError('Record not Found', 'Record not available in database!');
+            }
+        } else {
+            return $this->sendError('Error', 'Authorization Failed!');
+        }
+    }
+
 
 }
