@@ -79,7 +79,9 @@ class EvaluationAssignmentController extends BaseController
                     'province_name as province',
                     'city_name as city',
                     'subdistrict_name as subdistrict',
-                    'village_name as village'
+                    'village_name as village',
+                    'assessor_id',
+                    'assessors.name'
                 ]);
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
@@ -109,7 +111,8 @@ class EvaluationAssignmentController extends BaseController
                 ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-                //->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
+                ->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
+                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
                 ->select([
                     'accreditation_proposals.proposal_date',
                     'evaluation_assignments.*',
@@ -125,7 +128,8 @@ class EvaluationAssignmentController extends BaseController
                     'city_name as city',
                     'subdistrict_name as subdistrict',
                     'village_name as village',
-                    'assessor_id'
+                    'assessor_id',
+                    'assessors.name'
                 ]);
             if ($is_assessor) {
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();

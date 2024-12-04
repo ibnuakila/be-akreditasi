@@ -263,7 +263,7 @@ class ProposalController extends BaseController
                 }
             }
         }
-        if ($user_role != 'ADMIN PERPUSTAKAAN') {
+        if ($user_role !== 'ADMIN PERPUSTAKAAN') {
             $validator = Validator::make($input, [
                 'institution_id' => 'required',
                 'proposal_date' => 'required',
