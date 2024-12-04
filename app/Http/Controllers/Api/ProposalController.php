@@ -84,13 +84,13 @@ class ProposalController extends BaseController
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
-        if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'province_name')) {//filter berdasarkan name            
             $query->where('province_name', '=', "{$s}");
         }
-        if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'city_name')) {//filter berdasarkan name            
             $query->where('city_name', '=', "{$s}");
         }
-        if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'subdistrict_name')) {//filter berdasarkan name            
             $query->where('subdistrict_name', '=', "{$s}");
         }
         if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
