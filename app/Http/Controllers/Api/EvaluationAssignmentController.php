@@ -110,8 +110,8 @@ class EvaluationAssignmentController extends BaseController
             $query = EvaluationAssignment::query()
                 ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-                ->join('evaluation_assignments', 'evaluation_assignments.accreditation_proposal_id', '=', 'accreditation_proposals.id')
+                //->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')                
                 ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
                 ->select([
                     'accreditation_proposals.proposal_date',
@@ -122,7 +122,7 @@ class EvaluationAssignmentController extends BaseController
                     'npp',
                     'agency_name',
                     'institution_head_name',
-                    'email',
+                    'institution_requests.email',
                     'telephone_number',
                     'province_name as province',
                     'city_name as city',
