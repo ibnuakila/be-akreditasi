@@ -66,8 +66,7 @@ class EvaluationAssignmentController extends BaseController
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('assessors.user_id', '=', $user_id)
                 ->select([
-                    'accreditation_proposals.*',
-                    //'evaluation_assignments.*',
+                    'accreditation_proposals.*',                    
                     'proposal_states.state_name',
                     'institution_requests.category',
                     'library_name',
@@ -81,7 +80,7 @@ class EvaluationAssignmentController extends BaseController
                     'subdistrict_name as subdistrict',
                     'village_name as village',
                     'assessor_id',
-                    'assessors.name'
+                    'assessors.name as assessor'
                 ]);
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
@@ -129,7 +128,7 @@ class EvaluationAssignmentController extends BaseController
                     'subdistrict_name as subdistrict',
                     'village_name as village',
                     'assessor_id',
-                    'assessors.name'
+                    'assessors.name as assessor'
                 ]);
             if ($is_assessor) {
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();
