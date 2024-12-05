@@ -259,7 +259,7 @@ class EvaluationAssignmentController extends BaseController
                         'file_type' => $file_type,
                         'file_path' => $file_path,
                     ];
-                    
+
                     $evaluation = Evaluation::create($data);
                 }
                 //update assignment state
@@ -275,29 +275,48 @@ class EvaluationAssignmentController extends BaseController
                 $instrument_id = $accreditation->instrument_id;
                 $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
                 if ($temp_file_name == $instrument_id) {
+                    $accre_content = AccreditationContent::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
+                    
+                    $eval_contents = new \ArrayObject();
+                    DB::table('evaluation_contents')->where('evaluation_id', $evaluation->id)->delete();
+                    foreach ($accre_content as $ac) {
+                        $eval_data = [
+                            'evaluation_id' => $evaluation->id,
+                            'statement' => $ac->statement,
+                            'accreditation_content_id' => $ac->id,
+                            'main_component_id' => $ac->main_component_id,
+                            'instrument_aspect_point_id' => $ac->instrument_aspect_point_id
+                        ];
+                        $eval_content = EvaluationContent::create($eval_data);
+                        $eval_contents->append($eval_content);
+                    }
+
                     $evaluation_contents = $this->readInstrument($params);
                     $return['evaluation_contents'] = $evaluation_contents;
 
                     //update skor evaluasi
-                    $eval_contents = DB::table('accreditation_contents')
+                    $eval_contents = DB::table('evaluation_contents')
                         ->select(
                             'instrument_components.name',
                             'instrument_components.weight',
-                            DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
-                            DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
+                            //DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
+                            //DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
                             DB::raw('SUM(evaluation_contents.value) as nilai_evaluasi'),
                             DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
-                            'accreditation_contents.main_component_id'
+                            'evaluation_contents.main_component_id'
                         )
-                        ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
-                        ->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
-                        ->where('accreditation_contents.accreditation_proposal_id', $input['accreditation_proposal_id'])
-                        ->groupBy('accreditation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
+                        ->join('instrument_components', 'evaluation_contents.main_component_id', '=', 'instrument_components.id')
+                        //->leftJoin('evaluation_contents', 'accreditation_contents.id', '=', 'evaluation_contents.accreditation_content_id')
+                        ->where('evaluation_contents.evaluation_id', $evaluation->id)
+                        ->groupBy('evaluation_contents.main_component_id', 'instrument_components.name', 'instrument_components.weight')
                         ->get();
                     $skor = 0;
-                    foreach($eval_contents as $ec){
-
+                    foreach ($eval_contents as $ec) {
+                        $skor = $skor + $ec->total_nilai_evaluasi;
                     }
+                    $evaluation->skor = $skor;
+                    $evaluation->update();
+
                     return $this->sendResponse($return, 'Success');
                 } else {
                     return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
@@ -314,8 +333,8 @@ class EvaluationAssignmentController extends BaseController
     private function readInstrument($params)
     {
         //delete penilaian terlebih dahulu
-        EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
-            ->delete();
+        //EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
+            //->delete();
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 3;
@@ -328,7 +347,7 @@ class EvaluationAssignmentController extends BaseController
         while (is_numeric($butir)) {
             $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
             $butir = str_replace('.', '', $butir);
-            $value = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
+            $nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
             $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
@@ -345,17 +364,21 @@ class EvaluationAssignmentController extends BaseController
                 $aspect = '-';
                 if (is_object($instrument_aspect)) {
                     $aspect = $instrument_aspect->aspect;
+                    $nilai = $instrument_aspect->value;
+                }
+                if($nilai == ''){
+                    $nilai = 0;
                 }
                 $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
-                    ->where('value', '=', $value)->first();
+                    ->where('value', '=', $nilai)->first();
                 $statement = '-';
                 $instrument_aspect_point_id = '';
                 if (is_object($instrument_aspect_point)) {
                     $statement = $instrument_aspect_point->statement;
-                    $value = $instrument_aspect_point->value;
+                    //$new_value = $instrument_aspect_point->value;
                     $instrument_aspect_point_id = $instrument_aspect_point->id;
                 } else {
-                    $value = 0;
+                    $statement = '-';
                 }
 
                 $accreditation_content = AccreditationContent::query()
@@ -366,31 +389,43 @@ class EvaluationAssignmentController extends BaseController
 
                 //if (is_object($accreditation_content)) {
                 //$accre_content_id = ;
-                $evaluation_content = new EvaluationContent();
-                $evaluation_content->evaluation_id = $params['evaluation_id'];
-                if (is_object($accreditation_content)) {
-                    $evaluation_content->accreditation_content_id = $accreditation_content->id;
+                $evaluation_content = EvaluationContent::query()
+                    ->where('evaluation_id', $params['evaluation_id'])
+                    ->where('instrument_aspect_point_id', $instrument_aspect_point_id)->first();
+
+                //$evaluation_content->evaluation_id = $params['evaluation_id'];
+                if (is_object($evaluation_content)) {
+                    //$evaluation_content->accreditation_content_id = $accreditation_content->id;
+                    //$evaluation_content->main_component_id = $main_component_id;
+                    //$evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
+                    //$evaluation_content->aspect = $aspect;
+                    $evaluation_content->statement = $statement;
+                    $evaluation_content->value = $nilai;
+                    $evaluation_content->comment = $comment;
+                    if (!is_numeric($pleno)) {
+                        $pleno = 0;
+                    }
+                    if (!is_numeric($banding)) {
+                        $banding = 0;
+                    }
+                    $evaluation_content->pleno = $pleno;
+                    $evaluation_content->banding = $banding;
+                    //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
+                    //$evaluation_content->butir = $butir;
+                    //if (!empty($aspect_id)) {
+                    $evaluation_content->update();
+                    // $evaluation_content = DB::table('evaluation_contents')
+                    // ->where('evaluation_id', $params['evaluation_id'])
+                    // ->where('instrument_aspect_point_id', $instrument_aspect_point_id)
+                    // ->update([
+                    //     'value' => $value,
+                    //     'comment' => $comment,
+                    //     'pleno' => $pleno,
+                    //     'banding' => $banding
+                    // ]);
+                    $obj_instrument->append($evaluation_content);
                 }
-                $evaluation_content->main_component_id = $main_component_id;
-                $evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
-                //$evaluation_content->aspect = $aspect;
-                $evaluation_content->statement = $statement;
-                $evaluation_content->value = $value;
-                $evaluation_content->comment = $comment;
-                if (!is_numeric($pleno)) {
-                    $pleno = 0;
-                }
-                if (!is_numeric($banding)) {
-                    $banding = 0;
-                }
-                $evaluation_content->pleno = $pleno;
-                $evaluation_content->banding = $banding;
-                //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
-                //$evaluation_content->butir = $butir;
-                //if (!empty($aspect_id)) {
-                $evaluation_content->save();
-                //}
-                $obj_instrument->append($evaluation_content);
+                
                 //}
             }
 
