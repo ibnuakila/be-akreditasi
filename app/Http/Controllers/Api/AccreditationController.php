@@ -243,6 +243,7 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
+            $perpustakaan = null;
             if(is_object($response)){
             $perpustakaan = $response->data;
             }
