@@ -174,8 +174,11 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
-            $perpustakaan = $response->data;
-            $data['perpustakaan'] = $response;
+            if(is_object($response->data)){
+                $perpustakaan = $response->data;
+                $data['perpustakaan'] = $response;
+            }
+            
 
             $Y = date('Y');
             $proposal = AccreditationProposal::where('user_id', '=', $userid)
