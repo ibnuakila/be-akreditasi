@@ -10,6 +10,7 @@ use App\Models\Assessor;
 use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
 use App\Models\EvaluationContent;
+use App\Models\EvaluationContentAssessor;
 use App\Models\InstrumentAspect;
 use App\Models\InstrumentAspectPoint;
 use App\Models\InstrumentComponent;
@@ -276,19 +277,22 @@ class EvaluationAssignmentController extends BaseController
                 $temp_file_name = substr($file_name, 0, strlen($file_name) - 5);
                 if ($temp_file_name == $instrument_id) {
                     $accre_content = AccreditationContent::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
-                    
+
                     $eval_contents = new \ArrayObject();
                     DB::table('evaluation_contents')->where('evaluation_id', $evaluation->id)->delete();
+
                     foreach ($accre_content as $ac) {
                         $eval_data = [
                             'evaluation_id' => $evaluation->id,
                             'statement' => $ac->statement,
+                            'value' => $ac->value,
                             'accreditation_content_id' => $ac->id,
                             'main_component_id' => $ac->main_component_id,
-                            'instrument_aspect_point_id' => $ac->instrument_aspect_point_id
+                            'instrument_aspect_point_id' => $ac->instrument_aspect_point_id,
+                            'updated_at' => date('Y-m-d H:i:s')
                         ];
                         $eval_content = EvaluationContent::create($eval_data);
-                        $eval_contents->append($eval_content);
+                        $eval_contents->append($eval_data);
                     }
 
                     $evaluation_contents = $this->readInstrument($params);
@@ -334,104 +338,102 @@ class EvaluationAssignmentController extends BaseController
     {
         //delete penilaian terlebih dahulu
         //EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
-            //->delete();
+        //->delete();
         $file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 3;
-        $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue());
-        $butir = str_replace('.', '', $butir);
+        $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . strval($start_row))->getCalculatedValue());
+        if (strpos($butir, '.') !== false) {
+            $butir = (int)str_replace('.', '', $butir);
+        }
         //$ins_component_id = trim($spreadsheet->getActiveSheet(0)->getCell('I' . strval($start_row))->getCalculatedValue());
 
         $main_component_id = '';
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
-            $butir = $spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue();
-            $butir = str_replace('.', '', $butir);
+            $butir = (int)trim($spreadsheet->getActiveSheet()->getCell('A' . strval($start_row))->getCalculatedValue());
+            if (strpos($butir, '.') !== false) {
+                $butir = (int)str_replace('.', '', $butir);
+            }
+            
             $nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
             $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
             $ins_component_id = trim($spreadsheet->getActiveSheet()->getCell('M' . strval($start_row))->getCalculatedValue());
+            $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
+            $data = [
+                'butir' => $butir,
+                'nilai' => $nilai,
+                'comment' => $comment,
+                'pleno' => $pleno,
+                'banding' => $banding,
+                'ins_component_id' => $ins_component_id,
+                'aspect_id' => $aspect_id
+            ];
 
-            if (!empty($ins_component_id)) {
-                $aspect_id = trim($spreadsheet->getActiveSheet()->getCell('N' . strval($start_row))->getCalculatedValue());
-                $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
-                    ->where('type', '=', 'main')->first();
-                if (is_object($instrument_component)) {
-                    $main_component_id = $instrument_component->id;
-                }
-                $instrument_aspect = InstrumentAspect::where('id', '=', $aspect_id)->first();
-                $aspect = '-';
-                if (is_object($instrument_aspect)) {
-                    $aspect = $instrument_aspect->aspect;
-                    $nilai = $instrument_aspect->value;
-                }
-                if($nilai == ''){
-                    $nilai = 0;
-                }
-                $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
-                    ->where('value', '=', $nilai)->first();
-                $statement = '-';
-                $instrument_aspect_point_id = '';
-                if (is_object($instrument_aspect_point)) {
-                    $statement = $instrument_aspect_point->statement;
-                    //$new_value = $instrument_aspect_point->value;
-                    $instrument_aspect_point_id = $instrument_aspect_point->id;
-                } else {
-                    $statement = '-';
-                }
+            // $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
+            //     ->where('type', '=', 'main')->first();
+            // if (is_object($instrument_component)) {
+            //     $main_component_id = $instrument_component->id;
+            // }
 
-                $accreditation_content = AccreditationContent::query()
-                    ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
-                    //->where('main_component_id', '=', $ins_component_id)
-                    //->where('aspectable_id', '=', $aspect_id)
-                    ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
+            // $instrument_aspect = InstrumentAspect::where('id', '=', $aspect_id)->first();
+            // $aspect = '-';
+            // if (is_object($instrument_aspect)) {
+            //     $aspect = $instrument_aspect->aspect;                
+            // }
 
-                //if (is_object($accreditation_content)) {
-                //$accre_content_id = ;
-                $evaluation_content = EvaluationContent::query()
-                    ->where('evaluation_id', $params['evaluation_id'])
-                    ->where('instrument_aspect_point_id', $instrument_aspect_point_id)->first();
+            $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
+                ->where('value', '=', $nilai)->first();
+            $statement = '-';
+            $instrument_aspect_point_id = '';
 
-                //$evaluation_content->evaluation_id = $params['evaluation_id'];
-                if (is_object($evaluation_content)) {
-                    //$evaluation_content->accreditation_content_id = $accreditation_content->id;
-                    //$evaluation_content->main_component_id = $main_component_id;
-                    //$evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
-                    //$evaluation_content->aspect = $aspect;
-                    $evaluation_content->statement = $statement;
-                    $evaluation_content->value = $nilai;
-                    $evaluation_content->comment = $comment;
-                    if (!is_numeric($pleno)) {
-                        $pleno = 0;
-                    }
-                    if (!is_numeric($banding)) {
-                        $banding = 0;
-                    }
-                    $evaluation_content->pleno = $pleno;
-                    $evaluation_content->banding = $banding;
-                    //$evaluation_content->accreditation_proposal_id = $params['accreditation_proposal_id'];
-                    //$evaluation_content->butir = $butir;
-                    //if (!empty($aspect_id)) {
-                    $evaluation_content->update();
-                    // $evaluation_content = DB::table('evaluation_contents')
-                    // ->where('evaluation_id', $params['evaluation_id'])
-                    // ->where('instrument_aspect_point_id', $instrument_aspect_point_id)
-                    // ->update([
-                    //     'value' => $value,
-                    //     'comment' => $comment,
-                    //     'pleno' => $pleno,
-                    //     'banding' => $banding
-                    // ]);
-                    $obj_instrument->append($evaluation_content);
+            if (is_object($instrument_aspect_point)) {
+                $statement = $instrument_aspect_point->statement;
+                $nilai = $instrument_aspect_point->value;
+                $instrument_aspect_point_id = $instrument_aspect_point->id;
+            }else{
+                $nilai = 0;
+            }
+
+            // $accreditation_content = AccreditationContent::query()
+            //     ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
+            //     //->where('main_component_id', '=', $ins_component_id)
+            //     //->where('aspectable_id', '=', $aspect_id)
+            //     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
+
+
+            $evaluation_content = EvaluationContent::query()
+                ->where('evaluation_id', '=', $params['evaluation_id'])
+                ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
+
+            if (is_object($evaluation_content)) {
+                $evaluation_content->evaluation_id = $params['evaluation_id'];
+
+                //$evaluation_content->accreditation_content_id = $accreditation_content->id;
+                //$evaluation_content->main_component_id = $main_component_id;
+                //$evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
+                //$evaluation_content->aspect = $aspect;
+                $evaluation_content->statement = $statement;
+                $evaluation_content->value = $nilai;
+                $evaluation_content->comment = $comment;
+                //$evaluation_content->updated_at = date('Y-m-d H:i:s');
+                if (!is_numeric($pleno)) {
+                    $pleno = 0;
                 }
-                
-                //}
+                if (!is_numeric($banding)) {
+                    $banding = 0;
+                }
+                $evaluation_content->pleno = $pleno;
+                $evaluation_content->banding = $banding;
+                $evaluation_content->save();
+                $obj_instrument->append($data);
             }
 
             $start_row++;
         }
         return $obj_instrument->getArrayCopy();
-        ;
+
     }
 }
