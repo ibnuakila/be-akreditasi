@@ -243,7 +243,9 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
+            if(is_object($response)){
             $perpustakaan = $response->data;
+            }
             //}
             //validating---------------------------
             $validator = Validator::make($input, [
@@ -323,27 +325,52 @@ class AccreditationController extends BaseController //implements ICrud
             } /*else {
            $file_path = $request->file('registration_form_file')->store($input['user_id']);
        }*/
-            $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
+            $library_name = '-';
+            $npp = '';
+            $agency_name = '';
+            $province_name = '';
+            $city_name = '';
+            $subdistrict_name = '';
+            $village_name = '';
+            $institution_head_name = '';
+            $email = '';
+            $telephone_number = '';
+            $library_head_name = '';
+            $title_count = 0;
+            if(is_object($perpustakaan)){
+                $library_name = $perpustakaan->nama_perpustakaan;
+                $npp = $perpustakaan->npp;
+                $agency_name = $perpustakaan->nama_lembaga;
+                $province_name = $perpustakaan->provinsi;
+                $city_name = $perpustakaan->kota_kabupaten;
+                $subdistrict_name = $perpustakaan->kecamatan;
+                $village_name = $perpustakaan->kelurahan_desa;
+                $institution_head_name = $perpustakaan->nama_kepala_sekolah;
+                $email = $perpustakaan->email;
+                $telephone_number = $perpustakaan->nomor_telepon;
+                $library_head_name = $perpustakaan->nama_kepala_perpustakaan;
+                $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
+            }
             $institution_request = [
                 'category' => $input['category'],
                 'region_id' => $input['region_id'],
-                'library_name' => $perpustakaan->nama_perpustakaan,
-                'npp' => $perpustakaan->npp,
-                'agency_name' => $perpustakaan->nama_lembaga,
+                'library_name' => $library_name,
+                'npp' => $npp,
+                'agency_name' => $agency_name,
                 // 'address' => $input['address'],
                 // 'province_id' => $input['province_id'],
-                'province_name' => $perpustakaan->provinsi,
+                'province_name' => $province_name,
                 // 'city_id' => $input['city_id'],
-                'city_name' => $perpustakaan->kota_kabupaten,
+                'city_name' => $city_name,
                 // 'subdistrict_id' => $input['subdistrict_id'],
-                'subdistrict_name' => $perpustakaan->kecamatan,
+                'subdistrict_name' => $subdistrict_name,
                 // 'village_id' => $input['village_id'],
-                'village_name' => $perpustakaan->kelurahan_desa,
-                'institution_head_name' => $perpustakaan->nama_kepala_sekolah,
-                'email' => $perpustakaan->email,
-                'telephone_number' => $perpustakaan->nomor_telepon,
+                'village_name' => $village_name,
+                'institution_head_name' => $institution_head_name,
+                'email' => $email,
+                'telephone_number' => $telephone_number,
                 // 'mobile_number' => $input['mobile_number'],
-                'library_head_name' => $perpustakaan->nama_kepala_perpustakaan,
+                'library_head_name' => $library_head_name,
                 // 'library_worker_name' => $input['library_worker_name'],
                 'registration_form_file' => $file_path,
                 'title_count' => $title_count,
@@ -466,7 +493,7 @@ class AccreditationController extends BaseController //implements ICrud
         }
     }
 
-    public function edit($id)
+    public function edit($id, Request $request)
     {
         if ($request->hasHeader('Access-User')) {
             $accreditation_proposal = AccreditationProposal::find($id);
