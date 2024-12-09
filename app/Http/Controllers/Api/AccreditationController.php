@@ -494,12 +494,12 @@ class AccreditationController extends BaseController //implements ICrud
             //ambil hanya dokumen yg belum diupload
             //$proposal_document = ProposalDocument::query()
             //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
-            $proposal_document = ProposalDocument::join(
-                'instruments',
-                'proposal_documents.instrument_id',
-                '=',
-                'instruments.id'
-            )
+                $proposal_document = ProposalDocument::join(
+                    'instruments',
+                    'proposal_documents.instrument_id',
+                    '=',
+                    'instruments.id'
+                )
                 ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
                 ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
                     $query->select('proposal_document_id')
@@ -508,6 +508,7 @@ class AccreditationController extends BaseController //implements ICrud
                 })
                 ->select(['proposal_documents.*'])
                 ->get();
+
             $accreditation_contents = AccreditationContent::query()
                 ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
             /*$provinces = Province::all();
@@ -533,7 +534,7 @@ class AccreditationController extends BaseController //implements ICrud
             $data['type'] = $type;
             return $this->sendResponse($data, "Success", 0);
         } else {
-            $this->sendError('Error', 'Authorization Failed!');
+            return $this->sendError('Error', 'Authorization Failed!');
         }
     }
 
