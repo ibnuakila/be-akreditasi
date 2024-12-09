@@ -304,11 +304,12 @@ class AccreditationController extends BaseController //implements ICrud
             if ($request->file()) {
                 $file_path = $request->file('registration_form_file')->store('institutions/forms/');
             } /*else {
-          $file_path = $request->file('registration_form_file')->store($input['user_id']);
-      }*/
+         $file_path = $request->file('registration_form_file')->store($input['user_id']);
+     }*/
             $library_name = '-';
             $npp = '';
             $agency_name = '';
+            $address = '';
             $province_id = '';
             $province_name = '';
             $city_id = '';
@@ -322,10 +323,12 @@ class AccreditationController extends BaseController //implements ICrud
             $telephone_number = '';
             $library_head_name = '';
             $title_count = 0;
+            $last_predicate = '';
             if (is_object($perpustakaan)) {
                 $library_name = $perpustakaan->nama_perpustakaan;
                 $npp = $perpustakaan->npp;
                 $agency_name = $perpustakaan->nama_lembaga;
+                $address = $perpustakaan->alamat;
                 $province_id = $perpustakaan->provinsi->id;
                 $province_name = $perpustakaan->provinsi->nama;
                 $city_id = $perpustakaan->kota_kabupaten->id;
@@ -338,6 +341,7 @@ class AccreditationController extends BaseController //implements ICrud
                 $email = $perpustakaan->email;
                 $telephone_number = $perpustakaan->nomor_telepon;
                 $library_head_name = $perpustakaan->nama_kepala_perpustakaan;
+                $last_predicate = $perpustakaan->nilai_akreditasi;
                 $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
             }
             $institution_request = [
@@ -346,29 +350,28 @@ class AccreditationController extends BaseController //implements ICrud
                 'library_name' => $library_name,
                 'npp' => $npp,
                 'agency_name' => $agency_name,
-                // 'address' => $input['address'],
-                // 'province_id' => $input['province_id'],
+                'address' => $address,
+                'province_id' => $province_id,
                 'province_name' => $province_name,
-                // 'city_id' => $input['city_id'],
+                'city_id' => $city_id,
                 'city_name' => $city_name,
-                // 'subdistrict_id' => $input['subdistrict_id'],
+                'subdistrict_id' => $subdistrict_id,
                 'subdistrict_name' => $subdistrict_name,
-                // 'village_id' => $input['village_id'],
+                'village_id' => $village_id,
                 'village_name' => $village_name,
                 'institution_head_name' => $institution_head_name,
                 'email' => $email,
                 'telephone_number' => $telephone_number,
-                // 'mobile_number' => $input['mobile_number'],
+                'mobile_number' => $telephone_number,
                 'library_head_name' => $library_head_name,
                 // 'library_worker_name' => $input['library_worker_name'],
                 'registration_form_file' => $file_path,
                 'title_count' => $title_count,
                 'user_id' => $userid,
                 'status' => 'tidak_valid',
-                //'last_predicate' => $input['last_predicate'],
+                'last_predicate' => $last_predicate,
                 'type' => $input['type'],
                 'accreditation_proposal_id' => $proposal->id,
-
                 'institution_id' => $perpus_id,
             ];
             //$temp_inrequest = InstitutionRequest::query()
@@ -500,14 +503,14 @@ class AccreditationController extends BaseController //implements ICrud
                 '=',
                 'instruments.id'
             )
-            ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
-            ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
-                $query->select('proposal_document_id')
-                    ->from('accreditation_proposal_files')
-                    ->where('accreditation_proposal_id', $id);
-            })
-            ->select(['proposal_documents.*'])
-            ->get();
+                ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
+                ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
+                    $query->select('proposal_document_id')
+                        ->from('accreditation_proposal_files')
+                        ->where('accreditation_proposal_id', $id);
+                })
+                ->select(['proposal_documents.*'])
+                ->get();
             //$proposal_document = ProposalDocument::query()->where('instrument_idx', '=', $accreditation_proposal->instrument_id)->get();
             $accreditation_contents = AccreditationContent::query()
                 ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
@@ -621,8 +624,8 @@ class AccreditationController extends BaseController //implements ICrud
             if ($request->file()) {
                 //$file_path = $request->file('registration_form_file')->store($proposal->id);
             } /*else {
-          $file_path = $request->file('registration_form_file')->store($input['user_id']);
-      }*/
+         $file_path = $request->file('registration_form_file')->store($input['user_id']);
+     }*/
 
             $request = InstitutionRequest::query()
                 ->where('accreditation_proposal_id', '=', $id)
@@ -634,19 +637,26 @@ class AccreditationController extends BaseController //implements ICrud
                 $library_name = '-';
                 $npp = '';
                 $agency_name = '';
+                $address = '';
+                $province_id = '';
                 $province_name = '';
+                $city_id = '';
                 $city_name = '';
+                $subdistrict_id = '';
                 $subdistrict_name = '';
+                $village_id = '';
                 $village_name = '';
                 $institution_head_name = '';
                 $email = '';
                 $telephone_number = '';
                 $library_head_name = '';
                 $title_count = 0;
+                $last_predicate = '';
                 if (is_object($perpustakaan)) {
                     $library_name = $perpustakaan->nama_perpustakaan;
                     $npp = $perpustakaan->npp;
                     $agency_name = $perpustakaan->nama_lembaga;
+                    $address = $perpustakaan->alamat;
                     $province_id = $perpustakaan->provinsi->id;
                     $province_name = $perpustakaan->provinsi->nama;
                     $city_id = $perpustakaan->kota_kabupaten->id;
@@ -659,6 +669,7 @@ class AccreditationController extends BaseController //implements ICrud
                     $email = $perpustakaan->email;
                     $telephone_number = $perpustakaan->nomor_telepon;
                     $library_head_name = $perpustakaan->nama_kepala_perpustakaan;
+                    $last_predicate = $perpustakaan->nilai_akreditasi;
                     $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
                 }
                 $institution_request = [
@@ -667,18 +678,26 @@ class AccreditationController extends BaseController //implements ICrud
                     'library_name' => $library_name,
                     'npp' => $npp,
                     'agency_name' => $agency_name,
+                    'address' => $address,
+                    'province_id' => $province_id,
                     'province_name' => $province_name,
+                    'city_id' => $city_id,
                     'city_name' => $city_name,
+                    'subdistrict_id' => $subdistrict_id,
                     'subdistrict_name' => $subdistrict_name,
+                    'village_id' => $village_id,
                     'village_name' => $village_name,
                     'institution_head_name' => $institution_head_name,
                     'email' => $email,
                     'telephone_number' => $telephone_number,
+                    'mobile_number' => $telephone_number,
                     'library_head_name' => $library_head_name,
+                    // 'library_worker_name' => $input['library_worker_name'],
                     'registration_form_file' => $file_path,
                     'title_count' => $title_count,
                     'user_id' => $userid,
-                    'status' => $status,
+                    'status' => 'tidak_valid',
+                    'last_predicate' => $last_predicate,
                     'type' => $input['type'],
                     'accreditation_proposal_id' => $proposal->id,
                     'institution_id' => $perpus_id,
@@ -700,7 +719,7 @@ class AccreditationController extends BaseController //implements ICrud
             })
             ->select(['proposal_documents.*'])
             ->get();*/
-            $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $proposal->instrument_id)->get();
+            $proposal_document = ProposalDocument::where('instrument_id', '=', $proposal->instrument_id)->get();
 
             $data['accreditation_proposal'] = $proposal;
             $data['institution_request'] = $institution_request;
@@ -828,7 +847,7 @@ class AccreditationController extends BaseController //implements ICrud
             //CURLOPT_USERAGENT => $userAgent,
         ]);
 
-        $user_access = "{\"id\":1,\"old_uuid\":null,\"username\":\"johndoe\",\"telepon\":\"08123456789\",\"status\":\"1\",\"ref\":\"ref123\",\"provinsi_id\":12,\"kabkota_id\":34,\"kecamatan_id\":56,\"kelurahan_id\":78,\"kode_pos\":\"12345\",\"activation_code\":\"code123\",\"expired_date_code\":null,\"is_change_password\":0,\"perpus_id\":1,\"alamat\":\"Address\",\"npp\":\"123456\",\"foto\":\"photo.jpg\",\"is_blocked\":0,\"nip\":\"NIP123\",\"name\":\"John Doe\",\"email\":\"john@example.com\",\"email_verified_at\":null,\"created_at\":\"2024-10-17T00:00:00.000000Z\",\"updated_at\":\"2024-10-17T00:00:00.000000Z\",\"jenis_perpustakaan\":null,\"email_verification_token\":null,\"bagian_id\":null,\"is_migration\":0,\"roles\":[{\"id\":1,\"name\":\"Superadmin\",\"level\":null,\"guard_name\":\"web\",\"created_at\":\"2024-08-15T10:23:45.000000Z\",\"updated_at\":\"2024-10-07T01:07:41.000000Z\",\"pivot\":{\"model_type\":\"App\\\\Models\\\\User\",\"model_id\":1,\"role_id\":1},\"permissions\":[{\"id\":1,\"name\":\"create user\",\"guard_name\":\"web\",\"created_at\":\"2024-08-15T10:23:42.000000Z\",\"updated_at\":\"2024-08-15T10:23:42.000000Z\",\"pivot\":{\"role_id\":1,\"permission_id\":1}}]}],\"permissions\":[]}";
+        $user_access = "{\"id\":99,\"old_uuid\":null,\"username\":\"johndoe\",\"telepon\":\"08123456789\",\"status\":\"1\",\"ref\":\"ref123\",\"provinsi_id\":12,\"kabkota_id\":34,\"kecamatan_id\":56,\"kelurahan_id\":78,\"kode_pos\":\"12345\",\"activation_code\":\"code123\",\"expired_date_code\":null,\"is_change_password\":0,\"perpus_id\":1,\"alamat\":\"Address\",\"npp\":\"123456\",\"foto\":\"photo.jpg\",\"is_blocked\":0,\"nip\":\"NIP123\",\"name\":\"John Doe\",\"email\":\"john@example.com\",\"email_verified_at\":null,\"created_at\":\"2024-10-17T00:00:00.000000Z\",\"updated_at\":\"2024-10-17T00:00:00.000000Z\",\"jenis_perpustakaan\":null,\"email_verification_token\":null,\"bagian_id\":null,\"is_migration\":0,\"roles\":[{\"id\":1,\"name\":\"Superadmin\",\"level\":null,\"guard_name\":\"web\",\"created_at\":\"2024-08-15T10:23:45.000000Z\",\"updated_at\":\"2024-10-07T01:07:41.000000Z\",\"pivot\":{\"model_type\":\"App\\\\Models\\\\User\",\"model_id\":1,\"role_id\":1},\"permissions\":[{\"id\":1,\"name\":\"create user\",\"guard_name\":\"web\",\"created_at\":\"2024-08-15T10:23:42.000000Z\",\"updated_at\":\"2024-08-15T10:23:42.000000Z\",\"pivot\":{\"role_id\":1,\"permission_id\":1}}]}],\"permissions\":[]}";
         curl_setopt($curl, CURLOPT_HTTPHEADER, [
             "cache-control: no-cache",
             "Access-User: " . $user_access
