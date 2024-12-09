@@ -114,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function(){
 //});
 
 //Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/instrument/add-new/', [InstrumentController::class, 'addnew']);
+    Route::post('/instrument/add-new/', [InstrumentController::class, 'addnew']);
     Route::get('/instrument/get-instrument/{params}', [InstrumentController::class, 'getInstrument']);
     Route::get('/instrument/edit/{id}', [InstrumentController::class, 'edit']);
     Route::get('/instrument/index', [InstrumentController::class, 'index']);

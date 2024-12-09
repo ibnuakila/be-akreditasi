@@ -43,7 +43,7 @@ class InstrumentController extends BaseController
         if ($request->file()) {
             $file_name = $request->file('file')->getClientOriginalName();
             $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
-            $file_path = $request->file('file')->store('/assets');
+            $file_path = $request->file('file')->store();
             $data = [
                 'category' => $input['category'],
                 'periode' => $input['periode'],
@@ -117,10 +117,14 @@ class InstrumentController extends BaseController
         return $this->sendResponse([], 'Instrument Deleted!', $model->count());
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $instruments = Instrument::all();
-        return $this->sendResponse($instruments, 'Success', $instruments->count());
+        $query = Instrument::query();
+        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
+            $query->where('category', 'like', "%{$s}%");
+        }
+            $query->paginate();
+        return $this->sendResponse($query, 'Success', $query->count());
     }
 
     public function edit($id)
