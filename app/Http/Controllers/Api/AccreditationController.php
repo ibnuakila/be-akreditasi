@@ -716,7 +716,7 @@ class AccreditationController extends BaseController //implements ICrud
                     //'last_predicate' => $input['last_predicate'],
                     'type' => $input['type'],
                     'accreditation_proposal_id' => $proposal->id,
-                    'validated_at' => '',
+                    //'validated_at' => '',
                     'institution_id' => $perpus_id,
                 ];
                 //$request->region_id = $input['region_id'];
