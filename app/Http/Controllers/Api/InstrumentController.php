@@ -119,8 +119,8 @@ class InstrumentController extends BaseController
 
     public function index(Request $request)
     {
-        $query = Instrument::query();
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
+        $query = Instrument::all();
+        /*if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('category', 'like', "%{$s}%");
         }
         $perPage = $request->input(key: 'pageSize', default: 10);
@@ -128,7 +128,7 @@ class InstrumentController extends BaseController
         $total = $query->count();
         $response = $query->offset(value: ($page - 1) * $perPage)
             ->limit($perPage)
-            ->paginate();
+            ->paginate();*/
         return $this->sendResponse($query, 'Success', $query->count());
     }
 
