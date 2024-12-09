@@ -508,7 +508,7 @@ class AccreditationController extends BaseController //implements ICrud
                 })
                 ->select(['proposal_documents.*'])
                 ->get();*/
-            $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $proposal->instrument_id)->get();
+            $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
             $accreditation_contents = AccreditationContent::query()
                 ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
             /*$provinces = Province::all();
