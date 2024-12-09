@@ -123,7 +123,12 @@ class InstrumentController extends BaseController
         if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
             $query->where('category', 'like', "%{$s}%");
         }
-            $query->paginate();
+        $perPage = $request->input(key: 'pageSize', default: 10);
+        $page = $request->input(key: 'page', default: 1);
+        $total = $query->count();
+        $response = $query->offset(value: ($page - 1) * $perPage)
+            ->limit($perPage)
+            ->paginate();
         return $this->sendResponse($query, 'Success', $query->count());
     }
 
