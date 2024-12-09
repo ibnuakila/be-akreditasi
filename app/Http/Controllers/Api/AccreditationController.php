@@ -695,7 +695,24 @@ class AccreditationController extends BaseController //implements ICrud
                 
                 $request->update($institution_request);
             }
-            return $this->sendResponse(new AccreditationProposalResource($request), 'Proposal Updated', $proposal->count);
+            $proposal_document = ProposalDocument::join(
+                'instruments',
+                'proposal_documents.instrument_id',
+                '=',
+                'instruments.id'
+            )
+            ->where('instrument_id', '=', $proposal->instrument_id)
+            ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
+                $query->select('proposal_document_id')
+                    ->from('accreditation_proposal_files')
+                    ->where('accreditation_proposal_id', $id);
+            })
+            ->select(['proposal_documents.*'])
+            ->get();
+            $data['accreditation_proposal'] = $proposal;
+            $data['institution_request'] = $institution_request;
+            $data['proposal_document'] = $proposal_document;
+            return $this->sendResponse(new AccreditationProposalResource($data), 'Proposal Updated', $proposal->count);
         } else {
             return $this->sendError('Error', 'Authorization Failed!');
         }
