@@ -90,7 +90,6 @@ class AccreditationController extends BaseController //implements ICrud
                     //->join('institution_requests', 'accreditation_proposals.institution_id', '=', 'institution_requests.institution_id')
                     ->where(['accreditation_proposals.user_id' => $userid])
                     ->with('proposalState')->get();
-
             }
             if (is_object($accreditation_proposal)) {
                 $data['accreditation_proposal'] = $accreditation_proposal;
@@ -174,11 +173,11 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
-            if(is_object($response)){
+            if (is_object($response)) {
                 $perpustakaan = $response->data;
                 $data['perpustakaan'] = $response;
             }
-            
+
 
             $Y = date('Y');
             $proposal = AccreditationProposal::where('user_id', '=', $userid)
@@ -244,8 +243,8 @@ class AccreditationController extends BaseController //implements ICrud
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
             $perpustakaan = null;
-            if(is_object($response)){
-            $perpustakaan = $response->data;
+            if (is_object($response)) {
+                $perpustakaan = $response->data;
             }
             //}
             //validating---------------------------
@@ -285,27 +284,27 @@ class AccreditationController extends BaseController //implements ICrud
             if ($validator->fails()) {
                 return $this->sendError('Validation Error!', $validator->errors());
             }
-            $instrument =
-                $accreditation_proposal = [
-                    'institution_id' => $perpus_id,
-                    'proposal_date' => date('Y-m-d'),
-                    'proposal_state_id' => 0,
-                    'finish_date' => date('Y-m-d'),
-                    'type' => $input['type'],
-                    'periode' => date('Y'),
-                    'notes' => '',
-                    //'accredited_at' => '',
-                    'predicate' => '',
-                    'certificate_status' => '',
-                    //'certificate_expires_at' => '',
-                    //'pleno_date' => '',
-                    //'certificate_file' => '',
-                    //'recommendation_file' => '',
-                    'is_valid' => 'tidak_valid',
-                    'instrument_id' => $input['category'],
-                    'category' => $input['category'],
-                    'user_id' => $userid
-                ];
+
+            $accreditation_proposal = [
+                'institution_id' => $perpus_id,
+                'proposal_date' => date('Y-m-d'),
+                'proposal_state_id' => 0,
+                'finish_date' => date('Y-m-d'),
+                'type' => $input['type'],
+                'periode' => date('Y'),
+                'notes' => '',
+                //'accredited_at' => '',
+                'predicate' => '',
+                'certificate_status' => '',
+                //'certificate_expires_at' => '',
+                //'pleno_date' => '',
+                //'certificate_file' => '',
+                //'recommendation_file' => '',
+                'is_valid' => 'tidak_valid',
+                'instrument_id' => $input['category'],
+                'category' => $input['category'],
+                'user_id' => $userid
+            ];
             //sebelum create cek dulu apakah sudah ada usulan berdasarkan user_di pada tahun yg sama
             $Y = date('Y');
             $proposal = AccreditationProposal::where('user_id', '=', $input['user_id'])
@@ -338,7 +337,7 @@ class AccreditationController extends BaseController //implements ICrud
             $telephone_number = '';
             $library_head_name = '';
             $title_count = 0;
-            if(is_object($perpustakaan)){
+            if (is_object($perpustakaan)) {
                 $library_name = $perpustakaan->nama_perpustakaan;
                 $npp = $perpustakaan->npp;
                 $agency_name = $perpustakaan->nama_lembaga;
@@ -480,7 +479,6 @@ class AccreditationController extends BaseController //implements ICrud
                         if (isset($accre_contents)) {
                             $return['accreditation_contents'] = $accre_contents;
                         }
-
                     }
                 } else {
                     return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
@@ -569,11 +567,36 @@ class AccreditationController extends BaseController //implements ICrud
                     $user_role = $role['name'];
                 }
             }
+
+            $url = "http://103.23.199.161/api/perpustakaan/" . $perpus_id;
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "GET",
+                //CURLOPT_USERAGENT => $userAgent,
+            ]);
+
+            curl_setopt($curl, CURLOPT_HTTPHEADER, [
+                "cache-control: no-cache",
+                "Access-User: " . $user_request_header
+            ]);
+
+            $response = json_decode(curl_exec($curl));
+            $error = curl_error($curl);
+            $perpustakaan = null;
+            if (is_object($response)) {
+                $perpustakaan = $response->data;
+            }
             //validating---------------------------
             $validator = Validator::make($input, [
                 //institution-request
-                'category' => 'required',
-                'region_id' => 'required',
+                'category' => 'nullable',
+                'region_id' => 'nullable',
                 //'library_name' => 'required',
                 //'npp' => 'nullable',
                 //'agency_name' => 'required',
@@ -598,7 +621,7 @@ class AccreditationController extends BaseController //implements ICrud
                 'status' => 'nullable',
                 // 'last_predicate' => 'nullable',
                 // 'last_certification_date' => 'nullable',
-                'type' => 'required',
+                'type' => 'nullable',
                 'accreditation_proposal_id' => 'nullable',
                 'validated_at' => 'nullable',
                 //'institution_id' => 'required'
@@ -639,7 +662,64 @@ class AccreditationController extends BaseController //implements ICrud
                 if (is_object($instrument)) {
                     $request->category = $instrument->category;
                 }
-                $request->region_id = $input['region_id'];
+                $library_name = '-';
+                $npp = '';
+                $agency_name = '';
+                $province_name = '';
+                $city_name = '';
+                $subdistrict_name = '';
+                $village_name = '';
+                $institution_head_name = '';
+                $email = '';
+                $telephone_number = '';
+                $library_head_name = '';
+                $title_count = 0;
+                if (is_object($perpustakaan)) {
+                    $library_name = $perpustakaan->nama_perpustakaan;
+                    $npp = $perpustakaan->npp;
+                    $agency_name = $perpustakaan->nama_lembaga;
+                    $province_name = $perpustakaan->provinsi;
+                    $city_name = $perpustakaan->kota_kabupaten;
+                    $subdistrict_name = $perpustakaan->kecamatan;
+                    $village_name = $perpustakaan->kelurahan_desa;
+                    $institution_head_name = $perpustakaan->nama_kepala_sekolah;
+                    $email = $perpustakaan->email;
+                    $telephone_number = $perpustakaan->nomor_telepon;
+                    $library_head_name = $perpustakaan->nama_kepala_perpustakaan;
+                    $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
+                }
+                $institution_request = [
+                    'category' => $input['category'],
+                    'region_id' => $input['region_id'],
+                    'library_name' => $library_name,
+                    'npp' => $npp,
+                    'agency_name' => $agency_name,
+                    // 'address' => $input['address'],
+                    // 'province_id' => $input['province_id'],
+                    'province_name' => $province_name,
+                    // 'city_id' => $input['city_id'],
+                    'city_name' => $city_name,
+                    // 'subdistrict_id' => $input['subdistrict_id'],
+                    'subdistrict_name' => $subdistrict_name,
+                    // 'village_id' => $input['village_id'],
+                    'village_name' => $village_name,
+                    'institution_head_name' => $institution_head_name,
+                    'email' => $email,
+                    'telephone_number' => $telephone_number,
+                    // 'mobile_number' => $input['mobile_number'],
+                    'library_head_name' => $library_head_name,
+                    // 'library_worker_name' => $input['library_worker_name'],
+                    'registration_form_file' => $file_path,
+                    'title_count' => $title_count,
+                    'user_id' => $userid,
+                    'status' => 'tidak_valid',
+                    //'last_predicate' => $input['last_predicate'],
+                    'type' => $input['type'],
+                    'accreditation_proposal_id' => $proposal->id,
+                    'validated_at' => '',
+                    'institution_id' => $perpus_id,
+                ];
+                //$request->region_id = $input['region_id'];
                 // $request->library_name = $input['library_name'];
                 // $request->npp = $input['npp'];
                 // $request->agency_name = $input['agency_name'];
@@ -660,15 +740,15 @@ class AccreditationController extends BaseController //implements ICrud
                 // $request->library_worker_name = $input['library_worker_name'];
                 // $request->registration_form_file = $file_path;
                 // $request->title_count = $input['title_count'];
-                $request->user_id = $input['user_id'];
-                $request->status = $input['status'];
-                $request->last_predicate = $input['last_predicate'];
-                $request->last_certification_date = $input['last_certification_date'];
-                //$request->type = $input['type'];
-                $request->accreditation_proposal_id = $proposal->id;
-                //$request->validated_at = '';
-                $request->institution_id = $input['institution_id'];
-                $request->save();
+                // $request->user_id = $input['user_id'];
+                // $request->status = $input['status'];
+                // $request->last_predicate = $input['last_predicate'];
+                // $request->last_certification_date = $input['last_certification_date'];
+                // $request->type = $input['type'];
+                // $request->accreditation_proposal_id = $proposal->id;
+                // $request->validated_at = '';
+                // $request->institution_id = $input['institution_id'];
+                $request->update($institution_request);
             }
             return $this->sendResponse(new AccreditationProposalResource($request), 'Proposal Updated', $proposal->count);
         } else {
@@ -743,7 +823,6 @@ class AccreditationController extends BaseController //implements ICrud
             $start_row++;
         }
         return $obj_instrument->getArrayCopy();
-        
     }
 
     public function destroyFile($id)
@@ -771,7 +850,6 @@ class AccreditationController extends BaseController //implements ICrud
                 } catch (FileNotFoundException $e) {
                     return $this->sendError('File not Found', 'File not available in hard drive!');
                 }
-
             } else {
                 return $this->sendError('Record not Found', 'Record not available in database!');
             }
