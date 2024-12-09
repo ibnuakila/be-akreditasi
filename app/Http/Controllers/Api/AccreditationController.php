@@ -593,7 +593,7 @@ class AccreditationController extends BaseController //implements ICrud
                 // 'library_head_name' => 'required',
                 // 'library_worker_name' => 'nullable',
                 'registration_form_file' => 'nullable',
-                'title_count' => 'required',
+                'title_count' => 'nullable',
                 'user_id' => 'required',
                 'status' => 'nullable',
                 // 'last_predicate' => 'nullable',
