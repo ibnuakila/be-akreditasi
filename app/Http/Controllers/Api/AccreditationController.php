@@ -380,7 +380,7 @@ class AccreditationController extends BaseController //implements ICrud
             //if (!$isExist) {
                 $temp_inrequest = InstitutionRequest::create($institution_request);
                 $data['institution_request'] = $institution_request;
-                $data['perpustakaan'] = $perpustakaan;
+                $data['accreditation_proposal'] = $proposal;
             //}
 
             $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $input['category'])->get();
