@@ -494,7 +494,7 @@ class AccreditationController extends BaseController //implements ICrud
             //ambil hanya dokumen yg belum diupload
             //$proposal_document = ProposalDocument::query()
             //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
-                $proposal_document = ProposalDocument::join(
+                /*$proposal_document = ProposalDocument::join(
                     'instruments',
                     'proposal_documents.instrument_id',
                     '=',
@@ -507,8 +507,8 @@ class AccreditationController extends BaseController //implements ICrud
                         ->where('accreditation_proposal_id', $id);
                 })
                 ->select(['proposal_documents.*'])
-                ->get();
-
+                ->get();*/
+            $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $proposal->instrument_id)->get();
             $accreditation_contents = AccreditationContent::query()
                 ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
             /*$provinces = Province::all();
@@ -695,7 +695,7 @@ class AccreditationController extends BaseController //implements ICrud
                 
                 $request->update($institution_request);
             }
-            $proposal_document = ProposalDocument::join(
+            /*$proposal_document = ProposalDocument::join(
                 'instruments',
                 'proposal_documents.instrument_id',
                 '=',
@@ -708,8 +708,8 @@ class AccreditationController extends BaseController //implements ICrud
                     ->where('accreditation_proposal_id', $id);
             })
             ->select(['proposal_documents.*'])
-            ->get();
-            //$proposal_document = ProposalDocument::query()->where('instrument_id', '=', $proposal->instrument_id)->get();
+            ->get();*/
+            $proposal_document = ProposalDocument::query()->where('instrument_id', '=', $proposal->instrument_id)->get();
 
             $data['accreditation_proposal'] = $proposal;
             $data['institution_request'] = $institution_request;
