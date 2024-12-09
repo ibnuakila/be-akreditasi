@@ -351,12 +351,11 @@ class EvaluationAssignmentController extends BaseController
         $main_component_id = '';
         $obj_instrument = new \ArrayObject();
         while (is_numeric($butir)) {
-            $butir = (int)trim($spreadsheet->getActiveSheet()->getCell('A' . strval($start_row))->getCalculatedValue());
-            if (strpos($butir, '.') !== false) {
-                $butir = (int)str_replace('.', '', $butir);
-            }
-            
+            $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue());
+            $butir = str_replace('.', '', $butir);
             $nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
+            
+            //$nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
             $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
