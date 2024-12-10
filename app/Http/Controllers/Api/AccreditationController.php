@@ -705,7 +705,7 @@ class AccreditationController extends BaseController //implements ICrud
 
                 $request->update($institution_request);
             }
-            /*$proposal_document = ProposalDocument::join(
+            $proposal_document = ProposalDocument::join(
                 'instruments',
                 'proposal_documents.instrument_id',
                 '=',
@@ -718,8 +718,8 @@ class AccreditationController extends BaseController //implements ICrud
                     ->where('accreditation_proposal_id', $id);
             })
             ->select(['proposal_documents.*'])
-            ->get();*/
-            $proposal_document = ProposalDocument::where('instrument_idx', '=', $proposal->instrument_id)->get();
+            ->get();
+            //$proposal_document = ProposalDocument::where('instrument_idx', '=', $proposal->instrument_id)->get();
 
             $data['accreditation_proposal'] = $proposal;
             $data['institution_request'] = $institution_request;
