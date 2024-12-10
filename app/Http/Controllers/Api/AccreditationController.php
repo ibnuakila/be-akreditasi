@@ -282,7 +282,7 @@ class AccreditationController extends BaseController //implements ICrud
                 //'recommendation_file' => '',
                 'is_valid' => 'tidak_valid',
                 'instrument_id' => $input['category'],
-                'category' => $instrument->category,
+                'category' => $input['category'],
                 'user_id' => $userid
             ];
             //sebelum create cek dulu apakah sudah ada usulan berdasarkan user_di pada tahun yg sama
@@ -344,7 +344,7 @@ class AccreditationController extends BaseController //implements ICrud
                 $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
             }
             $institution_request = [
-                'category' => $input['category'],
+                'category' => $instrument->category,
                 'region_id' => $input['region_id'],
                 'library_name' => $library_name,
                 'npp' => $npp,
@@ -611,10 +611,10 @@ class AccreditationController extends BaseController //implements ICrud
                 $proposal->finish_date = date('Y-m-d');
                 $proposal->type = $input['type'];
                 
-                if (is_object($instrument)) {
-                    $proposal->instrument_id = $instrument->id;
-                    $proposal->category = $instrument->category;
-                }
+                // if (is_object($instrument)) {
+                $proposal->instrument_id = $input['category'];
+                $proposal->category = $input['category'];
+                // }
                 if ($input['status'] == 'valid') {
                     $proposal->proposal_state_id = 1;
                 }
@@ -673,7 +673,7 @@ class AccreditationController extends BaseController //implements ICrud
                     $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
                 }
                 $institution_request = [
-                    'category' => $proposal->category,
+                    'category' => $instrument->category,
                     'region_id' => $input['region_id'],
                     'library_name' => $library_name,
                     'npp' => $npp,

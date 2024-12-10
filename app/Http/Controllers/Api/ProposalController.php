@@ -62,7 +62,7 @@ class ProposalController extends BaseController
         $query = AccreditationProposal::query()
             ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
             ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-            //->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
+            ->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
             //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
             //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
             //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
