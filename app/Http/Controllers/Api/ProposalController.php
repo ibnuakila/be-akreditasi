@@ -317,6 +317,9 @@ class ProposalController extends BaseController
                 }
 
                 $model->save();
+                $ins_request = InstitutionRequest::where('accreditation_proposal_id', '=', $id)->first();
+                $ins_request->status = $input['is_valid'];
+                $ins_request->save();
             } else {
                 $this->sendError('Error', 'Object not found!');
             }

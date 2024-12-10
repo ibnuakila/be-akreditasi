@@ -607,7 +607,7 @@ class AccreditationController extends BaseController //implements ICrud
             $instrument = Instrument::find($input['category']);
             if (is_object($proposal)) {
                 $proposal->institution_id = $perpus_id;
-                //$proposal->proposal_date = date('Y-m-d');
+                //$proposal->is_valid = $status;
                 $proposal->finish_date = date('Y-m-d');
                 $proposal->type = $input['type'];
                 
@@ -616,7 +616,7 @@ class AccreditationController extends BaseController //implements ICrud
                 $proposal->category = $input['category'];
                 // }
                 if ($input['status'] == 'valid') {
-                    $proposal->proposal_state_id = 1;
+                    $proposal->proposal_state_id = 1;                    
                 }
                 $proposal->save();
             }
@@ -696,7 +696,7 @@ class AccreditationController extends BaseController //implements ICrud
                     'registration_form_file' => $file_path,
                     'title_count' => $title_count,
                     'user_id' => $userid,
-                    'status' => 'tidak_valid',
+                    'status' => $status,
                     'last_predicate' => $last_predicate,
                     'type' => $input['type'],
                     'accreditation_proposal_id' => $proposal->id,
