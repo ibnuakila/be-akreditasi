@@ -256,7 +256,6 @@ class AccreditationController extends BaseController //implements ICrud
                 'title_count' => 'nullable',
                 'user_id' => 'required',
                 'status' => 'nullable',
-
                 'type' => 'required',
                 'accreditation_proposal_id' => 'nullable',
                 'validated_at' => 'nullable',
@@ -265,7 +264,7 @@ class AccreditationController extends BaseController //implements ICrud
             if ($validator->fails()) {
                 return $this->sendError('Validation Error!', $validator->errors());
             }
-
+            $instrument = Instrument::find($input['category']);
             $accreditation_proposal = [
                 'institution_id' => $perpus_id,
                 'proposal_date' => date('Y-m-d'),
@@ -273,7 +272,7 @@ class AccreditationController extends BaseController //implements ICrud
                 'finish_date' => date('Y-m-d'),
                 'type' => $input['type'],
                 'periode' => date('Y'),
-                'notes' => '',
+                //'notes' => '',
                 //'accredited_at' => '',
                 'predicate' => '',
                 'certificate_status' => '',
@@ -283,7 +282,7 @@ class AccreditationController extends BaseController //implements ICrud
                 //'recommendation_file' => '',
                 'is_valid' => 'tidak_valid',
                 'instrument_id' => $input['category'],
-                'category' => $input['category'],
+                'category' => $instrument->category,
                 'user_id' => $userid
             ];
             //sebelum create cek dulu apakah sudah ada usulan berdasarkan user_di pada tahun yg sama
@@ -591,12 +590,12 @@ class AccreditationController extends BaseController //implements ICrud
                 'category' => 'nullable',
                 'region_id' => 'nullable',
                 'registration_form_file' => 'nullable',
-                'title_count' => 'nullable',
-                'user_id' => 'required',
+                //'title_count' => 'nullable',
+                //'user_id' => 'required',
                 'status' => 'nullable',
                 'type' => 'nullable',
                 'accreditation_proposal_id' => 'nullable',
-                'validated_at' => 'nullable',
+                //'validated_at' => 'nullable',
             ]);
 
             $status = $input['status'];
@@ -607,12 +606,13 @@ class AccreditationController extends BaseController //implements ICrud
             $proposal = AccreditationProposal::find($id);
             $instrument = Instrument::find($input['category']);
             if (is_object($proposal)) {
-                $proposal->institution_id = $input['institution_id'];
+                $proposal->institution_id = $perpus_id;
                 //$proposal->proposal_date = date('Y-m-d');
                 $proposal->finish_date = date('Y-m-d');
                 $proposal->type = $input['type'];
-                $proposal->instrument_id = $input['category'];
+                
                 if (is_object($instrument)) {
+                    $proposal->instrument_id = $instrument->id;
                     $proposal->category = $instrument->category;
                 }
                 if ($input['status'] == 'valid') {
@@ -673,7 +673,7 @@ class AccreditationController extends BaseController //implements ICrud
                     $title_count = $perpustakaan->jumlah_judul_koleksi_perpustakaan + $perpustakaan->jumlah_eksemplar_koleksi_perpustakaan;
                 }
                 $institution_request = [
-                    'category' => $input['category'],
+                    'category' => $proposal->category,
                     'region_id' => $input['region_id'],
                     'library_name' => $library_name,
                     'npp' => $npp,
@@ -719,7 +719,7 @@ class AccreditationController extends BaseController //implements ICrud
             })
             ->select(['proposal_documents.*'])
             ->get();*/
-            $proposal_document = ProposalDocument::where('instrument_id', '=', $proposal->instrument_id)->get();
+            $proposal_document = ProposalDocument::where('instrument_idx', '=', $proposal->instrument_id)->get();
 
             $data['accreditation_proposal'] = $proposal;
             $data['institution_request'] = $institution_request;
