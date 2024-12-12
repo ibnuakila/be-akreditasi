@@ -487,54 +487,58 @@ class AccreditationController extends BaseController //implements ICrud
     {
         if ($request->hasHeader('Access-User')) {
             $accreditation_proposal = AccreditationProposal::find($id);
-            $institution_request = InstitutionRequest::query()
-                ->where('accreditation_proposal_id', '=', $id)->first();
-            $accreditation_files = AccreditationProposalFiles::query()
-                ->where('accreditation_proposal_id', '=', $id)
-                ->with('proposalDocument')
-                ->get();
-            //ambil hanya dokumen yg belum diupload
-            //$proposal_document = ProposalDocument::query()
-            //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
-            $proposal_document = ProposalDocument::join(
-                'instruments',
-                'proposal_documents.instrument_id',
-                '=',
-                'instruments.id'
-            )
-                ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
-                ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
-                    $query->select('proposal_document_id')
-                        ->from('accreditation_proposal_files')
-                        ->where('accreditation_proposal_id', $id);
-                })
-                ->select(['proposal_documents.*'])
-                ->get();
-            //$proposal_document = ProposalDocument::query()->where('instrument_idx', '=', $accreditation_proposal->instrument_id)->get();
-            $accreditation_contents = AccreditationContent::query()
-                ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
-            /*$provinces = Province::all();
+            if ($accreditation_proposal->proposal_state_id == 0) {
+                $institution_request = InstitutionRequest::query()
+                    ->where('accreditation_proposal_id', '=', $id)->first();
+                $accreditation_files = AccreditationProposalFiles::query()
+                    ->where('accreditation_proposal_id', '=', $id)
+                    ->with('proposalDocument')
+                    ->get();
+                //ambil hanya dokumen yg belum diupload
+                //$proposal_document = ProposalDocument::query()
+                //    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)->get();
+                $proposal_document = ProposalDocument::join(
+                    'instruments',
+                    'proposal_documents.instrument_id',
+                    '=',
+                    'instruments.id'
+                )
+                    ->where('instrument_id', '=', $accreditation_proposal->instrument_id)
+                    ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
+                        $query->select('proposal_document_id')
+                            ->from('accreditation_proposal_files')
+                            ->where('accreditation_proposal_id', $id);
+                    })
+                    ->select(['proposal_documents.*'])
+                    ->get();
+                //$proposal_document = ProposalDocument::query()->where('instrument_idx', '=', $accreditation_proposal->instrument_id)->get();
+                $accreditation_contents = AccreditationContent::query()
+                    ->where('accreditation_proposal_id', '=', $accreditation_proposal->id)->get();
+                /*$provinces = Province::all();
             $cities = City::first();
             $subdistricts = Subdistrict::first();
             $villages = Village::first();*/
 
-            $region = Region::all();
-            $category = Instrument::all();
+                $region = Region::all();
+                $category = Instrument::all();
 
-            $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
-            $data['accreditation_proposal'] = $accreditation_proposal;
-            $data['institution_request'] = $institution_request;
-            $data['accreditation_files'] = $accreditation_files;
-            $data['proposal_document'] = $proposal_document;
-            $data['accreditation_contents'] = $accreditation_contents;
-            //$data['provinces'] = $provinces;
-            //$data['cities'] = $cities;
-            //$data['subdistricts'] = $subdistricts;
-            //$data['villages'] = $villages;
-            $data['region'] = $region;
-            $data['category'] = $category;
-            $data['type'] = $type;
-            return $this->sendResponse($data, "Success", 0);
+                $type = ['baru' => 'Baru', 'reakreditasi' => 'Reakreditasi'];
+                $data['accreditation_proposal'] = $accreditation_proposal;
+                $data['institution_request'] = $institution_request;
+                $data['accreditation_files'] = $accreditation_files;
+                $data['proposal_document'] = $proposal_document;
+                $data['accreditation_contents'] = $accreditation_contents;
+                //$data['provinces'] = $provinces;
+                //$data['cities'] = $cities;
+                //$data['subdistricts'] = $subdistricts;
+                //$data['villages'] = $villages;
+                $data['region'] = $region;
+                $data['category'] = $category;
+                $data['type'] = $type;
+                return $this->sendResponse($data, "Success", 0);
+            } else {
+                return $this->sendError('Error', 'Usulan sudah diajukan!');
+            }
         } else {
             return $this->sendError('Error', 'Authorization Failed!');
         }
@@ -610,13 +614,13 @@ class AccreditationController extends BaseController //implements ICrud
                 //$proposal->is_valid = $status;
                 $proposal->finish_date = date('Y-m-d');
                 $proposal->type = $input['type'];
-                
+
                 // if (is_object($instrument)) {
                 $proposal->instrument_id = $input['category'];
                 $proposal->category = $input['category'];
                 // }
                 if ($input['status'] == 'valid') {
-                    $proposal->proposal_state_id = 1;                    
+                    $proposal->proposal_state_id = 1;
                 }
                 $proposal->save();
             }
@@ -711,14 +715,14 @@ class AccreditationController extends BaseController //implements ICrud
                 '=',
                 'instruments.id'
             )
-            ->where('instrument_id', '=', $proposal->instrument_id)
-            ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
-                $query->select('proposal_document_id')
-                    ->from('accreditation_proposal_files')
-                    ->where('accreditation_proposal_id', $id);
-            })
-            ->select(['proposal_documents.*'])
-            ->get();
+                ->where('instrument_id', '=', $proposal->instrument_id)
+                ->whereNotIn('proposal_documents.id', function ($query) use ($id) {
+                    $query->select('proposal_document_id')
+                        ->from('accreditation_proposal_files')
+                        ->where('accreditation_proposal_id', $id);
+                })
+                ->select(['proposal_documents.*'])
+                ->get();
             //$proposal_document = ProposalDocument::where('instrument_idx', '=', $proposal->instrument_id)->get();
 
             $data['accreditation_proposal'] = $proposal;
