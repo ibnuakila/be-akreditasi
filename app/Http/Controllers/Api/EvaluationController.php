@@ -156,10 +156,9 @@ class EvaluationController extends BaseController implements ICrud
                                                         }
                                                     ])
                                                         ->with([
-                                                            'evaluationContent' => function ($query) use ($id) {
-                                                                $query->join('evaluations', 'evaluations.id', '=', 'evaluation_contents.evaluation_id')
-                                                                    ->where('evaluations.accreditation_proposal_id', '=', $id)
-                                                                    ->select('evaluation_contents.*');
+                                                            'mergedEvaluationContent' => function ($query) use ($id) {
+                                                                $query->where('accreditation_proposal_id', '=', $id);
+                                                                    //->select('merged_evaluation_contents.*');
                                                             }
                                                         ])
                                                         ->get();

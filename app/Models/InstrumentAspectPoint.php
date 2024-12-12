@@ -29,6 +29,11 @@ class InstrumentAspectPoint extends Model
         return $this->hasMany(AccreditationContent::class);
     }
 
+    public function mergedEvaluationContent()
+    {
+        return $this->hasMany(MergedEvaluationContent::class);
+    }
+
     public function evaluationContent()
     {
         return $this->hasMany(EvaluationContent::class);
