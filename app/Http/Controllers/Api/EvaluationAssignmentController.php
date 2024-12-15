@@ -14,6 +14,7 @@ use App\Models\EvaluationContentAssessor;
 use App\Models\InstrumentAspect;
 use App\Models\InstrumentAspectPoint;
 use App\Models\InstrumentComponent;
+use App\Models\MergedEvaluationContent;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -297,7 +298,7 @@ class EvaluationAssignmentController extends BaseController
 
                     $evaluation_contents = $this->readInstrument($params);
                     $return['evaluation_contents'] = $evaluation_contents;
-
+                    
                     //update skor evaluasi
                     $eval_contents = DB::table('evaluation_contents')
                         ->select(
@@ -321,6 +322,11 @@ class EvaluationAssignmentController extends BaseController
                     $evaluation->skor = $skor;
                     $evaluation->update();
 
+                    $evaluations = Evaluation::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
+                    $params['evaluation_contents'] = $evaluations;
+                    if(count($evaluations) > 1){
+                        $this->mergedEvaluation($params);
+                    }
                     return $this->sendResponse($return, 'Success');
                 } else {
                     return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
@@ -434,5 +440,30 @@ class EvaluationAssignmentController extends BaseController
         }
         return $obj_instrument->getArrayCopy();
 
+    }
+
+    private function mergedEvaluation($params)
+    {
+        if(isset(($params['evaluation_contents']))){
+            foreach ($params['evaluation_contents'] as $evaluation){
+                if($evaluation->value !== ''){
+                    $obj_mec = MergedEvaluationContent::where('accreditation_proposal_id', $evaluation->accreditation_proposal_id)
+                        ->where('instrument_aspect_point_id')->first();
+                        if(!is_object($obj_mec)){
+                            $eval_data = [
+                                'evaluation_id' => $evaluation->id,
+                                'statement' => $obj_mec->statement,
+                                'value' => $obj_mec->value,
+                                'accreditation_content_id' => $obj_mec->accreditation_content_id,
+                                'main_component_id' => $obj_mec->main_component_id,
+                                'instrument_aspect_point_id' => $obj_mec->instrument_aspect_point_id,
+                                'updated_at' => date('Y-m-d H:i:s')
+                            ];
+                            $merged_evaluation_content = MergedEvaluationContent::create($eval_data);
+                        }
+                }
+                
+            }
+        }
     }
 }

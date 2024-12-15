@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ProvinceController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Models\EvaluationAssignment;
 use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
@@ -185,3 +186,5 @@ Route::post('/evaluation/update/{id}', [EvaluationController::class, 'update']);
 Route::post('/evaluation/update-row/', [EvaluationController::class, 'updateRow']);
 
 Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);
+
+Route::get('/dashboard/index', [DashboardController::class, 'index']);
