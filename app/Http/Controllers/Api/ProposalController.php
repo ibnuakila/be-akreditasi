@@ -20,6 +20,10 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Storage;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 class ProposalController extends BaseController
 {
 
@@ -53,8 +57,20 @@ class ProposalController extends BaseController
     {
         $accreditation = AccreditationProposal::query()
             ->get();
+        $spreadsheet = new Spreadsheet();
+        $activeWorksheet = $spreadsheet->getActiveSheet();
+        $activeWorksheet->setCellValue('A1', 'Data Usulan Akreditasi');
 
-        return $this->sendResponse(new AccreditationProposalResource($accreditation), 'Success', $accreditation->count());
+        $writer = new Xlsx($spreadsheet);
+        $response = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment;filename="data-usulan-akreditasi.xlsx"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+        //return $this->sendResponse(new AccreditationProposalResource($accreditation), 'Success', $accreditation->count());
     }
 
     public function list(Request $request)//with filter
