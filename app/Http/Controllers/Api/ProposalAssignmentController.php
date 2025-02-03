@@ -48,7 +48,7 @@ class ProposalAssignmentController extends BaseController
             $user_id = $request_header['id'];
             $roles = $request_header['roles'];
             foreach ($roles as $role) {
-                if ($role['name'] == 'Asesor') {
+                if ($role['name'] == 'Asesor' || $role['name'] == 'ASSESOR') {
                     $is_assessor = true;
                 }
             }
