@@ -479,7 +479,7 @@ class AccreditationController extends BaseController //implements ICrud
             }
             return $this->sendResponse($return, 'Success', $accre_files->count());
         } else {
-            $this->sendError('Error', 'Authorization Failed!');
+            return $this->sendError('Error', 'Authorization Failed!');
         }
     }
 

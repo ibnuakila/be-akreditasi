@@ -324,6 +324,7 @@ class EvaluationAssignmentController extends BaseController
 
                     $evaluations = Evaluation::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
                     $params['evaluation_contents'] = $evaluations;
+                    $params['accre_content'] = $accre_content;
                     if(count($evaluations) > 1){
                         $this->mergedEvaluation($params);
                     }
@@ -359,9 +360,9 @@ class EvaluationAssignmentController extends BaseController
         while (is_numeric($butir)) {
             $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . $start_row)->getCalculatedValue());
             $butir = str_replace('.', '', $butir);
-            $nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
+            $nilaisa = trim($spreadsheet->getActiveSheet()->getCell('H' . strval($start_row))->getCalculatedValue());        
+            $nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());            
             
-            //$nilai = trim($spreadsheet->getActiveSheet()->getCell('I' . strval($start_row))->getCalculatedValue());
             $comment = trim($spreadsheet->getActiveSheet()->getCell('J' . strval($start_row))->getCalculatedValue());
             $pleno = trim($spreadsheet->getActiveSheet()->getCell('K' . strval($start_row))->getCalculatedValue());
             $banding = trim($spreadsheet->getActiveSheet()->getCell('L' . strval($start_row))->getCalculatedValue());
@@ -388,9 +389,21 @@ class EvaluationAssignmentController extends BaseController
             // if (is_object($instrument_aspect)) {
             //     $aspect = $instrument_aspect->aspect;                
             // }
-
-            $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
+            if($nilaisa !== ''){
+                $old_instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
+                ->where('value', '=', $nilaisa)->first();
+                if(is_object($old_instrument_aspect_point)){
+                    $old_instrument_aspect_point_id = $old_instrument_aspect_point->id;
+                }
+            }else{
+                $old_instrument_aspect_point_id = null;
+            }
+            if($nilai !== ''){
+                $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
                 ->where('value', '=', $nilai)->first();
+            }else{
+                $instrument_aspect_point = null;
+            }
             $statement = '-';
             $instrument_aspect_point_id = '';
 
@@ -399,7 +412,9 @@ class EvaluationAssignmentController extends BaseController
                 $nilai = $instrument_aspect_point->value;
                 $instrument_aspect_point_id = $instrument_aspect_point->id;
             }else{
-                $nilai = 0;
+                if($nilai == ''){
+                    $nilai = 0;
+                }
             }
 
             // $accreditation_content = AccreditationContent::query()
@@ -408,21 +423,22 @@ class EvaluationAssignmentController extends BaseController
             //     //->where('aspectable_id', '=', $aspect_id)
             //     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
 
-
-            $evaluation_content = EvaluationContent::query()
-                ->where('evaluation_id', '=', $params['evaluation_id'])
-                ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
-
+            if($instrument_aspect_point_id !== ''){
+                $evaluation_content = EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
+                ->where('instrument_aspect_point_id', '=', $old_instrument_aspect_point_id)->first();
+            }else{
+                $evaluation_content = null;
+            }
             if (is_object($evaluation_content)) {
-                $evaluation_content->evaluation_id = $params['evaluation_id'];
+                //$evaluation_content->evaluation_id = $params['evaluation_id'];
 
                 //$evaluation_content->accreditation_content_id = $accreditation_content->id;
                 //$evaluation_content->main_component_id = $main_component_id;
                 //$evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
                 //$evaluation_content->aspect = $aspect;
-                $evaluation_content->statement = $statement;
-                $evaluation_content->value = $nilai;
-                $evaluation_content->comment = $comment;
+                //$evaluation_content->statement = $statement;
+                //$evaluation_content->value = $nilai;
+                //$evaluation_content->comment = $comment;
                 //$evaluation_content->updated_at = date('Y-m-d H:i:s');
                 if (!is_numeric($pleno)) {
                     $pleno = 0;
@@ -430,10 +446,18 @@ class EvaluationAssignmentController extends BaseController
                 if (!is_numeric($banding)) {
                     $banding = 0;
                 }
-                $evaluation_content->pleno = $pleno;
-                $evaluation_content->banding = $banding;
-                $evaluation_content->save();
-                $obj_instrument->append($data);
+                //$evaluation_content->pleno = $pleno;
+                //$evaluation_content->banding = $banding;
+                $evaluation_content->update([
+                    'instrument_aspect_point_id' => $instrument_aspect_point_id,
+                    'statement' => $statement,
+                    'value' => $nilai,
+                    'comment' => $comment,
+                    'pleno' => $pleno,
+                    'banding' => $banding,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+                $obj_instrument->append($evaluation_content);
             }
 
             $start_row++;
@@ -444,24 +468,29 @@ class EvaluationAssignmentController extends BaseController
 
     private function mergedEvaluation($params)
     {
-        if(isset(($params['evaluation_contents']))){
-            foreach ($params['evaluation_contents'] as $evaluation){
-                if($evaluation->value !== ''){
-                    $obj_mec = MergedEvaluationContent::where('accreditation_proposal_id', $evaluation->accreditation_proposal_id)
-                        ->where('instrument_aspect_point_id')->first();
-                        if(!is_object($obj_mec)){
+        if(is_array(($params))){
+            foreach ($params['accre_content'] as $evaluation){
+                $evaluations = EvaluationContent::where('accreditaion_content_id', '=', $evaluation->accreditation_content_id)->get();
+                if(count($evaluations) > 0){
+                    foreach ($evaluations as $eval){
+                        if($eval->value !== 0){
+                            $value = $eval->value;
+                            $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id) //cari berdasarkan aspectable_id
+                                ->where('value', '=', $value)->first();
+                        }
+                    }
+                }
                             $eval_data = [
                                 'evaluation_id' => $evaluation->id,
                                 'statement' => $obj_mec->statement,
-                                'value' => $obj_mec->value,
+                                'value' => $value,
                                 'accreditation_content_id' => $obj_mec->accreditation_content_id,
                                 'main_component_id' => $obj_mec->main_component_id,
                                 'instrument_aspect_point_id' => $obj_mec->instrument_aspect_point_id,
                                 'updated_at' => date('Y-m-d H:i:s')
                             ];
                             $merged_evaluation_content = MergedEvaluationContent::create($eval_data);
-                        }
-                }
+                        
                 
             }
         }
