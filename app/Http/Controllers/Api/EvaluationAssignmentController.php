@@ -65,8 +65,9 @@ class EvaluationAssignmentController extends BaseController
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
                 ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
-                ->where('accreditation_proposals.proposal_state_id', '=', 2)
+                ->where('accreditation_proposals.proposal_state_id', 'IN', [2,3])
                 ->Where('institution_requests.status', '=', 'valid')
+                ->where('evaluation_assignments.assignment_state_id', '=', 1)
                 ->where('assessors.user_id', '=', $user_id)
                 ->select([
                     'accreditation_proposals.*',
