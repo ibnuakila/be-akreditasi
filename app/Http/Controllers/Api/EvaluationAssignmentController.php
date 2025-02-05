@@ -61,7 +61,7 @@ class EvaluationAssignmentController extends BaseController
             $user_access = $request_header;
             $query = AccreditationProposal::query()
                 //->select('accreditation_proposals.*')
-                ->join('institution_requestsx', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
                 ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
