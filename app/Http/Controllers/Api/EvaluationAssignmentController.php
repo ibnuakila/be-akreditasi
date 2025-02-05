@@ -68,7 +68,7 @@ class EvaluationAssignmentController extends BaseController
                 ->where('accreditation_proposals.proposal_state_id', 'IN', [2,3])
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('evaluation_assignments.assignment_state_id', '=', 1)
-                ->where('assessors.user_id', '=', $user_id)
+                //->where('assessors.user_id', '=', $user_id)
                 ->select([
                     'accreditation_proposals.*',
                     'proposal_states.state_name',
