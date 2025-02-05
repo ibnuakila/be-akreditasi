@@ -8,6 +8,7 @@ use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
 use App\Models\EvaluationContent;
 use App\Models\Instrument;
+use App\Models\MergedEvaluationContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -215,7 +216,7 @@ class EvaluationController extends BaseController implements ICrud
         if ($valid->fails()) {
             return $this->sendError('Error', $valid->errors());
         }
-        $evaluation_content = EvaluationContent::find($input['id']);
+        $evaluation_content = MergedEvaluationContent::find($input['id']);
         if (is_object($evaluation_content)) {
             if (!empty($input['value'])) {
                 $evaluation_content->value = $input['value'];

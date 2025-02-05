@@ -280,8 +280,9 @@ class EvaluationAssignmentController extends BaseController
                     $accre_content = AccreditationContent::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
 
                     $eval_contents = new \ArrayObject();
+                    //hapus data evaluation_contents
                     DB::table('evaluation_contents')->where('evaluation_id', $evaluation->id)->delete();
-
+                    //copy data accreditation_contents ke evaluation_contents
                     foreach ($accre_content as $ac) {
                         $eval_data = [
                             'evaluation_id' => $evaluation->id,
@@ -295,7 +296,7 @@ class EvaluationAssignmentController extends BaseController
                         $eval_content = EvaluationContent::create($eval_data);
                         $eval_contents->append($eval_data);
                     }
-
+                    //baca instrument
                     $evaluation_contents = $this->readInstrument($params);
                     $return['evaluation_contents'] = $evaluation_contents;
                     
@@ -323,7 +324,7 @@ class EvaluationAssignmentController extends BaseController
                     $evaluation->update();
 
                     $evaluations = Evaluation::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
-                    $params['evaluation_contents'] = $evaluations;
+                    $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];
                     $params['accre_content'] = $accre_content;
                     if(count($evaluations) > 1){
                         $this->mergedEvaluation($params);
@@ -378,17 +379,7 @@ class EvaluationAssignmentController extends BaseController
                 'aspect_id' => $aspect_id
             ];
 
-            // $instrument_component = InstrumentComponent::where('id', '=', $ins_component_id)
-            //     ->where('type', '=', 'main')->first();
-            // if (is_object($instrument_component)) {
-            //     $main_component_id = $instrument_component->id;
-            // }
-
-            // $instrument_aspect = InstrumentAspect::where('id', '=', $aspect_id)->first();
-            // $aspect = '-';
-            // if (is_object($instrument_aspect)) {
-            //     $aspect = $instrument_aspect->aspect;                
-            // }
+            //cari instrument_aspect_points berdasarkan nilai yg lama
             if($nilaisa !== ''){
                 $old_instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
                 ->where('value', '=', $nilaisa)->first();
@@ -398,10 +389,11 @@ class EvaluationAssignmentController extends BaseController
             }else{
                 $old_instrument_aspect_point_id = null;
             }
+            //cari instrument_aspect_points berdasarkan nilai yg baru
             if($nilai !== ''){
                 $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id)
                 ->where('value', '=', $nilai)->first();
-            }else{
+            }else{                
                 $instrument_aspect_point = null;
             }
             $statement = '-';
@@ -411,52 +403,35 @@ class EvaluationAssignmentController extends BaseController
                 $statement = $instrument_aspect_point->statement;
                 $nilai = $instrument_aspect_point->value;
                 $instrument_aspect_point_id = $instrument_aspect_point->id;
-            }else{
-                if($nilai == ''){
-                    $nilai = 0;
-                }
             }
 
-            // $accreditation_content = AccreditationContent::query()
-            //     ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
-            //     //->where('main_component_id', '=', $ins_component_id)
-            //     //->where('aspectable_id', '=', $aspect_id)
-            //     ->where('instrument_aspect_point_id', '=', $instrument_aspect_point_id)->first();
-
-            if($instrument_aspect_point_id !== ''){
+            //if($instrument_aspect_point_id !== ''){
                 $evaluation_content = EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
                 ->where('instrument_aspect_point_id', '=', $old_instrument_aspect_point_id)->first();
-            }else{
-                $evaluation_content = null;
-            }
+            //}else{
+            //    $evaluation_content = null;
+            //}
             if (is_object($evaluation_content)) {
-                //$evaluation_content->evaluation_id = $params['evaluation_id'];
-
-                //$evaluation_content->accreditation_content_id = $accreditation_content->id;
-                //$evaluation_content->main_component_id = $main_component_id;
-                //$evaluation_content->instrument_aspect_point_id = $instrument_aspect_point_id;
-                //$evaluation_content->aspect = $aspect;
-                //$evaluation_content->statement = $statement;
-                //$evaluation_content->value = $nilai;
-                //$evaluation_content->comment = $comment;
-                //$evaluation_content->updated_at = date('Y-m-d H:i:s');
+                
                 if (!is_numeric($pleno)) {
                     $pleno = 0;
                 }
                 if (!is_numeric($banding)) {
                     $banding = 0;
                 }
-                //$evaluation_content->pleno = $pleno;
-                //$evaluation_content->banding = $banding;
-                $evaluation_content->update([
-                    'instrument_aspect_point_id' => $instrument_aspect_point_id,
-                    'statement' => $statement,
-                    'value' => $nilai,
-                    'comment' => $comment,
-                    'pleno' => $pleno,
-                    'banding' => $banding,
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
+                if($nilai !== ''){
+                    $evaluation_content->update([
+                        'instrument_aspect_point_id' => $instrument_aspect_point_id,
+                        'statement' => $statement,
+                        'value' => $nilai,
+                        'comment' => $comment,
+                        'pleno' => $pleno,
+                        'banding' => $banding,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                }else{
+                    $evaluation_content->delete();
+                }
                 $obj_instrument->append($evaluation_content);
             }
 
@@ -469,28 +444,47 @@ class EvaluationAssignmentController extends BaseController
     private function mergedEvaluation($params)
     {
         if(is_array(($params))){
+            MergedEvaluationContent::query()
+            ->where('accreditation_proposal_id', '=', $params['accreditation_proposal_id'])
+            ->delete();
             foreach ($params['accre_content'] as $evaluation){
-                $evaluations = EvaluationContent::where('accreditaion_content_id', '=', $evaluation->accreditation_content_id)->get();
+                $evaluations = EvaluationContent::where('accreditation_content_id', '=', $evaluation->id)->get();
+                
+                $statement = '';
+                $value = 0;
+                $evaluation_id = '';
+                $instrument_aspect_point_id = '';
+                $comment = '';
                 if(count($evaluations) > 0){
+                    
                     foreach ($evaluations as $eval){
-                        if($eval->value !== 0){
-                            $value = $eval->value;
-                            $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $aspect_id) //cari berdasarkan aspectable_id
-                                ->where('value', '=', $value)->first();
+                        if($eval->value != 0){
+                            $comment = $eval->comment;
+                            $evaluation_id = $eval->evaluation_id;
+                            $instrument_aspect_point = InstrumentAspectPoint::where('instrument_aspect_id', '=', $evaluation->aspectable_id) //cari berdasarkan aspectable_id
+                                ->where('value', '=', $eval->value)->first();
+                            if(is_object($instrument_aspect_point)){
+                                $statement = $instrument_aspect_point->statement;   
+                                $instrument_aspect_point_id = $instrument_aspect_point->id;   
+                                $value = $instrument_aspect_point->value;                          
+                            }
                         }
-                    }
-                }
-                            $eval_data = [
-                                'evaluation_id' => $evaluation->id,
-                                'statement' => $obj_mec->statement,
-                                'value' => $value,
-                                'accreditation_content_id' => $obj_mec->accreditation_content_id,
-                                'main_component_id' => $obj_mec->main_component_id,
-                                'instrument_aspect_point_id' => $obj_mec->instrument_aspect_point_id,
-                                'updated_at' => date('Y-m-d H:i:s')
-                            ];
-                            $merged_evaluation_content = MergedEvaluationContent::create($eval_data);
                         
+                    }
+                    
+                }
+                $eval_data = [
+                    'evaluation_id' => $evaluation_id,
+                    'statement' => $statement,
+                    'value' => $value,
+                    'comment' => $comment,
+                    'accreditation_content_id' => $evaluation->id,
+                    'main_component_id' => $evaluation->main_component_id,
+                    'instrument_aspect_point_id' => $instrument_aspect_point_id,
+                    'accreditation_proposal_id' => $evaluation->accreditation_proposal_id,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                $merged_evaluation_content = MergedEvaluationContent::create($eval_data);                        
                 
             }
         }
