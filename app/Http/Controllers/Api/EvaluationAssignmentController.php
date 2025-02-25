@@ -86,21 +86,21 @@ class EvaluationAssignmentController extends BaseController
                     'assessor_id',
                     'assessors.name as assessor'
                 ]);
-            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
-                $query->where('institution_requests.library_name', 'like', "%{$s}%");
-            }
-            if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
-                $query->where('province_name', '=', "{$s}");
-            }
-            if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
-                $query->where('city_name', '=', "{$s}");
-            }
-            if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
-                $query->where('subdistrict_name', '=', "{$s}");
-            }
-            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
-                $query->where('proposal_states.state_name', '=', "{$s}");
-            }
+                if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
+                    $query->where('institution_requests.library_name', 'like', "%{$s}%");
+                }
+                if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
+                    $query->where('institution_requests.province_id', '=', "{$s}");
+                }
+                if ($s = $request->input(key: 'city_id')) {//filter berdasarkan name            
+                    $query->where('institution_requests.city_id', '=', "{$s}");
+                }
+                if ($s = $request->input(key: 'subdistrict_id')) {//filter berdasarkan name            
+                    $query->where('institution_requests.subdistrict_id', '=', "{$s}");
+                }
+                if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
+                    $query->where('proposal_states.state_name', '=', "{$s}");
+                }
             $perPage = $request->input(key: 'pageSize', default: 10);
             $page = $request->input(key: 'page', default: 1);
             $total = $query->count();
@@ -140,19 +140,19 @@ class EvaluationAssignmentController extends BaseController
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();
                 $query->where('evaluation_assignments.assessor_id', '=', $assessor->id);
             }
-            if ($s = $request->input(key: 'library_name')) { //filter berdasarkan name            
+            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
             }
-            if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
-                $query->where('province_name', '=', "{$s}");
+            if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.province_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'city')) { //filter berdasarkan name            
-                $query->where('city_name', '=', "{$s}");
+            if ($s = $request->input(key: 'city_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.city_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'subdistrict')) { //filter berdasarkan name            
-                $query->where('subdistrict_name', '=', "{$s}");
+            if ($s = $request->input(key: 'subdistrict_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.subdistrict_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
+            if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
                 $query->where('proposal_states.state_name', '=', "{$s}");
             }
             $perPage = $request->input(key: 'pageSize', default: 10);

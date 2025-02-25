@@ -102,17 +102,17 @@ class EvaluationController extends BaseController implements ICrud
                     ]);
             }
 
-            if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
+            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
             }
-            if ($s = $request->input(key: 'province')) {//filter berdasarkan name            
-                $query->where('province_name', '=', "{$s}");
+            if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.province_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'city')) {//filter berdasarkan name            
-                $query->where('city_name', '=', "{$s}");
+            if ($s = $request->input(key: 'city_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.city_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'subdistrict')) {//filter berdasarkan name            
-                $query->where('subdistrict_name', '=', "{$s}");
+            if ($s = $request->input(key: 'subdistrict_id')) {//filter berdasarkan name            
+                $query->where('institution_requests.subdistrict_id', '=', "{$s}");
             }
             if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
                 $query->where('proposal_states.state_name', '=', "{$s}");

@@ -16,6 +16,7 @@ use App\Models\Instrument;
 use App\Models\Province;
 use App\Models\Region;
 use App\Models\ProvinceRegion;
+use App\Models\Evaluation;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -55,12 +56,74 @@ class ProposalController extends BaseController
 
     public function index()
     {
-        $accreditation = AccreditationProposal::query()
+        $accreditation = DB::table('accreditation_proposals')
+            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+            ->select(['institution_requests.*',
+                'accreditation_proposals.proposal_date',
+                'accreditation_proposals.predicate',
+                'accreditation_proposals.accredited_at',
+                'accreditation_proposals.type',
+                'proposal_states.state_name'])
+            ->where('accreditation_proposals.proposal_state_id', '>', '0')
             ->get();
         $spreadsheet = new Spreadsheet();
         $activeWorksheet = $spreadsheet->getActiveSheet();
         $activeWorksheet->setCellValue('A1', 'Data Usulan Akreditasi');
-
+        $activeWorksheet->getStyle('A1')->getFont()->setBold(true);
+        $activeWorksheet->getStyle('A1')->getFont()->setSize(16);
+        $activeWorksheet->setCellValue('A2', 'ID');
+        $activeWorksheet->setCellValue('B2', 'Tgl Pengajuan');
+        $activeWorksheet->setCellValue('C2', 'Nama Institusi');
+        $activeWorksheet->setCellValue('D2', 'Status');
+        $activeWorksheet->setCellValue('E2', 'Predikat');
+        $activeWorksheet->setCellValue('F2', 'Tgl Akreditasi');
+        $activeWorksheet->setCellValue('G2', 'Type');       
+        $activeWorksheet->setCellValue('H2', 'Category');
+        $activeWorksheet->setCellValue('I2', 'Propinsi');
+        $activeWorksheet->setCellValue('J2', 'Kabupaten');
+        $activeWorksheet->setCellValue('K2', 'Kecamatan');
+        $activeWorksheet->setCellValue('L2', 'Desa');
+        $styleArray = [
+            'font' => [
+                'bold' => true,
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'top' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                //'rotation' => 90,
+                'startColor' => [
+                    'argb' => 'FFA0A0A0',
+                ],
+                'endColor' => [
+                    'argb' => 'FFFFFFFF',
+                ],
+            ],
+        ];
+        $activeWorksheet->getStyle('A2:L2')->applyFromArray($styleArray);
+        $row = 3;
+        foreach($accreditation as $accre){
+            $activeWorksheet->setCellValue('A'.strval($row), $accre->accreditation_proposal_id);
+            $activeWorksheet->setCellValue('B'.strval($row), $accre->proposal_date);
+            $activeWorksheet->setCellValue('C'.strval($row), $accre->library_name);
+            $activeWorksheet->setCellValue('D'.strval($row), $accre->state_name);
+            $activeWorksheet->setCellValue('E'.strval($row), $accre->predicate);
+            $activeWorksheet->setCellValue('F'.strval($row), $accre->accredited_at);
+            $activeWorksheet->setCellValue('G'.strval($row), $accre->type);
+            $activeWorksheet->setCellValue('H'.strval($row), $accre->category);
+            $activeWorksheet->setCellValue('I'.strval($row), $accre->province_name);
+            $activeWorksheet->setCellValue('J'.strval($row), $accre->city_name);
+            $activeWorksheet->setCellValue('K'.strval($row), $accre->subdistrict_name);
+            $activeWorksheet->setCellValue('L'.strval($row), $accre->village_name);
+            $row++;
+        }
         $writer = new Xlsx($spreadsheet);
         $response = new StreamedResponse(function () use ($writer) {
             $writer->save('php://output');
@@ -265,14 +328,14 @@ class ProposalController extends BaseController
     public function update(Request $request, $id)
     {
         $input = $request->all();
-        $user_role = '';
+        $user_role = ''; $perpus_id = '';
         if ($request->hasHeader('Access-User')) {
             $temp_request_header = $request->header('Access-User');
             $request_header = str_replace('\"', '"', $temp_request_header);
             $request_header = json_decode($request_header, true);
             $userid = $request_header['id'];
             $roles = $request_header['roles'];
-
+            $perpus_id = $request_header['perpus_id'];
             foreach ($roles as $role) {
                 if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
                     $user_role = $role['name'];
@@ -321,7 +384,7 @@ class ProposalController extends BaseController
                 $model->pleno_date = $input['pleno_date'];
                 $model->is_valid = $input['is_valid'];
                 $model->instrument_id = $input['instrument_id'];
-                $model->category = $input['category'];
+                //$model->category = $input['category'];
                 //certificate-file
                 if ($request->file()) {
                     $directory = 'certifications/' . $model->id;
@@ -333,16 +396,72 @@ class ProposalController extends BaseController
                 }
 
                 $model->save();
+                
                 $ins_request = InstitutionRequest::where('accreditation_proposal_id', '=', $id)->first();
                 $ins_request->status = $input['is_valid'];
                 $ins_request->save();
-            } else {
-                $this->sendError('Error', 'Object not found!');
-            }
+
+                //update data akreditasi ke perpustakaan
+                //ambil skor evaluasi
+                $evaluation = Evaluation::where('accreditation_proposal_id', '=', $id)->get();
+                $skor = 0;
+                if(count($evaluation) > 0){
+                    foreach($evaluation as $eva){
+                        $skor = $skor + $eva->skor;
+                    }
+                }
+                $url = "http://103.23.199.161/api/perpustakaan/" . $perpus_id;
+                $curl = curl_init();
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => "",
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 10,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => "GET",
+                    //CURLOPT_USERAGENT => $userAgent,
+                ]);
+
+                curl_setopt($curl, CURLOPT_HTTPHEADER, [
+                    "cache-control: no-cache",
+                    "Access-User: " . $temp_request_header
+                ]);
+
+                $response = json_decode(curl_exec($curl));
+                $error = curl_error($curl);
+                $perpustakaan = null;
+                if (is_object($response)) {
+                    $perpustakaan = $response->data;
+                    $perpustakaan->tanggal_akreditasi = $input['accredited_at'];
+                    $perpustakaan->nilai_akreditasi = $input['predicate'];
+
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => $url,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_ENCODING => "",
+                        CURLOPT_MAXREDIRS => 10,
+                        CURLOPT_TIMEOUT => 10,
+                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        CURLOPT_CUSTOMREQUEST => "PATCH",
+                        CURLOPT_POSTFIELDS => json_decode($perpustakaan)
+                        //CURLOPT_USERAGENT => $userAgent,
+                    ]);
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, [
+                        "cache-control: no-cache",
+                        "Access-User: " . $temp_request_header
+                    ]);
+                    $response = json_decode(curl_exec($curl));
+                    $error = curl_error($curl);
+                }
+                $return = ['accreditation_proposal' => $model, 'perpustakaan' => $perpustakaan];
+                } else {
+                    $this->sendError('Error', 'Object not found!');
+                }
         }else{
-            $model = [];
+            $return = [];
         }
-        return $this->sendResponse(new AccreditationProposalResource($model), 'Accreditation Updated!', $model->count());
+        return $this->sendResponse(new AccreditationProposalResource($return), 'Accreditation Updated!', $model->count());
     }
 
     public function showFile($id, $file)

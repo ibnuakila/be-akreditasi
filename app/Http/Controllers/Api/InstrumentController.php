@@ -35,7 +35,7 @@ class InstrumentController extends BaseController
             'file_path' => 'nullable',
             'file_name' => 'nullable',
             'file_type' => 'nullable',
-            'is_active' => 'required'
+            'is_active' => 'required' 
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error!', $validator->errors());
@@ -127,9 +127,9 @@ class InstrumentController extends BaseController
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
         $response = $query->get();
-        /*$response = $query->offset(value: ($page - 1) * $perPage)
+        $response = $query->offset(value: ($page - 1) * $perPage)
             ->limit($perPage)
-            ->paginate();*/
+            ->paginate();
         return $this->sendResponse($response, 'Success', $query->count());
     }
 
