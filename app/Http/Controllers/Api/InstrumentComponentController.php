@@ -146,6 +146,10 @@ class InstrumentComponentController extends BaseController implements ICrud
             ->where('type', '=', $type)->get();
         if($InsComponent->count()>0){
             $data[$type.'_components'] = $InsComponent;
+            $data['type'] = [
+                ['main' => 'Main'], 
+                ['sub_1' => 'Sub 1'], 
+                ['sub_2' => 'Sub 2']];
             return $this->sendResponse($data, "Success", $InsComponent->count());
         }else{
             return $this->sendResponse([], 'Record not found', 0);
@@ -155,6 +159,10 @@ class InstrumentComponentController extends BaseController implements ICrud
     public function getMainComponent($instrument_id){
         $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
             ->where('type', '=', 'main')->get();
+        $data['type'] = [
+                ['main' => 'Main'], 
+                ['sub_1' => 'Sub 1'], 
+                ['sub_2' => 'Sub 2']];
         if($InsComponent->count()>0){
             $data['main_components'] = $InsComponent;
             return $this->sendResponse($data, "Success", $InsComponent->count());
