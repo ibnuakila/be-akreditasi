@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Validator;
 class InstrumentComponentController extends BaseController implements ICrud
 {
     //
-    public function addNew(Request $request, $instrument_id){
-        
+    public function addNew($instrument_id){
+        $InsComponent = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            ->where('type', '=', 'main')->get();
         $instrument = Instrument::find($instrument_id);
         if(is_object($instrument)){
             $data['instrument'] = $instrument;
@@ -19,22 +20,8 @@ class InstrumentComponentController extends BaseController implements ICrud
                 ['main' => 'Main'], 
                 ['sub_1' => 'Sub 1'], 
                 ['sub_2' => 'Sub 2']];
-        $query = InstrumentComponent::query()
-            ->where('instrument_id', '=', $instrument_id)
-            ->where('type', '=', 'main');
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan library_name atau agency_name
-            $query->where('name', 'like', "%{$s}%")
-                    ->orWhere('name', 'like', "%{$s}%");
-        }
-        //$perPage = $request->input(key: 'pageSize', default: 10);
-        //$page = $request->input(key: 'page', default: 1);
-        //$total = $query->count();
-        $response = $query->get();
-            // $query->offset(value: ($page - 1) * $perPage)
-            //     ->limit($perPage)
-            //     ->paginate();
-            $data['components'] = $response;
-            return $this->sendResponse($data, "Success", $total);
+            $data['components'] = $InsComponent;
+            return $this->sendResponse($data, "Success", $instrument->count());
         }else{
             return $this->sendError('Error', 'Failed');
         }
