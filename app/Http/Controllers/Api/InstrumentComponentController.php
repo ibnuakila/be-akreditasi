@@ -26,12 +26,13 @@ class InstrumentComponentController extends BaseController implements ICrud
             $query->where('name', 'like', "%{$s}%")
                     ->orWhere('name', 'like', "%{$s}%");
         }
-        $perPage = $request->input(key: 'pageSize', default: 10);
-        $page = $request->input(key: 'page', default: 1);
-        $total = $query->count();
-        $response = $query->offset(value: ($page - 1) * $perPage)
-                ->limit($perPage)
-                ->paginate();
+        //$perPage = $request->input(key: 'pageSize', default: 10);
+        //$page = $request->input(key: 'page', default: 1);
+        //$total = $query->count();
+        $response = $query->get();
+            // $query->offset(value: ($page - 1) * $perPage)
+            //     ->limit($perPage)
+            //     ->paginate();
             $data['components'] = $response;
             return $this->sendResponse($data, "Success", $total);
         }else{
