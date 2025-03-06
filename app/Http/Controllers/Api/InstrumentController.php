@@ -127,9 +127,9 @@ class InstrumentController extends BaseController
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
         $response = $query->get();
-        // $response = $query->offset(value: ($page - 1) * $perPage)
-        //     ->limit($perPage)
-        //     ->paginate();
+        $response = $query->offset(value: ($page - 1) * $perPage)
+             ->limit($perPage)
+             ->paginate();
         return $this->sendResponse($response, 'Success', $query->count());
     }
 

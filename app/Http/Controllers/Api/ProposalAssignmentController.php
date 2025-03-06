@@ -82,7 +82,8 @@ class ProposalAssignmentController extends BaseController
                     'village_name as village'
                 ]);
                 if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
-                    $query->where('institution_requests.library_name', 'like', "%{$s}%");
+                    $query->where('institution_requests.library_name', 'like', "%{$s}%")
+                        ->orWhere('institution_requests.agency_name', 'like', "%{$s}%");
                 }
                 if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
                     $query->where('province_name', '=', "{$s}");
@@ -128,7 +129,8 @@ class ProposalAssignmentController extends BaseController
                     'village_name as village'
                 ]);
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
-                $query->where('institution_requests.library_name', 'like', "%{$s}%");
+                $query->where('institution_requests.library_name', 'like', "%{$s}%")
+                ->orWhere('institution_requests.agency_name', 'like', "%{$s}%");
             }
             if ($s = $request->input(key: 'province')) { //filter berdasarkan name            
                 $query->where('province_name', '=', "{$s}");

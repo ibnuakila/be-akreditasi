@@ -87,7 +87,8 @@ class EvaluationAssignmentController extends BaseController
                     'assessors.name as assessor'
                 ]);
                 if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
-                    $query->where('institution_requests.library_name', 'like', "%{$s}%");
+                    $query->where('institution_requests.library_name', 'like', "%{$s}%")
+                    ->orWhere('institution_requests.agency_name', 'like', "%{$s}%");
                 }
                 if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
                     $query->where('institution_requests.province_id', '=', "{$s}");
@@ -138,7 +139,8 @@ class EvaluationAssignmentController extends BaseController
                 ]);
             if ($is_assessor) {
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();
-                $query->where('evaluation_assignments.assessor_id', '=', $assessor->id);
+                $query->where('evaluation_assignments.assessor_id', '=', $assessor->id)
+                ->orWhere('institution_requests.agency_name', 'like', "%{$s}%");
             }
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
