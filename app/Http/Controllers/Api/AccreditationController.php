@@ -173,9 +173,11 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
+            $npp = '';
             if (is_object($response)) {
                 $perpustakaan = $response->data;
                 $data['perpustakaan'] = $response;
+                $npp = $perpustakaan->npp;
             }
 
 
@@ -186,6 +188,10 @@ class AccreditationController extends BaseController //implements ICrud
             if (is_object($proposal)) {
                 $data['accreditation_proposal'] = $proposal;
                 $message = 'Anda masih memiliki usulan akreditasi pada tahun yang sama!';
+                return $this->sendError($data, $message, 500);
+            } elseif($npp == ''){
+                $data['perpustakaan'] = $perpustakaan;
+                $message = 'Anda belum memiliki nomor NPP!';
                 return $this->sendError($data, $message, 500);
             } else {
                 $region = Region::all();
