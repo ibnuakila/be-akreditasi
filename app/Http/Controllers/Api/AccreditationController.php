@@ -543,10 +543,10 @@ class AccreditationController extends BaseController //implements ICrud
                 $data['type'] = $type;
                 return $this->sendResponse($data, "Success", 0);
             } else {
-                return $this->sendError('Error', 'Usulan sudah diajukan!');
+                return $this->sendError('Error', 'Usulan sudah diajukan!', 500);
             }
         } else {
-            return $this->sendError('Error', 'Authorization Failed!');
+            return $this->sendError('Error', 'Authorization Failed!', 500);
         }
     }
 
