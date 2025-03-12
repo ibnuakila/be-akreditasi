@@ -263,7 +263,7 @@ class ProposalController extends BaseController {
                 ])
                 ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
                 ->leftJoin('merged_evaluation_contents', 'accreditation_contents.id', '=', 'merged_evaluation_contents.accreditation_content_id')
-                ->where('accreditation_contents.accreditation_proposal_id', '9d6fc631-6110-4dd4-9123-b7e13d40f81d')
+                ->where('accreditation_contents.accreditation_proposal_id', $id)
                 ->groupBy(
                         'accreditation_contents.main_component_id',
                         'instrument_components.name',
