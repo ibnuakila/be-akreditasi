@@ -25,7 +25,7 @@ use App\Models\ProvinceRegion;
 use App\Models\City;
 use App\Models\Subdistrict;
 use App\Models\Village;
-
+use App\Models\MergedEvaluationContent;
 
 
 class AccreditationController extends BaseController //implements ICrud
@@ -801,6 +801,19 @@ class AccreditationController extends BaseController //implements ICrud
                 $accre_content->butir = $butir;
                 if ($aspect_id != '') {
                     $accre_content->save();
+                    
+                        $eval_data = [
+                        'evaluation_id' => '',
+                        'statement' => $statement,
+                        'value' => $value,
+                        'comment' => '-',
+                        'accreditation_content_id' => $accre_content->id,
+                        'main_component_id' => $accre_content->main_component_id,
+                        'instrument_aspect_point_id' => $instrument_aspect_point_id,
+                        'accreditation_proposal_id' => $accre_content->accreditation_proposal_id,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ];
+                    $merged_evaluation_content = MergedEvaluationContent::create($eval_data);   
                 }
                 $obj_instrument->append($accre_content);
             }
