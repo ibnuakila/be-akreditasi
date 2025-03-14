@@ -381,11 +381,11 @@ class ProposalController extends BaseController {
             if (is_object($model)) {
                 $model->institution_id = $input['institution_id'];
                 $model->proposal_date = $input['proposal_date'];
-                if ($input['is_valid'] == 'valid') {
+                /*if ($input['is_valid'] == 'valid') {
                     $model->proposal_state_id = 2;
-                } else {
-                    $model->proposal_state_id = 1;
-                }
+                } else {*/
+                    $model->proposal_state_id = $input['proposal_state_id'];
+                //}
                 $model->finish_date = $input['finish_date'];
                 $model->type = $input['type'];
                 $model->notes = $input['notes'];
@@ -456,8 +456,8 @@ class ProposalController extends BaseController {
                         CURLOPT_TIMEOUT => 10,
                         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                         CURLOPT_CUSTOMREQUEST => "PATCH",
-                        CURLOPT_POSTFIELDS => json_decode($perpustakaan)
-                            //CURLOPT_USERAGENT => $userAgent,
+                        CURLOPT_POSTFIELDS => json_decode($perpustakaan),
+                        //CURLOPT_USERAGENT => $userAgent,
                     ]);
                     curl_setopt($curl, CURLOPT_HTTPHEADER, [
                         "cache-control: no-cache",
