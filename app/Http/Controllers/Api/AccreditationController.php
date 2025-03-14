@@ -175,9 +175,9 @@ class AccreditationController extends BaseController //implements ICrud
             $error = curl_error($curl);
             $npp = '';
             if (is_object($response)) {
-                $perpustakaan = $response->data;
+                //$perpustakaan = $response->data;
                 $data['perpustakaan'] = $response;
-                $npp = $perpustakaan->npp;
+                //$npp = $perpustakaan->npp;
             }
 
 
