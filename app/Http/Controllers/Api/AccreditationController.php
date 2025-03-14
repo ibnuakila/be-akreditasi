@@ -147,7 +147,7 @@ class AccreditationController extends BaseController //implements ICrud
             $roles = $request_header['roles'];
 
             foreach ($roles as $role) {
-                if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
+                if ($role['name'] == 'ADMIN PERPUSTAKAAN' || $role['name'] == 'Asesi') {
                     $user_role = $role['name'];
                 }
             }
@@ -223,7 +223,7 @@ class AccreditationController extends BaseController //implements ICrud
             $roles = $request_header['roles'];
 
             foreach ($roles as $role) {
-                if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
+                if ($role['name'] == 'ADMIN PERPUSTAKAAN' || $role['name'] == 'Asesi') {
                     $user_role = $role['name'];
                 }
             }
@@ -565,7 +565,7 @@ class AccreditationController extends BaseController //implements ICrud
             $roles = $request_header['roles'];
 
             foreach ($roles as $role) {
-                if ($role['name'] == 'ADMIN PERPUSTAKAAN') {
+                if ($role['name'] == 'ADMIN PERPUSTAKAAN' || $role['name'] == 'Asesi') {
                     $user_role = $role['name'];
                 }
             }
