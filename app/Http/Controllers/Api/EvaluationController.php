@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccreditationContent;
 use App\Models\AccreditationProposal;
 use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
@@ -30,12 +31,9 @@ class EvaluationController extends BaseController implements ICrud
         }
     }
 
-    public function index()
-    {
+    public function index() {}
 
-    }
-
-    public function list(Request $request)//with filter
+    public function list(Request $request) //with filter
     {
         $is_assessor = false;
         if ($request->hasHeader('Access-User')) {
@@ -105,16 +103,16 @@ class EvaluationController extends BaseController implements ICrud
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
                 $query->where('institution_requests.library_name', 'like', "%{$s}%");
             }
-            if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
+            if ($s = $request->input(key: 'province_id')) { //filter berdasarkan name            
                 $query->where('institution_requests.province_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'city_id')) {//filter berdasarkan name            
+            if ($s = $request->input(key: 'city_id')) { //filter berdasarkan name            
                 $query->where('institution_requests.city_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'subdistrict_id')) {//filter berdasarkan name            
+            if ($s = $request->input(key: 'subdistrict_id')) { //filter berdasarkan name            
                 $query->where('institution_requests.subdistrict_id', '=', "{$s}");
             }
-            if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
+            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
                 $query->where('proposal_states.state_name', '=', "{$s}");
             }
             $perPage = $request->input(key: 'pageSize', default: 10);
@@ -147,30 +145,30 @@ class EvaluationController extends BaseController implements ICrud
                                 'children' => function ($query) use ($id) { // Load child components
                                     $query->with([
                                         'children' => function ($query) use ($id) {
-                                        $query->with([
-                                            'instrumentAspect' => function ($query) use ($id) { // Load aspects of each component
-                                                $query->with([
-                                                    'instrumentAspectPoint' => function ($query) use ($id) {
+                                            $query->with([
+                                                'instrumentAspect' => function ($query) use ($id) { // Load aspects of each component
                                                     $query->with([
-                                                        'accreditationContent' => function ($query) use ($id) {
-                                                            $query->where('accreditation_proposal_id', $id);
+                                                        'instrumentAspectPoint' => function ($query) use ($id) {
+                                                            $query->with([
+                                                                'accreditationContent' => function ($query) use ($id) {
+                                                                    $query->where('accreditation_proposal_id', $id);
+                                                                }
+                                                            ])
+                                                                ->with([
+                                                                    'mergedEvaluationContent' => function ($query) use ($id) {
+                                                                        $query->where('accreditation_proposal_id', '=', $id);
+                                                                        //->select('merged_evaluation_contents.*');
+                                                                    }
+                                                                ])
+                                                                ->get();
                                                         }
-                                                    ])
-                                                        ->with([
-                                                            'mergedEvaluationContent' => function ($query) use ($id) {
-                                                                $query->where('accreditation_proposal_id', '=', $id);
-                                                                    //->select('merged_evaluation_contents.*');
-                                                            }
-                                                        ])
-                                                        ->get();
-                                                }
-                                                ]); // Load aspect points for each aspect
-                                            },
-                                        ]);
-                                    },        // Recursively load more children if needed
+                                                    ]); // Load aspect points for each aspect
+                                                },
+                                            ]);
+                                        },        // Recursively load more children if needed
                                         'instrumentAspect' => function ($query) { // Load aspects of each component
-                                        $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
-                                    },
+                                            $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                        },
                                     ]);
                                 },
                                 'instrumentAspect' => function ($query) { // Load aspects of main components
@@ -182,27 +180,20 @@ class EvaluationController extends BaseController implements ICrud
                 ->first();
         }
         return $this->sendResponse($instrument, 'Success', null);
-
     }
 
     /**
      * 
      * @param $request
      */
-    public function store(Request $request)
-    {
-
-    }
+    public function store(Request $request) {}
 
     /**
      * 
      * @param $request
      * @param $model
      */
-    public function update(Request $request, $id)
-    {
-
-    }
+    public function update(Request $request, $id) {}
 
     public function updateRow(Request $request)
     {
@@ -216,21 +207,30 @@ class EvaluationController extends BaseController implements ICrud
         if ($valid->fails()) {
             return $this->sendError('Error', $valid->errors());
         }
-        $evaluation_content = MergedEvaluationContent::find($input['id']);
-        if (is_object($evaluation_content)) {
+        $accreditation_content = AccreditationContent::find($input['id']);
+        if (is_object($accreditation_content)) {
             if (!empty($input['value'])) {
-                $evaluation_content->value = $input['value'];
+                $accreditation_content->value = $input['value'];
+                $accreditation_content->update();
             }
-            if (!empty($input['pleno'])) {
-                $evaluation_content->pleno = $input['pleno'];
+            return $this->sendResponse($accreditation_content, 'Success', null);
+        }else{        
+            $evaluation_content = MergedEvaluationContent::find($input['id']);
+            if (is_object($evaluation_content)) {
+                if (!empty($input['value'])) {
+                    $evaluation_content->value = $input['value'];
+                }
+                if (!empty($input['pleno'])) {
+                    $evaluation_content->pleno = $input['pleno'];
+                }
+                if (!empty($input['banding'])) {
+                    $evaluation_content->value = $input['banding'];
+                }
+                $evaluation_content->update();
+                return $this->sendResponse($evaluation_content, 'Success', null);
+            } else {
+                return $this->sendError('Error', 'Object not found');
             }
-            if (!empty($input['banding'])) {
-                $evaluation_content->value = $input['banding'];
-            }
-            $evaluation_content->update();
-            return $this->sendResponse($evaluation_content, 'Success', null);
-        } else {
-            return $this->sendError('Error', 'Object not found');
         }
     }
 }
