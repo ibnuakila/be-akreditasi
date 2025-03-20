@@ -22,7 +22,21 @@ use Storage;
 
 class EvaluationAssignmentController extends BaseController
 {
-    //
+    
+    public function addNew($id, Request $request)
+    {
+        if ($request->hasHeader('Access-User')) {
+            $accreditation_proposal = AccreditationProposal::find($id);
+            if(is_object($accreditation_proposal)){}
+            $instrument_id = $accreditation_proposal->instrument_id;
+            $instrument_component = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+                ->where('type', '=', 'main')->get();
+            return $this->sendResponse($instrument_component, 'Success', $instrument_component->count());
+            
+        }else {
+            $this->sendError('Error', 'Authorization Failed!');
+        }
+    }
     public function destroy(EvaluationAssignment $model)
     {
         //delete files
@@ -311,7 +325,7 @@ class EvaluationAssignmentController extends BaseController
                             //DB::raw('SUM(accreditation_contents.value) as nilai_sa'),
                             //DB::raw('(SUM(accreditation_contents.value) * instrument_components.weight) / 100 as total_nilai_sa'),
                             DB::raw('SUM(evaluation_contents.value) as nilai_evaluasi'),
-                            DB::raw('(SUM(evaluation_contents.value) * instrument_components.weight) / 100 as total_nilai_evaluasi'),
+                            DB::raw('(SUM(evaluation_contents.value) / (COUNT(evaluation_contents.value) * 5)) * instrument_components.weight AS total_nilai_evaluasi'),
                             'evaluation_contents.main_component_id'
                         )
                         ->join('instrument_components', 'evaluation_contents.main_component_id', '=', 'instrument_components.id')
@@ -481,6 +495,7 @@ class EvaluationAssignmentController extends BaseController
                     'statement' => $statement,
                     'value' => $value,
                     'comment' => $comment,
+                    'pleno' => $value,
                     'accreditation_content_id' => $evaluation->id,
                     'main_component_id' => $evaluation->main_component_id,
                     'instrument_aspect_point_id' => $instrument_aspect_point_id,

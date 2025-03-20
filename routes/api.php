@@ -170,6 +170,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/proposal-assignment/update/{id}', [ProposalAssignmentController::class, 'update']);
 
 //Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/evaluation-assignment/addnew/{id}', [EvaluationAssignmentController::class, 'addNew']);
     Route::get('/evaluation-assignment/index/', [EvaluationAssignmentController::class, 'index']);
     Route::get('/evaluation-assignment/list/', [EvaluationAssignmentController::class, 'list']);
     Route::get('/evaluation-assignment/show/{id}', [EvaluationAssignmentController::class, 'show']);
