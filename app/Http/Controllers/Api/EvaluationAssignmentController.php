@@ -11,6 +11,7 @@ use App\Models\Evaluation;
 use App\Models\EvaluationAssignment;
 use App\Models\EvaluationContent;
 use App\Models\EvaluationContentAssessor;
+use App\Models\EvaluationRecomendation;
 use App\Models\InstrumentAspect;
 use App\Models\InstrumentAspectPoint;
 use App\Models\InstrumentComponent;
@@ -153,6 +154,7 @@ class EvaluationAssignmentController extends BaseController
                 ]);
             if ($is_assessor) {
                 $assessor = Assessor::where('user_id', '=', $user_id)->first();
+                $s = $request->input(key: 'search');
                 $query->where('evaluation_assignments.assessor_id', '=', $assessor->id)
                 ->orWhere('institution_requests.agency_name', 'like', "%{$s}%");
             }
@@ -249,6 +251,7 @@ class EvaluationAssignmentController extends BaseController
             return $this->sendError('Validation Error!', $validator->errors());
         }
         if ($request->file()) {
+            $return['recommendation'] = $input['component'];
             //$document = ProposalDocument::find($input['proposal_document_id']);
             $file_name = $request->file('file')->getClientOriginalName();
             $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
@@ -339,6 +342,18 @@ class EvaluationAssignmentController extends BaseController
                     }
                     $evaluation->skor = $skor;
                     $evaluation->update();
+
+                    //recommendation component
+                    $recommendation = json_decode($input['component']);
+                    foreach ($recommendation->data as $recom) {
+                        $data_recom = [
+                            'main_component_id' => $recom->id,
+                            'nama' => $recom->name,
+                            'content' => $recom->content,
+                            'evaluation_id' => $evaluation->id
+                        ];
+                        EvaluationRecomendation::create($data_recom);
+                    }
 
                     $evaluations = Evaluation::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
                     $params['accreditation_proposal_id'] = $input['accreditation_proposal_id'];

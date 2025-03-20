@@ -11,7 +11,7 @@ class EvaluationRecomendation extends Model
     use HasFactory;
     use HasUuids;
     public $timestamps = false;
-    protected $table = 'accreditation_feedbacks';
+    protected $table = 'evaluation_recomendations';
     protected $fillable = [
         'main_component_id',
         'nama',
