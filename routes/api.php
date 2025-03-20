@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\AccreditationFeedbackController;
 use App\Models\EvaluationAssignment;
 use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
@@ -185,6 +186,13 @@ Route::get('/evaluation/show/{id}', [EvaluationController::class,'show']);
 Route::post('/evaluation/store', [EvaluationController::class,'store']);
 Route::post('/evaluation/update/{id}', [EvaluationController::class, 'update']);
 Route::post('/evaluation/update-row/', [EvaluationController::class, 'updateRow']);
+
+Route::get('/accreditation-feedback/addnew/{accreditation_proposal_id}', [AccreditationFeedbackController::class, 'addNew']);
+Route::get('/accreditation-feedback/show/{id}', [AccreditationFeedbackController::class, 'show']);
+Route::get('/accreditation-feedback/index', [AccreditationFeedbackController::class, 'index']);
+Route::post('/accreditation-feedback/store', [AccreditationFeedbackController::class, 'store']);
+Route::delete('/accreditation-feedback/destroy/{model}', [AccreditationFeedbackController::class, 'destroy']);
+Route::post('/accreditation-feedback/update/{model}', [AccreditationFeedbackController::class, 'update']);
 
 Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);
 
