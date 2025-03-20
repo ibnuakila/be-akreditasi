@@ -259,12 +259,12 @@ class ProposalController extends BaseController {
                     DB::raw('(SUM(accreditation_contents.value) / (COUNT(accreditation_contents.value) * 5)) * instrument_components.weight AS total_nilai_sa'),
                     DB::raw('SUM(merged_evaluation_contents.value) AS nilai_evaluasi'),
                     DB::raw('(SUM(merged_evaluation_contents.value) / (COUNT(merged_evaluation_contents.value) * 5)) * instrument_components.weight AS total_nilai_evaluasi'),
-                    'accreditation_contents.main_component_id',
-                    'evaluation_recomendations.content as recommendation'
+                    'accreditation_contents.main_component_id'
+                    //'evaluation_recomendations.content as recommendation'
                 ])
                 ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
                 ->leftJoin('merged_evaluation_contents', 'accreditation_contents.id', '=', 'merged_evaluation_contents.accreditation_content_id')
-                ->leftJoin('evaluation_recomendations', 'merged_evaluation_contents.main_component_id', '=', 'evaluation_recomendations.main_component_id')
+                //->leftJoin('evaluation_recomendations', 'merged_evaluation_contents.main_component_id', '=', 'evaluation_recomendations.main_component_id')
                 ->where('accreditation_contents.accreditation_proposal_id', $id)
                 ->groupBy(
                         'accreditation_contents.main_component_id',
