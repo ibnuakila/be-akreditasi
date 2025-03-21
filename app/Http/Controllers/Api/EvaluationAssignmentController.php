@@ -34,12 +34,12 @@ class EvaluationAssignmentController extends BaseController
                 ->where('type', '=', 'main')->get();
                 return $this->sendResponse($instrument_component, 'Success', $instrument_component->count());
             }else{
-                $this->sendError('Error', 'Object not found!');
+                return $this->sendError('Error', 'Object not found!');
             }
             
             
         }else {
-            $this->sendError('Error', 'Authorization Failed!');
+            return $this->sendError('Error', 'Authorization Failed!');
         }
     }
     public function destroy(EvaluationAssignment $model)
