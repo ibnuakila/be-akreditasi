@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\models\AccreditationFeedback;
+use App\Models\AccreditationFeedback;
 use App\Models\MasterFeedback;
 
 class AccreditationFeedbackController extends BaseController 
