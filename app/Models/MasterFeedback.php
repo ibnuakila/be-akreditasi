@@ -13,4 +13,9 @@ class MasterFeedback extends Model
     protected $fillable = [
         'feedback'        
     ];
+
+    public function accreditationFeedback()
+    {
+        return $this->hasOne(AccreditationFeedback::class);
+    }
 }

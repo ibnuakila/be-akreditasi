@@ -51,6 +51,11 @@ class InstitutionRequest extends Model
         return $this->belongsTo(AccreditationProposal::class);
     }
 
+    public function accreditationFeedback()
+    {
+        return $this->hasMany(AccreditationFeedback::class,'accreditation_proposal_id', 'accreditation_proposal_id');
+    }
+
     public function province()
     {
         return $this->belongsTo(Province::class);

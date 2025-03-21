@@ -54,4 +54,9 @@ class AccreditationProposal extends Model
     { 
         return $this->hasOne(InstitutionRequest::class);
     }
+
+    public function accreditationFeedback()
+    {
+        return $this->hasMany(AccreditationFeedback::class);
+    }
 }

@@ -193,6 +193,7 @@ Route::get('/accreditation-feedback/index', [AccreditationFeedbackController::cl
 Route::post('/accreditation-feedback/store', [AccreditationFeedbackController::class, 'store']);
 Route::delete('/accreditation-feedback/destroy/{model}', [AccreditationFeedbackController::class, 'destroy']);
 Route::post('/accreditation-feedback/update/{model}', [AccreditationFeedbackController::class, 'update']);
+Route::get('/accreditation-feedback/export', [AccreditationFeedbackController::class, 'export']);
 
 Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);
 
