@@ -28,11 +28,15 @@ class EvaluationAssignmentController extends BaseController
     {
         if ($request->hasHeader('Access-User')) {
             $accreditation_proposal = AccreditationProposal::find($id);
-            if(is_object($accreditation_proposal)){}
-            $instrument_id = $accreditation_proposal->instrument_id;
-            $instrument_component = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+            if(is_object($accreditation_proposal)){
+                $instrument_id = $accreditation_proposal->instrument_id;
+                $instrument_component = InstrumentComponent::where('instrument_id', '=', $instrument_id)
                 ->where('type', '=', 'main')->get();
-            return $this->sendResponse($instrument_component, 'Success', $instrument_component->count());
+                return $this->sendResponse($instrument_component, 'Success', $instrument_component->count());
+            }else{
+                $this->sendError('Error', 'Object not found!');
+            }
+            
             
         }else {
             $this->sendError('Error', 'Authorization Failed!');
