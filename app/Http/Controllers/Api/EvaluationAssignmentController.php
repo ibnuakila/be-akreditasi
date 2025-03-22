@@ -304,9 +304,9 @@ class EvaluationAssignmentController extends BaseController
                 $file_path = Storage::disk('local')->path($params['file_path']); 
                 $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
                 $params['spreadsheet'] = $spreadsheet;
-                $temp_file_name = $spreadsheet->getActiveSheet()->getCell('A1' )->getCalculatedValue();
+                $temp_inst_name = $spreadsheet->getActiveSheet()->getCell('A1' )->getCalculatedValue();
 
-                if ($temp_file_name == $instrument_id) {
+                if ($temp_inst_name == $instrument_id) {
                     $accre_content = AccreditationContent::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
 
                     $eval_contents = new \ArrayObject();
@@ -390,7 +390,7 @@ class EvaluationAssignmentController extends BaseController
         //EvaluationContent::where('evaluation_id', '=', $params['evaluation_id'])
         //->delete();
         //$file_path = Storage::disk('local')->path($params['file_path']); //base_path($params['file_path']);
-        //$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
+        $spreadsheet = $params['spreadsheet'];//\PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
         $start_row = 3;
         $butir = trim($spreadsheet->getActiveSheet()->getCell('A' . strval($start_row))->getCalculatedValue());
         if (strpos($butir, '.') !== false) {
