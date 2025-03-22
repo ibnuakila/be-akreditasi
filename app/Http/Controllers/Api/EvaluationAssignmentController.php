@@ -354,7 +354,7 @@ class EvaluationAssignmentController extends BaseController
                     $evaluation->update();
 
                     //recommendation component
-                    $recommendation = json_decode($input['component']);
+                    $recommendation = json_decode($input['components']);
                     foreach ($recommendation->data as $recom) {
                         $data_recom = [
                             'main_component_id' => $recom->id,
