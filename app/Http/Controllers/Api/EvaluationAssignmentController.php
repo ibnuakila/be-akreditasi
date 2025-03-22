@@ -304,7 +304,7 @@ class EvaluationAssignmentController extends BaseController
                 $file_path = Storage::disk('local')->path($params['file_path']); 
                 $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
                 $params['spreadsheet'] = $spreadsheet;
-                $temp_inst_name = trim($spreadsheet->getActiveSheet()->getCell('A1' )->getValue());
+                $temp_inst_name = trim($spreadsheet->getActiveSheet(0)->getCell('A1' )->getValue());
 
                 if ($temp_inst_name == $instrument_id) {
                     $accre_content = AccreditationContent::where('accreditation_proposal_id', $input['accreditation_proposal_id'])->get();
@@ -324,7 +324,7 @@ class EvaluationAssignmentController extends BaseController
                             'updated_at' => date('Y-m-d H:i:s')
                         ];
                         $eval_content = EvaluationContent::create($eval_data);
-                        $eval_contents->append($eval_data);
+                        $eval_contents->append($eval_content);
                     }
                     //baca instrument
                     $evaluation_contents = $this->readInstrument($params);
