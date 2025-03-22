@@ -373,7 +373,7 @@ class EvaluationAssignmentController extends BaseController
                     }
                     return $this->sendResponse($return, 'Success');
                 } else {
-                    return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument!");
+                    return $this->sendError('Wrong Instrument', "You probably uploaded a wrong instrument! " . $temp_inst_name);
                 }
             } else {
                 return $this->sendError('Not found!', "Accreditation Proposal not found, make sure you provide the ID!");
