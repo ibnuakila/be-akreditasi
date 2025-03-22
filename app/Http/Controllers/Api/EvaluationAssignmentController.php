@@ -255,7 +255,7 @@ class EvaluationAssignmentController extends BaseController
             return $this->sendError('Validation Error!', $validator->errors());
         }
         if ($request->file()) {
-            $return['recommendation'] = $input['component'];
+            $return['recommendation'] = $input['components'];
             //$document = ProposalDocument::find($input['proposal_document_id']);
             $file_name = $request->file('file')->getClientOriginalName();
             $file_type = $request->file('file')->getMimeType(); //getClientMimeType();
