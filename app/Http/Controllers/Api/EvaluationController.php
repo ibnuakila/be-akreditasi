@@ -166,8 +166,24 @@ class EvaluationController extends BaseController implements ICrud
                                                 },
                                             ]);
                                         },        // Recursively load more children if needed
-                                        'instrumentAspect' => function ($query) { // Load aspects of each component
-                                            $query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                        'instrumentAspect' => function ($query) use ($id) { // Load aspects of each component
+                                            //$query->with('instrumentAspectPoint'); // Load aspect points for each aspect
+                                            $query->with([
+                                                'instrumentAspectPoint' => function ($query) use ($id) {
+                                                    $query->with([
+                                                        'accreditationContent' => function ($query) use ($id) {
+                                                            $query->where('accreditation_proposal_id', $id);
+                                                        }
+                                                    ])
+                                                        ->with([
+                                                            'mergedEvaluationContent' => function ($query) use ($id) {
+                                                                $query->where('accreditation_proposal_id', '=', $id);
+                                                                //->select('merged_evaluation_contents.*');
+                                                            }
+                                                        ])
+                                                        ->get();
+                                                }
+                                            ]); // Load aspect points for each aspect
                                         },
                                     ]);
                                 },
