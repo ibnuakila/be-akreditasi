@@ -173,11 +173,12 @@ class AccreditationController extends BaseController //implements ICrud
 
             $response = json_decode(curl_exec($curl));
             $error = curl_error($curl);
-            $npp = '';
+            $npp = ''; $nilai_akreditasi = '';
             if (is_object($response)) {
                 $perpustakaan = $response->data;
                 $data['perpustakaan'] = $response;
                 $npp = $perpustakaan->npp;
+                $nilai_akreditasi = $perpustakaan->nilai_akreditasi;
             }
 
 
