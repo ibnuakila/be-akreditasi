@@ -230,7 +230,7 @@ class ProposalController extends BaseController {
                 ->get();
         $evaluation_recommendation = EvaluationRecomendation::query()
                     ->join('evaluations', 'evaluation_recomendations.evaluation_id', '=', 'evaluations.id')
-                    ->where('evaluations.accreditation_proposal_id', '=', $id)->first();
+                    ->where('evaluations.accreditation_proposal_id', '=', $id)->all();
 
         $proposal_states = ProposalState::all();
         $is_valid = [
