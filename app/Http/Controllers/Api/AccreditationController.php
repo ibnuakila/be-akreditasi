@@ -182,10 +182,23 @@ class AccreditationController extends BaseController //implements ICrud
             }
 
 
+            
+            $institution_requests = InstitutionRequest::where('user_id', '=', $user_id)
+                ->orderBy('validated_at', 'asc')
+                ->all();
+            $institution_request = null; $last_predicate = '';
+            if($institution_requests->count() > 0){
+                foreach($institution_requests as $in_request){
+                    $institution_request = $in_request;
+                }
+                $last_predicate = $institution_request->last_predicate;
+            }
+
             $Y = date('Y');
             $proposal = AccreditationProposal::where('user_id', '=', $userid)
                 ->whereBetween('proposal_date', [$Y . '-01-01', $Y . '-12-31'])
                 ->first();
+
             if (is_object($proposal)) {
                 $data['accreditation_proposal'] = $proposal;
                 $message = 'Anda masih memiliki usulan akreditasi pada tahun yang sama!';
