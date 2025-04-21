@@ -19,7 +19,9 @@ use App\Http\Controllers\Api\SubdistrictController;
 use App\Http\Controllers\Api\VillageController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AccreditationFeedbackController;
+use App\Http\Controllers\Api\EvaluationSurveilanceController;
 use App\Models\EvaluationAssignment;
+use App\Models\EvaluationSurveilance;
 use App\Models\InstrumentComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -194,7 +196,11 @@ Route::post('/accreditation-feedback/store', [AccreditationFeedbackController::c
 Route::delete('/accreditation-feedback/destroy/{model}', [AccreditationFeedbackController::class, 'destroy']);
 Route::post('/accreditation-feedback/update/{model}', [AccreditationFeedbackController::class, 'update']);
 Route::get('/accreditation-feedback/export', [AccreditationFeedbackController::class, 'export']);
-
 Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);
+
+Route::get('/evaluation-surveilance/addnew/{id}', [EvaluationSurveilanceController::class, 'addNew']);
+Route::post('evaluation-serveilance/store', [EvaluationSurveilanceController::class, 'store']);
+Route::post('evaluation-serveilance/list', [EvaluationSurveilanceController::class, 'store']);
+Route::post('evaluation-serveilance/update/{model}', [EvaluationSurveilanceController::class, 'store']);
 
 Route::get('/dashboard/index', [DashboardController::class, 'index']);
