@@ -40,7 +40,7 @@ class EvaluationSurveilanceController extends BaseController
         }
     }
 
-    public function list(Request $request)
+    public function list(Request $request) //with filter
     {
         $is_assessor = false;
         if ($request->hasHeader('Access-User')) {
@@ -55,9 +55,80 @@ class EvaluationSurveilanceController extends BaseController
                 }
             }
             if ($is_assessor) {
+                $query = Evaluation::query()
+                    ->join('evaluation_assignments', 'evaluations.evaluation_assignment_id', '=', 'evaluation_assignments.id')
+                    ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                    ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                    ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                    ->join('assessors', 'assessors.id', '=', 'evaluations.assessor_id')
+                    ->join('instruments', 'accreditation_proposals.instrument_id', '=', 'instruments.id')
+                    ->where('assessors.user_id', '=', $user_id)
+                    ->select([
+                        'accreditation_proposals.proposal_date',
+                        'evaluation_assignments.method',
+                        'evaluations.*',
+                        'proposal_states.state_name',
+                        'instruments.category',
+                        'assessors.name as assessor',
+                        'library_name',
+                        'npp',
+                        'agency_name',
+                        'institution_head_name',
+                        'telephone_number',
+                        'province_name as province',
+                        'city_name as city',
+                        'subdistrict_name as subdistrict',
+                        'village_name as village'
+                    ]);
             } else {
-                $evaluation_surveilance = EvaluationSurveilance::all();
+                $query = Evaluation::query()
+                    ->join('evaluation_assignments', 'evaluations.evaluation_assignment_id', '=', 'evaluation_assignments.id')
+                    ->join('accreditation_proposals', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
+                    ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+                    ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+                    ->join('assessors', 'assessors.id', '=', 'evaluations.assessor_id')
+                    ->join('instruments', 'accreditation_proposals.instrument_id', '=', 'instruments.id')
+                    ->select([
+                        'accreditation_proposals.proposal_date',
+                        'evaluation_assignments.method',
+                        'evaluations.*',
+                        'proposal_states.state_name',
+                        'instruments.category',
+                        'assessors.name as assessor',
+                        'library_name',
+                        'npp',
+                        'agency_name',
+                        'institution_head_name',
+                        'telephone_number',
+                        'province_name as province',
+                        'city_name as city',
+                        'subdistrict_name as subdistrict',
+                        'village_name as village'
+                    ]);
             }
+
+            if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
+                $query->where('institution_requests.library_name', 'like', "%{$s}%");
+            }
+            if ($s = $request->input(key: 'province_id')) { //filter berdasarkan name            
+                $query->where('institution_requests.province_id', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'city_id')) { //filter berdasarkan name            
+                $query->where('institution_requests.city_id', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'subdistrict_id')) { //filter berdasarkan name            
+                $query->where('institution_requests.subdistrict_id', '=', "{$s}");
+            }
+            if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
+                $query->where('proposal_states.state_name', '=', "{$s}");
+            }
+            $perPage = $request->input(key: 'pageSize', default: 10);
+            $page = $request->input(key: 'page', default: 1);
+            $total = $query->count();
+            $response = $query->offset(value: ($page - 1) * $perPage)
+                ->limit($perPage)
+                ->paginate();
+            return $this->sendResponse($response, "Success", $total);
         } else {
             return $this->sendError('Error', 'Authorization Failed!');
         }
@@ -85,11 +156,17 @@ class EvaluationSurveilanceController extends BaseController
                 'accreditation_proposal_id' => 'required',
                 'surveilance' => 'required'
             ]);
+            if ($validator->fails()) {
+                return $this->sendError('Validation Error!', $validator->errors());
+            }
+
             $assessor = Assessor::where('user_id', '=', $user_id)->first();
             if (is_object($assessor)) {
                 $evaluation_assignment = EvaluationAssignment::query()
                     ->where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])
-                    ->where('assessor_id', '=', $assessor->id)->first();
+                    ->where('assessor_id', '=', $assessor->id)
+                    ->where('method', '=', 'Onsite')
+                    ->first();
             } else {
                 $evaluation_assignment = null;
             }
@@ -117,23 +194,23 @@ class EvaluationSurveilanceController extends BaseController
                 $evaluation_assignment->save();
                 $surveilance = json_decode($input['surveilance']);
                 if (is_object($evaluation)) {
-                    foreach ($surveilance as $survei) {
+                    foreach ($surveilance->data as $survei) {
                         $data_recom = [
-                            'main_component_id' => $survei->id,
-                            'nama' => $survei->name,
+                            'main_component_id' => $survei->main_component_id,
+                            'nama' => $survei->nama,
                             'nilai' => $survei->nilai,
                             'keterangan' => $survei->keterangan,
-                            'evaluation_id' => $survei->id
+                            'evaluation_id' => $evaluation->id
                         ];
                         EvaluationSurveilance::create($data_recom);
                     }
                 }
+                return $this->sendResponse(($evaluation), 'Feedback Created', $evaluation->count());
+            }else{
+                return $this->sendResponse(($evaluation_assignment), 'Assignment Not Found!', 0);
             }
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error!', $validator->errors());
-            }
-            //
-            return $this->sendResponse(($evaluation), 'Feedback Created', $evaluation->count());
+            
+            //return $this->sendResponse(($evaluation), 'Feedback Created', $evaluation->count());
         } else {
             return $this->sendError('Error', 'Authorization Failed!');
         }
@@ -143,5 +220,30 @@ class EvaluationSurveilanceController extends BaseController
 
     public function destroy(EvaluationSurveilance $model) {}
 
-    public function show() {}
+    public function show($id,Request $request) {
+        if ($request->hasHeader('Access-User')) {
+            
+            $evaluation = Evaluation::where('id', '=', $id)->first();
+            if (is_object($evaluation)) {
+                $accreditation_proposal = AccreditationProposal::where('id', '=', $evaluation->accreditation_proposal_id)->first();
+                $evaluation_surveilance = EvaluationSurveilance::where('evaluation_id','=',$id)->get();
+                $instrument_id = $accreditation_proposal->instrument_id;
+                $instrument_component = InstrumentComponent::where('instrument_id', '=', $instrument_id)
+                    ->where('type', '=', 'main')->get();
+                $data['accreditation_proposal_id'] = $id;
+                $data['evaluation_surveilance'] = $evaluation_surveilance;
+                $penilaian = [
+                    'Menurun' => 'Menurun',
+                    'Tetap' => 'Tetap',
+                    'Meningkat' => 'Meningkat'
+                ];
+                $data['penilaian'] = $penilaian;
+                return $this->sendResponse($data, 'Success', 3);
+            } else {
+                return $this->sendError('Error', 'Object not found!');
+            }
+        } else {
+            return $this->sendError('Error', 'Authorization Failed!');
+        }
+    }
 }

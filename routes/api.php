@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\VillageController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AccreditationFeedbackController;
 use App\Http\Controllers\Api\EvaluationSurveilanceController;
+use App\Http\Controllers\Api\SurveilanceAssignmentController;
 use App\Models\EvaluationAssignment;
 use App\Models\EvaluationSurveilance;
 use App\Models\InstrumentComponent;
@@ -199,8 +200,11 @@ Route::get('/accreditation-feedback/export', [AccreditationFeedbackController::c
 Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'getPerpustakaan']);
 
 Route::get('/evaluation-surveilance/addnew/{id}', [EvaluationSurveilanceController::class, 'addNew']);
-Route::post('evaluation-serveilance/store', [EvaluationSurveilanceController::class, 'store']);
-Route::post('evaluation-serveilance/list', [EvaluationSurveilanceController::class, 'store']);
-Route::post('evaluation-serveilance/update/{model}', [EvaluationSurveilanceController::class, 'store']);
+Route::post('/evaluation-surveilance/store', [EvaluationSurveilanceController::class, 'store']);
+Route::post('/evaluation-surveilance/list', [EvaluationSurveilanceController::class, 'list']);
+Route::post('/evaluation-surveilance/update/{model}', [EvaluationSurveilanceController::class, 'update']);
+Route::get('/evaluation-surveilance/show/{id}', [EvaluationSurveilanceController::class, 'show']);
+
+Route::get('/surveilance-assignment/list', [SurveilanceAssignmentController::class, 'list']);
 
 Route::get('/dashboard/index', [DashboardController::class, 'index']);
