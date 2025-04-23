@@ -104,7 +104,8 @@ class EvaluationSurveilanceController extends BaseController
                         'city_name as city',
                         'subdistrict_name as subdistrict',
                         'village_name as village'
-                    ]);
+                    ])
+                    ->where('evaluation_assignments.method', '=', 'Onsite');
             }
 
             if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
