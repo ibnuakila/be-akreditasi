@@ -201,7 +201,7 @@ Route::get('/accreditation/getperpustakaan', [AccreditationController::class, 'g
 
 Route::get('/evaluation-surveilance/addnew/{id}', [EvaluationSurveilanceController::class, 'addNew']);
 Route::post('/evaluation-surveilance/store', [EvaluationSurveilanceController::class, 'store']);
-Route::post('/evaluation-surveilance/list', [EvaluationSurveilanceController::class, 'list']);
+Route::get('/evaluation-surveilance/list', [EvaluationSurveilanceController::class, 'list']);
 Route::post('/evaluation-surveilance/update/{model}', [EvaluationSurveilanceController::class, 'update']);
 Route::get('/evaluation-surveilance/show/{id}', [EvaluationSurveilanceController::class, 'show']);
 
