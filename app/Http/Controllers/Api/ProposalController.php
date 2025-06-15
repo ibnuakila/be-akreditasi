@@ -12,12 +12,15 @@ use Illuminate\Http\Request;
 use App\Models\AccreditationProposal;
 use App\Models\ProposalState;
 use App\Models\AccreditationProposalFiles;
+use App\Models\Assessor;
 use App\Models\ProposalDocument;
 use App\Models\Instrument;
 use App\Models\Province;
 use App\Models\Region;
 use App\Models\ProvinceRegion;
 use App\Models\Evaluation;
+use App\Models\EvaluationAssignment;
+use App\Models\EvaluationAssignmentUser;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -26,22 +29,20 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ProposalController extends BaseController {
+class ProposalController extends BaseController
+{
 
-    function __construct() {
-        
-    }
+    function __construct() {}
 
-    function __destruct() {
-        
-    }
+    function __destruct() {}
 
     /**
      * @param $model
      * 
      * @param model
      */
-    public function destroy(AccreditationProposal $model) {
+    public function destroy(AccreditationProposal $model)
+    {
         $proposal_files = AccreditationProposalFiles::find()->where('accreditation_proposal_id', '=', $model->id)->get();
         //delete files
         foreach ($proposal_files as $file) {
@@ -51,18 +52,21 @@ class ProposalController extends BaseController {
         return $this->sendResponse([], 'Proposal Deleted!', $model->count());
     }
 
-    public function index() {
+    public function index()
+    {
         $accreditation = DB::table('accreditation_proposals')
-                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-                ->select(['institution_requests.*',
-                    'accreditation_proposals.proposal_date',
-                    'accreditation_proposals.predicate',
-                    'accreditation_proposals.accredited_at',
-                    'accreditation_proposals.type',
-                    'proposal_states.state_name'])
-                ->where('accreditation_proposals.proposal_state_id', '>', '0')
-                ->get();
+            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+            ->select([
+                'institution_requests.*',
+                'accreditation_proposals.proposal_date',
+                'accreditation_proposals.predicate',
+                'accreditation_proposals.accredited_at',
+                'accreditation_proposals.type',
+                'proposal_states.state_name'
+            ])
+            ->where('accreditation_proposals.proposal_state_id', '>', '0')
+            ->get();
         $spreadsheet = new Spreadsheet();
         $activeWorksheet = $spreadsheet->getActiveSheet();
         $activeWorksheet->setCellValue('A1', 'Data Usulan Akreditasi');
@@ -80,6 +84,8 @@ class ProposalController extends BaseController {
         $activeWorksheet->setCellValue('J2', 'Kabupaten');
         $activeWorksheet->setCellValue('K2', 'Kecamatan');
         $activeWorksheet->setCellValue('L2', 'Desa');
+        $activeWorksheet->setCellValue('M2', 'Assessor 1');
+        $activeWorksheet->setCellValue('N2', 'Assessor 2');
         $styleArray = [
             'font' => [
                 'bold' => true,
@@ -106,6 +112,10 @@ class ProposalController extends BaseController {
         $activeWorksheet->getStyle('A2:L2')->applyFromArray($styleArray);
         $row = 3;
         foreach ($accreditation as $accre) {
+            //ambil data penugasan evaluasi dan assessor nya
+            $assignment = EvaluationAssignment::query()
+                ->join('evaluation_assignment_user', 'evaluation_assignments.id', '=', 'evaluation_assignment_user.evaluation_assignment_id')
+                ->where('accreditation_proposal_id', '=', $accre->accreditation_proposal_id)->get();
             $activeWorksheet->setCellValue('A' . strval($row), $accre->accreditation_proposal_id);
             $activeWorksheet->setCellValue('B' . strval($row), $accre->proposal_date);
             $activeWorksheet->setCellValue('C' . strval($row), $accre->library_name);
@@ -118,12 +128,30 @@ class ProposalController extends BaseController {
             $activeWorksheet->setCellValue('J' . strval($row), $accre->city_name);
             $activeWorksheet->setCellValue('K' . strval($row), $accre->subdistrict_name);
             $activeWorksheet->setCellValue('L' . strval($row), $accre->village_name);
+            if (count($assignment) >= 1) {
+                $eva_assign_user = EvaluationAssignmentUser::where('evaluation_assignment_id', '=', $assignment[0]->id)->get()->toArray();
+                if (count($eva_assign_user) == 1) {
+                    $assessor_1 = Assessor::where('id',$eva_assign_user[0]['assessor_id'])->first();
+                    if (is_object($assessor_1)) {
+                        $activeWorksheet->setCellValue('M' . strval($row), $assessor_1->name);
+                    }
+                } elseif (count($eva_assign_user) == 2) {
+                    $assessor_1 = Assessor::where('id',$eva_assign_user[0]['assessor_id'])->first();
+                    $assessor_2 = Assessor::where('id',$eva_assign_user[1]['assessor_id'])->first();
+                    if (is_object($assessor_1)) {
+                        $activeWorksheet->setCellValue('M' . strval($row), $assessor_1->name);
+                    }
+                    if (is_object($assessor_2)) {
+                        $activeWorksheet->setCellValue('N' . strval($row), $assessor_2->name);
+                    }
+                }
+            }
             $row++;
         }
         $writer = new Xlsx($spreadsheet);
         $response = new StreamedResponse(function () use ($writer) {
-                    $writer->save('php://output');
-                });
+            $writer->save('php://output');
+        });
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $response->headers->set('Content-Disposition', 'attachment;filename="data-usulan-akreditasi.xlsx"');
         $response->headers->set('Cache-Control', 'max-age=0');
@@ -132,42 +160,43 @@ class ProposalController extends BaseController {
         //return $this->sendResponse(new AccreditationProposalResource($accreditation), 'Success', $accreditation->count());
     }
 
-    public function list(Request $request) {//with filter
+    public function list(Request $request)
+    { //with filter
         $query = AccreditationProposal::query()
-                ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
-                ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
-                //->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
-                //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
-                //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
-                //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
-                ->select([
-                    'accreditation_proposals.*',
-                    'proposal_states.state_name',
-                    'institution_requests.category',
-                    'library_name',
-                    'npp',
-                    'agency_name',
-                    'institution_head_name',
-                    'email',
-                    'telephone_number',
-                    'province_name as province',
-                    'city_name as city',
-                    'subdistrict_name as subdistrict',
-                    'village_name as village'
-        ]);
-        if ($s = $request->input(key: 'search')) {//filter berdasarkan name            
+            ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
+            ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
+            //->join('provinces', 'institution_requests.province_id', '=', 'provinces.id')
+            //->join('cities', 'institution_requests.city_id', '=', 'cities.id')
+            //->join('subdistricts', 'institution_requests.subdistrict_id', '=', 'subdistricts.id')
+            //->join('villages', 'institution_requests.village_id', '=', 'villages.id')
+            ->select([
+                'accreditation_proposals.*',
+                'proposal_states.state_name',
+                'institution_requests.category',
+                'library_name',
+                'npp',
+                'agency_name',
+                'institution_head_name',
+                'email',
+                'telephone_number',
+                'province_name as province',
+                'city_name as city',
+                'subdistrict_name as subdistrict',
+                'village_name as village'
+            ]);
+        if ($s = $request->input(key: 'search')) { //filter berdasarkan name            
             $query->where('institution_requests.library_name', 'like', "%{$s}%");
         }
-        if ($s = $request->input(key: 'province_id')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'province_id')) { //filter berdasarkan name            
             $query->where('institution_requests.province_id', '=', "{$s}");
         }
-        if ($s = $request->input(key: 'city_id')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'city_id')) { //filter berdasarkan name            
             $query->where('institution_requests.city_id', '=', "{$s}");
         }
-        if ($s = $request->input(key: 'subdistrict_id')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'subdistrict_id')) { //filter berdasarkan name            
             $query->where('institution_requests.subdistrict_id', '=', "{$s}");
         }
-        if ($s = $request->input(key: 'state_name')) {//filter berdasarkan name            
+        if ($s = $request->input(key: 'state_name')) { //filter berdasarkan name            
             $query->where('proposal_states.state_name', '=', "{$s}");
         }
         $query->orderBy('proposal_date', 'desc');
@@ -175,8 +204,8 @@ class ProposalController extends BaseController {
         $page = $request->input(key: 'page', default: 1);
         $total = $query->count();
         $response = $query->offset(value: ($page - 1) * $perPage)
-                ->limit($perPage)
-                ->paginate();
+            ->limit($perPage)
+            ->paginate();
         return $this->sendResponse($response, "Success", $total);
     }
 
@@ -185,54 +214,55 @@ class ProposalController extends BaseController {
      * 
      * @param id
      */
-    public function show($id) {
+    public function show($id)
+    {
         $accreditation = AccreditationProposal::query()
-                ->where(['id' => $id])
-                ->with('proposalState')
-                //->with('institutionRequest')            
-                ->get();
+            ->where(['id' => $id])
+            ->with('proposalState')
+            //->with('institutionRequest')            
+            ->get();
         $institution_request = InstitutionRequest::query()
-                ->where(['accreditation_proposal_id' => $id])
-                ->with('province')
-                ->with('city')
-                ->with('subDistrict')
-                ->with('village')
-                ->get();
+            ->where(['accreditation_proposal_id' => $id])
+            ->with('province')
+            ->with('city')
+            ->with('subDistrict')
+            ->with('village')
+            ->get();
         $accre_files = AccreditationProposalFiles::query()
-                ->where(['accreditation_proposal_id' => $id])
-                ->with('proposalDocument')
-                ->get();
+            ->where(['accreditation_proposal_id' => $id])
+            ->with('proposalDocument')
+            ->get();
         //$accre_contents = AccreditationContent::query()
-        
+
 
         //(NILAI SA / (JUMLAH SOAL * 5)) * BOBOT
         $accre_contents = DB::table('accreditation_contents')
-                ->select([
-                    'instrument_components.name',
-                    'instrument_components.weight',
-                    DB::raw('SUM(accreditation_contents.value) AS nilai_sa'),
-                    DB::raw('COUNT(accreditation_contents.value) AS jumlah_soal'),
-                    DB::raw('(SUM(accreditation_contents.value) / (COUNT(accreditation_contents.value) * 5)) * instrument_components.weight AS total_nilai_sa'),
-                    DB::raw('SUM(merged_evaluation_contents.value) AS nilai_evaluasi'),
-                    DB::raw('(SUM(merged_evaluation_contents.value) / (COUNT(merged_evaluation_contents.value) * 5)) * instrument_components.weight AS total_nilai_evaluasi'),
-                    'accreditation_contents.main_component_id'
-                    //'evaluation_recomendations.content as recommendation'
-                ])
-                ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
-                ->leftJoin('merged_evaluation_contents', 'accreditation_contents.id', '=', 'merged_evaluation_contents.accreditation_content_id')
-                //->leftJoin('evaluation_recomendations', 'merged_evaluation_contents.evaluation_id', '=', 'evaluation_recomendations.evaluation_id')
-                ->where('accreditation_contents.accreditation_proposal_id', $id)
-                ->groupBy(
-                        'accreditation_contents.main_component_id',
-                        'instrument_components.name',
-                        'instrument_components.weight'
-                )   
-                ->get();
+            ->select([
+                'instrument_components.name',
+                'instrument_components.weight',
+                DB::raw('SUM(accreditation_contents.value) AS nilai_sa'),
+                DB::raw('COUNT(accreditation_contents.value) AS jumlah_soal'),
+                DB::raw('(SUM(accreditation_contents.value) / (COUNT(accreditation_contents.value) * 5)) * instrument_components.weight AS total_nilai_sa'),
+                DB::raw('SUM(merged_evaluation_contents.value) AS nilai_evaluasi'),
+                DB::raw('(SUM(merged_evaluation_contents.value) / (COUNT(merged_evaluation_contents.value) * 5)) * instrument_components.weight AS total_nilai_evaluasi'),
+                'accreditation_contents.main_component_id'
+                //'evaluation_recomendations.content as recommendation'
+            ])
+            ->join('instrument_components', 'accreditation_contents.main_component_id', '=', 'instrument_components.id')
+            ->leftJoin('merged_evaluation_contents', 'accreditation_contents.id', '=', 'merged_evaluation_contents.accreditation_content_id')
+            //->leftJoin('evaluation_recomendations', 'merged_evaluation_contents.evaluation_id', '=', 'evaluation_recomendations.evaluation_id')
+            ->where('accreditation_contents.accreditation_proposal_id', $id)
+            ->groupBy(
+                'accreditation_contents.main_component_id',
+                'instrument_components.name',
+                'instrument_components.weight'
+            )
+            ->get();
         $evaluation_recommendation = EvaluationRecomendation::query()
-                    ->select('evaluation_recomendations.*')
-                    ->join('evaluations', 'evaluation_recomendations.evaluation_id', '=', 'evaluations.id')
-                    ->where('evaluations.accreditation_proposal_id', '=', $id)
-                    ->get();
+            ->select('evaluation_recomendations.*')
+            ->join('evaluations', 'evaluation_recomendations.evaluation_id', '=', 'evaluations.id')
+            ->where('evaluations.accreditation_proposal_id', '=', $id)
+            ->get();
 
         $proposal_states = ProposalState::all();
         $is_valid = [
@@ -266,7 +296,8 @@ class ProposalController extends BaseController {
      * 
      * @param request
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $input = $request->all();
         //validating---------------------------
         $validator = Validator::make($input, [
@@ -301,7 +332,8 @@ class ProposalController extends BaseController {
      * @param request
      * @param model
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $input = $request->all();
         $user_role = '';
         $perpus_id = '';
@@ -348,7 +380,7 @@ class ProposalController extends BaseController {
                 /*if ($input['is_valid'] == 'valid') {
                     $model->proposal_state_id = 2;
                 } else {*/
-                    $model->proposal_state_id = $input['proposal_state_id'];
+                $model->proposal_state_id = $input['proposal_state_id'];
                 //}
                 $model->finish_date = $input['finish_date'];
                 $model->type = $input['type'];
@@ -386,7 +418,11 @@ class ProposalController extends BaseController {
                         $skor = $skor + $eva->skor;
                     }
                 }
-                $url = "http://103.23.199.161/api/perpustakaan/" . $perpus_id;
+                $IP_PERPUS = env('IP_PERPUS_DEV');
+                if (env('APP_ENV') == 'production') {
+                    $IP_PERPUS = env('IP_PERPUS_PROD');
+                }
+                $url = "http://" . $IP_PERPUS . "/api/perpustakaan/" . $perpus_id;
                 $curl = curl_init();
                 curl_setopt_array($curl, [
                     CURLOPT_URL => $url,
@@ -396,7 +432,7 @@ class ProposalController extends BaseController {
                     CURLOPT_TIMEOUT => 10,
                     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                     CURLOPT_CUSTOMREQUEST => "GET",
-                        //CURLOPT_USERAGENT => $userAgent,
+                    //CURLOPT_USERAGENT => $userAgent,
                 ]);
 
                 curl_setopt($curl, CURLOPT_HTTPHEADER, [
@@ -440,7 +476,8 @@ class ProposalController extends BaseController {
         return $this->sendResponse(new AccreditationProposalResource($return), 'Accreditation Updated!', $model->count());
     }
 
-    public function showFile($id, $file) {
+    public function showFile($id, $file)
+    {
         $accre_file = AccreditationProposal::find($id);
 
         /* if($file == 'certificate_file'){
@@ -460,8 +497,8 @@ class ProposalController extends BaseController {
             try {
                 $file_content = Storage::get($file_path);
                 return response($file_content, 200)
-                                ->header('Content-Type', 'application/pdf') // Set Content-Type header
-                                ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                    ->header('Content-Type', 'application/pdf') // Set Content-Type header
+                    ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
                 //return Storage::download($file_path, $accre_file->file_name);
             } catch (FileNotFoundException $e) {
                 return $this->sendError('File not Found', 'File not available in hard drive!');
@@ -471,7 +508,8 @@ class ProposalController extends BaseController {
         }
     }
 
-    public function showFiles($id, Request $request) {
+    public function showFiles($id, Request $request)
+    {
         if ($request->hasHeader('Access-User')) {
             $accre_file = AccreditationProposalFiles::find($id);
             if (is_object($accre_file)) {
@@ -481,9 +519,9 @@ class ProposalController extends BaseController {
                 try {
                     $file_content = Storage::get($file_path);
                     return response($file_content, 200)
-                                    ->header('Content-Type', $file_type) // Set Content-Type header
-                                    ->header('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type')
-                                    ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
+                        ->header('Content-Type', $file_type) // Set Content-Type header
+                        ->header('Access-Control-Expose-Headers', 'Content-Disposition, Content-Type')
+                        ->header('Content-Disposition', 'attachment; filename="' . $file_name . '"');
                     //return Storage::download($file_path, $accre_file->file_name);
                 } catch (FileNotFoundException $e) {
                     return $this->sendError('File not Found', 'File not available in hard drive!');

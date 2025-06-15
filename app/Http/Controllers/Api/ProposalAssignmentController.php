@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccreditationProposal;
 use App\Models\Assessor;
 use App\Models\EvaluationAssignment;
+use App\Models\EvaluationAssignmentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -60,7 +61,8 @@ class ProposalAssignmentController extends BaseController
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
+                ->join('evaluation_assignment_user', 'evaluation_assignments.id', '=', 'evaluation_assignment_user.evaluation_assignment_id')
+                ->join('assessors', 'evaluation_assignment_user.assessor_id', '=', 'assessors.id')
                 ->whereIn('accreditation_proposals.proposal_state_id', [2,3])                
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('assessors.user_id', '=', $user_id)
@@ -192,13 +194,27 @@ class ProposalAssignmentController extends BaseController
             'method' => $input['method'],
             'scheduled_date' => $input['scheduled_date'],
             'expired_date' => $input['expired_date'],
-            'assessor_id' => $input['assessor_id'],
+            //'assessor_id' => $input['assessor_id'],
             'assignment_state_id' => 1
         ];
-        $create = EvaluationAssignment::create($data);
+        $temp_evaluation_assignment = EvaluationAssignment::where('accreditation_proposal_id', '=', $input['accreditation_proposal_id'])->first();
+        if(!is_object($temp_evaluation_assignment)){
+            $create = EvaluationAssignment::create($data);
+        }else{
+            $create = $temp_evaluation_assignment;
+        }
+        
+        $data_assessor = [
+            'evaluation_assignment_id' => $create->id,
+            'assessor_id' => $input['assessor_id']
+        ];
+        if(is_object($create)){
+            $assignment_user = EvaluationAssignmentUser::create($data_assessor);
+        }
+        
         //update accreditation proposal
         $accreProposal = AccreditationProposal::find($input['accreditation_proposal_id']);
-        $accreProposal->proposal_state_id = 2;
+        $accreProposal->proposal_state_id = 3;
         $temp = $accreProposal->assignment_count;
         $accreProposal->assignment_count = $temp + 1;
         $accreProposal->save();

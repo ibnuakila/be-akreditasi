@@ -14,6 +14,7 @@ class Assessor extends Model
         'name',
         'email',
         'phone',
-        'user_id'
+        'user_id',
+        'institution_name'
     ];
 }

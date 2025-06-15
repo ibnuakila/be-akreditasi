@@ -71,7 +71,7 @@ class EvaluationAssignmentController extends BaseController
             $user_id = $request_header['id'];
             $roles = $request_header['roles'];
             foreach ($roles as $role) {
-                if ($role['name'] == 'Asesor') {
+                if ($role['name'] == 'Asesor' || $role['name'] == 'ASSESOR') {
                     $is_assessor = true;
                 }
             }
@@ -83,7 +83,8 @@ class EvaluationAssignmentController extends BaseController
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
+                ->join('evaluation_assignment_user', 'evaluation_assignments.id', '=', 'evaluation_assignment_user.evaluation_assignment_id')
+                ->join('assessors', 'evaluation_assignment_user.assessor_id', '=', 'assessors.id')
                 ->whereIn('accreditation_proposals.proposal_state_id', [2,3])
                 ->Where('institution_requests.status', '=', 'valid')
                 ->where('evaluation_assignments.assignment_state_id', '=', 1)
@@ -135,7 +136,8 @@ class EvaluationAssignmentController extends BaseController
                 ->join('institution_requests', 'accreditation_proposals.id', '=', 'institution_requests.accreditation_proposal_id')
                 ->join('proposal_states', 'accreditation_proposals.proposal_state_id', '=', 'proposal_states.id')
                 ->join('evaluation_assignments', 'accreditation_proposals.id', '=', 'evaluation_assignments.accreditation_proposal_id')
-                ->join('assessors', 'evaluation_assignments.assessor_id', '=', 'assessors.id')
+                ->join('evaluation_assignment_user', 'evaluation_assignments.id', '=', 'evaluation_assignment_user.evaluation_assignment_id')
+                ->join('assessors', 'evaluation_assignment_user.assessor_id', '=', 'assessors.id')
                 //->where('accreditation_proposals.proposal_state_id', '=', 2)
                 ->Where('institution_requests.status', '=', 'valid')
                 //->where('assessors.user_id', '=', $user_id)
@@ -153,7 +155,7 @@ class EvaluationAssignmentController extends BaseController
                     'city_name as city',
                     'subdistrict_name as subdistrict',
                     'village_name as village',
-                    'assessor_id',
+                    'evaluation_assignment_user.assessor_id',
                     'assessors.name as assessor'
                 ]);
             if ($is_assessor) {
